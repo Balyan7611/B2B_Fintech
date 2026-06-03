@@ -1,15 +1,70 @@
 // src/api/httpClient.js
 import axios from 'axios';
+import { store } from '../store';
+import { showLoader, hideLoader, setNotification } from '../store/slices/uiSlice';
 
 const httpClient = axios.create({
     baseURL: 'https://api.sahayatamoney.in/api',
     headers: { 'Content-Type': 'application/json' }
 });
 
+let activeRequests = 0;
+
+const startLoading = () => {
+    if (activeRequests === 0) {
+        store.dispatch(showLoader());
+    }
+    activeRequests++;
+};
+
+const stopLoading = () => {
+    activeRequests--;
+    if (activeRequests <= 0) {
+        activeRequests = 0;
+        store.dispatch(hideLoader());
+    }
+};
+
 httpClient.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
+    
+    // Start global loader
+    startLoading();
+    
     return config;
+}, (error) => {
+    stopLoading();
+    return Promise.reject(error);
+});
+
+httpClient.interceptors.response.use((response) => {
+    stopLoading();
+    
+    const resData = response.data;
+    if (resData) {
+        const method = response.config.method.toLowerCase();
+        const isWrite = ['post', 'put', 'delete'].includes(method);
+        
+        if (resData.status === true || resData.status === 'success' || resData.status === 1) {
+            if (isWrite) {
+                const msg = resData.mess || resData.message || "Operation completed successfully!";
+                store.dispatch(setNotification({ type: 'success', message: msg }));
+            }
+        } else if (resData.status === false || resData.status === 'error' || resData.status === 0) {
+            const msg = resData.mess || resData.message || "Operation failed!";
+            store.dispatch(setNotification({ type: 'error', message: msg }));
+        }
+    }
+    
+    return response;
+}, (error) => {
+    stopLoading();
+    
+    const errorMsg = error.response?.data?.mess || error.response?.data?.message || error.message || "Network error. Please try again.";
+    store.dispatch(setNotification({ type: 'error', message: errorMsg }));
+    
+    return Promise.reject(error);
 });
 
 const getSecurityData = async () => {

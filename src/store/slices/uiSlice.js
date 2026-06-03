@@ -9,6 +9,8 @@ const initialState = {
   isNavScrolled: false,
   isMobileMenuOpen: false,
   isDarkMode: savedTheme === 'dark',
+  globalLoading: false,
+  globalNotification: null, // { type: 'success' | 'error', message: 'string' }
 };
 
 const uiSlice = createSlice({
@@ -30,8 +32,29 @@ const uiSlice = createSlice({
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
     },
+    showLoader: (state) => {
+      state.globalLoading = true;
+    },
+    hideLoader: (state) => {
+      state.globalLoading = false;
+    },
+    setNotification: (state, action) => {
+      state.globalNotification = action.payload;
+    },
+    clearNotification: (state) => {
+      state.globalNotification = null;
+    },
   },
 });
 
-export const { setNavScrolled, toggleMobileMenu, setMobileMenuOpen, toggleDarkMode } = uiSlice.actions;
+export const { 
+  setNavScrolled, 
+  toggleMobileMenu, 
+  setMobileMenuOpen, 
+  toggleDarkMode,
+  showLoader,
+  hideLoader,
+  setNotification,
+  clearNotification
+} = uiSlice.actions;
 export default uiSlice.reducer;

@@ -50,6 +50,7 @@ import RegisterDetailsPage from './public/pages/RegisterDetailsPage';
 import TermsPage from './public/pages/TermsPage';
 import { AuthGuard } from './security/auth-guard';
 import { setNavScrolled } from './store/slices/uiSlice';
+import GlobalLoaderAndToast from './components/GlobalLoaderAndToast';
 
 function App() {
   const dispatch = useDispatch();
@@ -139,6 +140,7 @@ function App() {
             </AuthGuard>} />
           <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
+        <GlobalLoaderAndToast />
       </div>
   );
 }

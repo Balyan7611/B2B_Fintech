@@ -1,50 +1,16 @@
 // src/api/endpoints.js
-import { LoginRequestModel, LoginResponseModel } from '../models/authModel';
-import { RoleRequestModel, RoleResponseModel } from '../models/roleModel';
-import { apiService } from './httpClient';
+import { AuthService } from '../services/auth.service';
+import { RoleService } from '../services/RoleService';
+import { CompanyService } from '../services/company.service';
 
+// Re-exporting everything exactly as before to maintain backward compatibility
 export const API = {
-    login: async (data) => {
-        const res = await apiService.postWithSecurity('/UserAuth/LoginUser', data, LoginRequestModel);
-        return LoginResponseModel(res);
-    },
-    
-    getRoles: async () => {
-        const res = await apiService.get('/Role');
-        return RoleResponseModel(res);
-    },
-    
-    getCompanyDetails: async (url) => {
-        const response = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
-        return response;
-    },
-    
-    saveRole: async (data) => {
-        const method = (data.id && data.id > 0) ? 'put' : 'post';
-        const url = (method === 'put') ? '/Role/UpdateRole' : '/Role';
-        const payload = RoleRequestModel(data, null);
-        return await apiService[method](url, payload);
-    },
-    
-    deleteRole: async (id) => {
-        return await apiService.post(`/Role/DeleteRole/${id}`, {});
-    }
+    login: AuthService.login,
+    getRoles: RoleService.getRoles,
+    getMasterRoles: RoleService.getMasterRoles,
+    getCompanyDetails: CompanyService.getCompanyDetails,
+    saveRole: RoleService.saveRole,
+    deleteRole: RoleService.deleteRole
 };
 
-export const fetchCompanyData = async (url) => {
-    try {
-        const res = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
-        if (!res.status) throw new Error("Branding fetch failed");
-        return {
-            ...res.data,
-            primaryColor: res.data?.headerColor,
-            socialLinks: {
-                fb: res.data?.faceBook,
-                wa: res.data?.whastApp
-            }
-        };
-    } catch (err) {
-        console.error("Company fetch error:", err);
-        return null;
-    }
-};
+export const fetchCompanyData = CompanyService.fetchCompanyData;

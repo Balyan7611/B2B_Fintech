@@ -22,8 +22,24 @@ import {
 import { API } from '../../../api/endpoints';
 import styles from '../MemberPages/MemberPages.module.css';
 
+const ALL_AVAILABLE_SERVICES = [
+  // Admin Defaults
+  'All 57 Services Active', 'Gateway Direct API', 'Fund Settlement', 'Full System Access', 'Role Creation', 'News Broadcast', 'System Configuration',
+  // Retailer / Distributor Defaults
+  'Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)',
+  'Fastag Recharge', 'Pan Card', 'Broadband Postpaid', 'Insurance Premium', 'LPG Gas Booking',
+  // Other Services
+  'Recharge', 'MOBILE POSTPAID', 'DTH', 'Electricity', 'Water', 'GAS', 'LPG Gas', 'Insurance', 'Internet', 'Landline Postpaid',
+  'EMI', 'Fastag', 'Education', 'Cable Tv', 'Municipal Tax', 'AEPS', 'Payment Gateway', 'Scan & Pay', 'NSDL PAN',
+  'mATM', 'Settlement', 'Fund Transfer', 'My Services', 'MATM OnBoard', 'Credit Card', 'Money Transfer', 'Broadband', 'DataCard',
+  'Digital Voucher', 'Prepaid DataCard', 'Metro', 'Prebooking', 'WiFi', 'E-Challan', 'Pay Credit Card Bills',
+  'Account Verification', 'DMT PPI', 'Account Opening', 'Loan', 'Donation', 'Health Insurance', 'Housing Society', 'Life Insurance',
+  'Loan Repay', 'Muncipal Service', 'Recurring Deposit', 'Clubs Association', 'Rental', 'Subscription', 'NPMC', 'NPS', 'Prepaid Meter'
+];
+
 const RoleManagement = () => {
   const [roles, setRoles] = useState([]);
+  const [masterRoles, setMasterRoles] = useState([]);
   const [filteredRoles, setFilteredRoles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
@@ -33,6 +49,11 @@ const RoleManagement = () => {
   const [hoveredRole, setHoveredRole] = useState(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
+  const [hideTimeout, setHideTimeout] = useState(null);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignRole, setAssignRole] = useState(null);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [serviceSearch, setServiceSearch] = useState('');
   const [formData, setFormData] = useState({
     id: 0,
     name: '',
@@ -42,7 +63,7 @@ const RoleManagement = () => {
     price: '0',
     status: true,
     outside: false,
-    typeRole: 1,
+    typeRole: '',
     menuStr: '1,2,3',
     packageId: 2,
     description: 'string',
@@ -72,7 +93,23 @@ const RoleManagement = () => {
     }
   };
 
-  useEffect(() => { fetchRoles(); }, []);
+  const fetchMasterRoles = async () => {
+    try {
+      const response = await API.getMasterRoles();
+      if (response && response.data) {
+        setMasterRoles(response.data);
+      } else if (Array.isArray(response)) {
+        setMasterRoles(response);
+      }
+    } catch (error) {
+      console.error('Error fetching master roles:', error);
+    }
+  };
+
+  useEffect(() => { 
+    fetchRoles(); 
+    fetchMasterRoles();
+  }, []);
 
   const filterRoles = useCallback(() => {
     let filtered = [...roles];
@@ -92,6 +129,15 @@ const RoleManagement = () => {
 
   const getAssignedServices = (roleName) => {
     const roleLower = roleName?.toLowerCase() || '';
+    const stored = localStorage.getItem(`assigned_services_${roleLower}`);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    
     if (roleLower === 'retailer' || roleLower === 'retailer1') {
       return ['Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)'];
     } else if (roleLower === 'distributor') {
@@ -135,7 +181,7 @@ const RoleManagement = () => {
       price: '0',
       status: true,
       outside: false,
-      typeRole: 1,
+      typeRole: '',
       menuStr: '1,2,3',
       packageId: 2,
       description: 'string',
@@ -173,6 +219,10 @@ const RoleManagement = () => {
   };
 
   const handleMouseEnter = (e, role) => {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     setPopoverPos({
       x: rect.right + 15,
@@ -182,7 +232,64 @@ const RoleManagement = () => {
   };
 
   const handleMouseLeave = () => {
+    const timer = setTimeout(() => {
+      setHoveredRole(null);
+    }, 200);
+    setHideTimeout(timer);
+  };
+
+  const handlePopoverMouseEnter = () => {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
+    }
+  };
+
+  const handlePopoverMouseLeave = () => {
     setHoveredRole(null);
+  };
+
+  const openAssignModal = (role) => {
+    setAssignRole(role);
+    const currentlyAssigned = getAssignedServices(role.name);
+    setSelectedServices(currentlyAssigned);
+    setServiceSearch('');
+    setIsAssignModalOpen(true);
+    setHoveredRole(null);
+  };
+
+  const toggleServiceSelection = (service) => {
+    setSelectedServices(prev => 
+      prev.includes(service) 
+        ? prev.filter(s => s !== service) 
+        : [...prev, service]
+    );
+  };
+
+  const handleSelectAllServices = () => {
+    setSelectedServices(ALL_AVAILABLE_SERVICES);
+  };
+
+  const handleDeselectAllServices = () => {
+    setSelectedServices([]);
+  };
+
+  const handleSaveAssignedServices = (e) => {
+    if (e) e.preventDefault();
+    if (assignRole) {
+      const roleLower = assignRole.name?.toLowerCase() || '';
+      localStorage.setItem(`assigned_services_${roleLower}`, JSON.stringify(selectedServices));
+      setIsAssignModalOpen(false);
+      fetchRoles();
+    }
+  };
+
+  const removeServiceFromRole = (role, serviceToRemove) => {
+    const roleLower = role.name?.toLowerCase() || '';
+    const current = getAssignedServices(role.name);
+    const updated = current.filter(s => s !== serviceToRemove);
+    localStorage.setItem(`assigned_services_${roleLower}`, JSON.stringify(updated));
+    setRoles(prev => [...prev]);
   };
 
   const handleExport = (type) => {
@@ -372,21 +479,28 @@ const RoleManagement = () => {
         </div>
       </div>
 
+      {/* Placeholder Space for Future Card */}
+      <div style={{ minHeight: '250px', width: '100%' }}></div>
+
       {hoveredRole && (
-        <div style={{
-          position: 'absolute',
-          top: popoverPos.y,
-          left: popoverPos.x,
-          background: '#ffffff',
-          border: '1px solid #CBD5E1',
-          borderRadius: '12px',
-          padding: '16px',
-          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.15)',
-          zIndex: 9999,
-          width: '320px',
-          pointerEvents: 'none',
-          animation: 'fadeIn 0.15s ease-out'
-        }}>
+        <div 
+          onMouseEnter={handlePopoverMouseEnter}
+          onMouseLeave={handlePopoverMouseLeave}
+          style={{
+            position: 'absolute',
+            top: popoverPos.y,
+            left: popoverPos.x,
+            background: '#ffffff',
+            border: '1px solid #CBD5E1',
+            borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.15)',
+            zIndex: 9999,
+            width: '320px',
+            pointerEvents: 'auto',
+            animation: 'fadeIn 0.15s ease-out'
+          }}
+        >
           <div style={{
             position: 'absolute',
             left: '-6px',
@@ -398,13 +512,36 @@ const RoleManagement = () => {
             borderBottom: '1px solid #CBD5E1',
             transform: 'rotate(45deg)'
           }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
-            <FiList style={{ color: '#1756AA', fontSize: '1rem' }} />
-            <h4 style={{ margin: 0, fontSize: '0.8rem', color: '#0D1B3E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Assigned Services ({getAssignedServices(hoveredRole.name).length})
-            </h4>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FiList style={{ color: '#1756AA', fontSize: '1rem' }} />
+              <h4 style={{ margin: 0, fontSize: '0.8rem', color: '#0D1B3E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Services ({getAssignedServices(hoveredRole.name).length})
+              </h4>
+            </div>
+            <button
+              onClick={() => openAssignModal(hoveredRole)}
+              style={{
+                background: '#1756AA',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              onMouseEnter={(e) => e.target.style.background = '#114084'}
+              onMouseLeave={(e) => e.target.style.background = '#1756AA'}
+            >
+              Assign
+            </button>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
             {getAssignedServices(hoveredRole.name).map((service, idx) => (
               <span key={idx} style={{
                 background: '#F0F7FF',
@@ -413,9 +550,33 @@ const RoleManagement = () => {
                 borderRadius: '6px',
                 fontSize: '0.72rem',
                 fontWeight: 700,
-                border: '1px solid rgba(23, 86, 170, 0.08)'
+                border: '1px solid rgba(23, 86, 170, 0.08)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
               }}>
                 {service}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeServiceFromRole(hoveredRole, service);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#E53E3E',
+                    cursor: 'pointer',
+                    padding: 0,
+                    marginLeft: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem'
+                  }}
+                  title="Remove Service"
+                >
+                  <FiX size={10} />
+                </button>
               </span>
             ))}
           </div>
@@ -425,7 +586,7 @@ const RoleManagement = () => {
       {isModalOpen && (
         <div className={styles.drawerOverlay} onClick={() => setIsModalOpen(false)}>
           <div className={styles.drawer} onClick={(e) => e.stopPropagation()} style={{ width: '450px', maxWidth: '95%', background: '#fff' }}>
-            <div className={styles.drawerHeader} style={{ padding: '20px 25px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className={styles.drawerHeader} style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' }}>
                   <FiUsers size={18} />
@@ -451,23 +612,6 @@ const RoleManagement = () => {
                     </div>
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role Code</label>
-                    <input type="text" name="roleCode" className={styles.inputControl} value={formData.roleCode} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} required />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type Role</label>
-                    <select name="typeRole" className={styles.inputControl} value={formData.typeRole} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }}>
-                      <option value={1}>Admin</option>
-                      <option value={2}>Retailer</option>
-                      <option value={3}>Master Distributor</option>
-                      <option value={4}>Distributor</option>
-                      <option value={5}>Employee</option>
-                      <option value={6}>ATM</option>
-                    </select>
-                  </div>
-
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div className={styles.formGroup}>
                       <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Start ID</label>
@@ -477,6 +621,25 @@ const RoleManagement = () => {
                       <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Package ID</label>
                       <input type="number" name="packageId" className={styles.inputControl} value={formData.packageId} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} required />
                     </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type Role</label>
+                    <select name="typeRole" className={styles.inputControl} value={formData.typeRole} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '12px 16px', border: '2px solid #E2E8F0', background: '#ffffff', color: '#0F172A', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', outline: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} required>
+                      <option value="" disabled>Select Master Role</option>
+                      {masterRoles && masterRoles.length > 0 ? (
+                        masterRoles.map(role => (
+                          <option key={role.id} value={role.id}>{role.name}</option>
+                        ))
+                      ) : (
+                        <option value="" disabled>Loading...</option>
+                      )}
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role Code</label>
+                    <input type="text" name="roleCode" className={styles.inputControl} value={formData.roleCode} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} required />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -500,18 +663,8 @@ const RoleManagement = () => {
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Menu String</label>
-                    <input type="text" name="menuStr" className={styles.inputControl} value={formData.menuStr} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} />
-                  </div>
-
-                  <div className={styles.formGroup}>
                     <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</label>
                     <input type="text" name="description" className={styles.inputControl} value={formData.description} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Service</label>
-                    <input type="text" name="service" className={styles.inputControl} value={formData.service} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} />
                   </div>
                 </div>
 
@@ -555,6 +708,123 @@ const RoleManagement = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isAssignModalOpen && assignRole && (
+        <div className={styles.modalOverlay} style={{ zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className={styles.modalContainer} style={{ width: '700px', maxWidth: '95%', borderRadius: '16px', padding: '16px', background: '#fff', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <FiList style={{ color: '#1756AA', fontSize: '1.15rem' }} />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0D1B3E', fontWeight: 800 }}>
+                  Assign Services - {assignRole.name}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setIsAssignModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '1.2rem', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            {/* Toolbar: Search & Select All */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              <div className="global-search-box" style={{ maxWidth: '300px', margin: 0, flex: 1 }}>
+                <FiSearch />
+                <input
+                  type="text"
+                  placeholder="Search services..."
+                  value={serviceSearch}
+                  onChange={(e) => setServiceSearch(e.target.value)}
+                  style={{ borderRadius: '10px', height: '36px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handleSelectAllServices}
+                  style={{ padding: '6px 14px', background: '#F0F7FF', color: '#1756AA', border: '1px solid rgba(23, 86, 170, 0.15)', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeselectAllServices}
+                  style={{ padding: '6px 14px', background: '#FFF5F5', color: '#E53E3E', border: '1px solid rgba(229, 62, 62, 0.15)', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
+
+            {/* Services Grid (Scrollable) */}
+            <div style={{ flex: 1, overflowY: 'auto', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                {ALL_AVAILABLE_SERVICES.filter(service => 
+                  service.toLowerCase().includes(serviceSearch.toLowerCase())
+                ).map((service, idx) => {
+                  const isChecked = selectedServices.includes(service);
+                  return (
+                    <div 
+                      key={idx}
+                      onClick={() => toggleServiceSelection(service)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 10px',
+                        background: isChecked ? '#F0F7FF' : '#ffffff',
+                        border: isChecked ? '1px solid #1756AA' : '1px solid #E2E8F0',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '4px',
+                        border: isChecked ? 'none' : '2px solid #CBD5E1',
+                        background: isChecked ? '#1756AA' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        {isChecked && <FiCheck style={{ color: '#fff', fontSize: '0.7rem', strokeWidth: 4 }} />}
+                      </div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isChecked ? '#0D1B3E' : '#4E6080' }}>
+                        {service}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #E2E8F0', paddingTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setIsAssignModalOpen(false)}
+                style={{ padding: '8px 16px', background: '#F1F5F9', border: 'none', borderRadius: '8px', color: '#4E6080', fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAssignedServices}
+                style={{ padding: '8px 20px', background: '#1756AA', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
+              >
+                Save Changes <FiCheck />
+              </button>
+            </div>
+
           </div>
         </div>
       )}
