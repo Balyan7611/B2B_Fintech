@@ -1,0 +1,108 @@
+.container {
+  padding: 4px 4px 16px; /* Reduced top/horizontal padding to minimize gaps */
+  background-color: var(--color-background);
+  min-height: calc(100vh - 60px);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inlineFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(23, 86, 170, 0.03);
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(23, 86, 170, 0.05);
+}
+
+@media (max-width: 768px) {
+  .inlineFilterRow {
+    flex-direction: column; /* Stack vertically on mobile */
+    align-items: stretch;
+    background: none;
+    border: none;
+    padding: 0;
+    gap: 10px;
+    width: 100%;
+  }
+  .selectControl {
+    width: 100% !important; /* Full width on mobile */
+  }
+  .submitBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .container {
+    padding: 10px 8px;
+  }
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: #1756AA;
+  font-size: 1rem;
+  z-index: 5;
+}
+
+.selectControl {
+  width: 200px;
+  height: 42px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0 16px 0 42px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0D1B3E;
+  background: #fff;
+  outline: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234E6080' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+}
+
+.selectControl:focus {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.1);
+}
+
+.submitBtn {
+  height: 42px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #1756AA 0%, #0D1B3E 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.2);
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(23, 86, 170, 0.3);
+  filter: brightness(1.1);
+}
+
+/* AdminTable handles the rest */

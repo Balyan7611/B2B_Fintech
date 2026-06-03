@@ -1,0 +1,203 @@
+.servicesSection {
+  padding: 100px 0;
+  background: #f8fafc;
+}
+
+[data-theme="dark"] .servicesSection {
+  background: #0B1120;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 60px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sectionHeader.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.carouselContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
+.carouselBtn {
+  background: var(--color-surface);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.carouselBtn:hover {
+  background: var(--color-primary);
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .carouselBtn {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f8fafc;
+}
+
+.cardsWrapper {
+  position: relative;
+  width: 340px;
+  height: 100%;
+  perspective: 1200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.serviceCard {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  position: absolute;
+  width: 320px;
+  height: 340px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+}
+
+[data-theme="dark"] .serviceCard {
+  background: #111827;
+  border-color: rgba(31, 41, 55, 0.8);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.cardCenter {
+  transform: translateX(0) scale(1) translateZ(0);
+  z-index: 10;
+  opacity: 1;
+}
+
+.cardLeft {
+  transform: translateX(-110%) scale(0.85) translateZ(-100px);
+  z-index: 5;
+  opacity: 0.6;
+}
+
+.cardRight {
+  transform: translateX(110%) scale(0.85) translateZ(-100px);
+  z-index: 5;
+  opacity: 0.6;
+}
+
+.cardHiddenLeft {
+  transform: translateX(-200%) scale(0.7) translateZ(-200px);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cardHiddenRight {
+  transform: translateX(200%) scale(0.7) translateZ(-200px);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.iconWrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+.serviceCard:hover .iconWrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.serviceTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+[data-theme="dark"] .serviceTitle {
+  color: #f8fafc;
+}
+
+.serviceDescription {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+[data-theme="dark"] .serviceDescription {
+  color: #94a3b8;
+}
+
+.readMoreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1756AA;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .readMoreLink {
+  color: #60A5FA;
+}
+
+.readMoreLink:hover {
+  gap: 12px;
+  color: #F59E0B;
+}
+
+
+
+/* Responsive */
+@media (max-width: 968px) {
+  .cardLeft { transform: translateX(-80%) scale(0.8); }
+  .cardRight { transform: translateX(80%) scale(0.8); }
+}
+
+@media (max-width: 600px) {
+  .carouselContainer { gap: 10px; }
+  .carouselBtn { width: 40px; height: 40px; }
+  .cardsWrapper { width: 280px; }
+  .serviceCard { width: 280px; padding: 24px 20px; height: 320px; }
+  .cardLeft { transform: translateX(-60%) scale(0.7); opacity: 0.3; }
+  .cardRight { transform: translateX(60%) scale(0.7); opacity: 0.3; }
+  .iconWrapper { width: 44px; height: 44px; font-size: 1.2rem; }
+  .serviceTitle { font-size: 1.1rem; }
+}

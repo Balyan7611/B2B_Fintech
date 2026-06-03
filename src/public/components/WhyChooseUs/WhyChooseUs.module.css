@@ -1,0 +1,172 @@
+.whyChooseSection {
+  padding: var(--section-padding);
+  background: var(--color-background);
+}
+
+.whyChooseContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.leftContent {
+  opacity: 0;
+  transform: translateX(-80px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leftContent.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.paragraph {
+  font-size: var(--font-body);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  margin: 24px 0;
+}
+
+.registerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 50px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.5px;
+}
+
+.registerBtn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 35px rgba(16, 185, 129, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Right Content - Cards */
+.rightContent {
+  opacity: 0;
+  transform: translateX(80px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+}
+
+.rightContent.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.cardsWrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.visionCard,
+.missionCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+}
+
+[data-theme="dark"] .visionCard,
+[data-theme="dark"] .missionCard {
+  background: #111827;
+  border-color: rgba(31, 41, 55, 0.8);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.visionCard:hover,
+.missionCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .visionCard:hover,
+[data-theme="dark"] .missionCard:hover {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.cardIcon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.cardText {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .whyChooseContent {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .registerBtn {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cardsWrapper {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .cardsWrapper {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .visionCard,
+  .missionCard {
+    padding: 24px 16px;
+  }
+
+  .cardTitle {
+    font-size: 1.05rem;
+  }
+
+  .cardText {
+    font-size: 0.8rem;
+  }
+
+  .cardIcon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .cardsWrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .paragraph {
+    font-size: 0.875rem;
+  }
+}

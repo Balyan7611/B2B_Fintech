@@ -1,0 +1,39 @@
+import { configureStore } from '@reduxjs/toolkit';
+import uiReducer from './slices/uiSlice';
+import testimonialsReducer from './slices/testimonialsSlice';
+import registrationReducer from './slices/registrationSlice';
+import loginReducer from './slices/loginSlice';
+import dashboardReducer from './slices/dashboardSlice';
+import supportReducer from './slices/supportSlice';
+import balanceReducer from './slices/balanceSlice';
+import shoppingReducer from './slices/shoppingSlice';
+import memberReducer from './slices/memberSlice';
+import commissionReducer from './slices/commissionSlice';
+import kycReducer from './slices/kycSlice';
+import legalReducer from './slices/legalSlice';
+import walletReducer from './slices/walletSlice';
+import rechargeReducer from './slices/rechargeSlice';
+import reportReducer from './slices/reportSlice';
+import memberPanelReducer from './slices/memberPanelSlice';
+
+export const store = configureStore({
+  reducer: {
+    ui: uiReducer,
+    testimonials: testimonialsReducer,
+    registration: registrationReducer,
+    login: loginReducer,
+    dashboard: dashboardReducer,
+    support: supportReducer,
+    balance: balanceReducer,
+    shopping: shoppingReducer,
+    member: memberReducer,
+    commission: commissionReducer,
+    kyc: kycReducer,
+    legal: legalReducer,
+    wallet: walletReducer,
+    recharge: rechargeReducer,
+    report: reportReducer,
+    memberPanel: memberPanelReducer,
+  },
+});
+

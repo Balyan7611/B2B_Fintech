@@ -1,0 +1,60 @@
+/* ============================================
+   SCROLL TO TOP — Green Circle, Fixed Bottom-Right
+   ============================================ */
+
+.scrollBtn {
+  position: fixed;
+  bottom: 28px;
+  right: 20px;
+  z-index: 9999;
+
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+
+  /* Green color */
+  background: #27AE60;
+  color: #ffffff;
+  font-size: 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 4px 18px rgba(39, 174, 96, 0.5);
+  opacity: 0;
+  transform: translateY(16px) scale(0.8);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease,
+              background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scrollBtn.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.scrollBtn:hover {
+  background: #1e8449;
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 8px 24px rgba(39, 174, 96, 0.6);
+}
+
+.scrollBtn:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 3px 10px rgba(39, 174, 96, 0.4);
+}
+
+/* Slightly smaller on very small mobile */
+@media (max-width: 380px) {
+  .scrollBtn {
+    width: 42px;
+    height: 42px;
+    font-size: 0.9rem;
+    bottom: 20px;
+    right: 16px;
+  }
+}

@@ -1,0 +1,106 @@
+.partnersSection {
+  padding: 40px 0;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+}
+
+[data-theme="dark"] .partnersSection {
+  background: #0B1120;
+  border-top-color: #1e293b;
+}
+
+.partnersWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.partnersWrapper.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.headerBox {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+[data-theme="dark"] .title {
+  color: #94a3b8;
+}
+
+.divider {
+  width: 60px;
+  height: 3px;
+  background: #3b82f6;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+.logoGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  animation: floatLogo 6s ease-in-out infinite;
+}
+
+.logoBox:nth-child(even) {
+  animation-delay: 1.5s; /* Stagger animation for even items */
+}
+
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.logoImg {
+  max-width: 140px;
+  max-height: 60px;
+  object-fit: contain;
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+[data-theme="dark"] .logoImg {
+  /* Only add a slight brightness boost for dark mode to ensure they are visible, but keep colors natural */
+  filter: brightness(1.2);
+}
+
+.logoBox:hover .logoImg {
+  transform: scale(1.08);
+}
+
+@media (max-width: 768px) {
+  .logoGrid {
+    gap: 40px;
+  }
+  .logoImg {
+    max-width: 100px;
+    max-height: 40px;
+  }
+  .title {
+    font-size: 1.1rem;
+  }
+}

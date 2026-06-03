@@ -1,0 +1,132 @@
+.tickerContainer {
+  width: 100%;
+  background: #ffffff; /* Changed to white */
+  padding: 30px 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+[data-theme="dark"] .tickerContainer {
+  background: #0B1120;
+  border-bottom: 1px solid #1e293b;
+}
+
+/* Add a subtle fading mask on left and right for seamless loop look */
+.tickerContainer::before,
+.tickerContainer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tickerContainer::before {
+  left: 0;
+  background: linear-gradient(to right, #ffffff 10%, transparent);
+}
+
+.tickerContainer::after {
+  right: 0;
+  background: linear-gradient(to left, #ffffff 10%, transparent);
+}
+
+[data-theme="dark"] .tickerContainer::before {
+  background: linear-gradient(to right, #0B1120 10%, transparent);
+}
+[data-theme="dark"] .tickerContainer::after {
+  background: linear-gradient(to left, #0B1120 10%, transparent);
+}
+
+.tickerTrack {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: scrollTicker 35s linear infinite;
+}
+
+.tickerTrack:hover {
+  animation-play-state: paused;
+}
+
+.tickerCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px 10px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="dark"] .tickerCard {
+  background: #111827;
+  border-color: #1f2937;
+}
+
+.tickerCard:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .tickerCard:hover {
+  border-color: #374151;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.serviceName {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .serviceName {
+  color: #f8fafc;
+}
+
+@keyframes scrollTicker {
+  0% { transform: translateX(0); }
+  /* Since we mapped the array 3 times (3 blocks), we can safely translate -33.33% to seamlessly loop 1 block */
+  100% { transform: translateX(calc(-33.333% - 8px)); }
+}
+
+@media (max-width: 768px) {
+  .tickerContainer::before,
+  .tickerContainer::after {
+    width: 60px;
+  }
+  .tickerCard {
+    padding: 8px 20px 8px 8px;
+    gap: 10px;
+  }
+  .iconBox {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+  .serviceName {
+    font-size: 0.85rem;
+  }
+}

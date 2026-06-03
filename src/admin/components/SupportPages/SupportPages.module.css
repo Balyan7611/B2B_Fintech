@@ -1,0 +1,259 @@
+.container {
+  padding: 20px;
+  background-color: #f4f6f9;
+  min-height: calc(100vh - 70px);
+  font-family: 'Inter', sans-serif;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 24px;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.pageTitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 40px;
+  height: 3px;
+  background-color: #3498db;
+  border-radius: 2px;
+}
+
+/* Form Styles */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  overflow: hidden;
+  max-width: 800px;
+}
+
+.cardHeader {
+  background: linear-gradient(135deg, #1756AA 0%, #2980b9 100%);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.headerIcon {
+  font-size: 1.5rem;
+}
+
+.form {
+  padding: 24px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background-color: white;
+}
+
+.fileUploadWrapper {
+  position: relative;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.fileLabel:hover {
+  background-color: #e2e8f0;
+  color: #334155;
+  border-color: #94a3b8;
+}
+
+.formActions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submitBtn {
+  background-color: #27AE60;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.submitBtn:hover {
+  background-color: #219653;
+}
+
+.submitBtn:active {
+  transform: translateY(1px);
+}
+
+/* Support Main Grid */
+.supportGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.contactCard {
+  background: white;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contactCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin: 0 auto 20px;
+}
+
+.contactCard h3 {
+  color: #2c3e50;
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+.contactCard p {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.contactLink {
+  display: block;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+
+.contactLink:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.addressText {
+  color: #34495e;
+  font-style: normal;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* FAQ Section */
+.faqSection {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.sectionSubtitle {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 12px;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.faqItem h4 {
+  color: #34495e;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.faqItem p {
+  color: #7f8c8d;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .supportGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cardHeader {
+    padding: 16px;
+  }
+  
+  .form {
+    padding: 16px;
+  }
+}

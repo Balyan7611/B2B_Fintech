@@ -1,0 +1,1669 @@
+/* Premium Payout Service CSS */
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 4px 6px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Toast Notification styling */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+.toastError {
+  background: #ef4444;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+}
+
+/* Hero Header Area */
+.heroSection {
+  background: linear-gradient(135deg, #1756AA 0%, #0d1b3e 100%);
+  border-radius: 20px;
+  padding: 22px 28px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  box-shadow: 0 20px 40px rgba(23, 86, 170, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 65%;
+}
+
+.walletBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.heroTitle {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 2px 0;
+}
+
+.heroSurchargeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.surchargeHeaderLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.heroSurchargePills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.surchargePill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 50px;
+  color: #e2e8f0;
+}
+
+.surchargePill strong {
+  color: #60a5fa;
+}
+
+.heroSub {
+  font-size: 1rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* Balance Card */
+.walletCard {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px 30px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.walletLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.walletAmount {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.walletActions {
+  margin-top: 5px;
+}
+
+.statusPill {
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+/* Main Grid Layout - Dynamic and fluid */
+.payoutGrid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 30px;
+  width: 100%;
+}
+
+.leftMainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Master Transfer Form styling */
+.transferFormCard {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transferFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 600px;
+}
+
+
+.inputLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.disabledInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+}
+
+.textInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s;
+}
+.textInput:focus {
+  border-color: #1756AA;
+}
+
+.radioGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.disabledRadioGroup {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.radioLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+.radioItem input[type="radio"] {
+  accent-color: #1756AA;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.walletTransferAction {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.walletTransferBtn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 750;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transition: all 0.2s ease;
+}
+.walletTransferBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+.walletTransferBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cardSection {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.accountsScrollArea {
+  max-height: 520px;
+  overflow-y: auto;
+  padding: 10px 8px 10px 2px;
+  margin-top: 15px;
+}
+
+.historyScrollArea {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 10px 8px 10px 2px;
+  margin-top: 15px;
+}
+
+.accountsScrollArea::-webkit-scrollbar,
+.historyScrollArea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.accountsScrollArea::-webkit-scrollbar-track,
+.historyScrollArea::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.accountsScrollArea::-webkit-scrollbar-thumb,
+.historyScrollArea::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.accountsScrollArea::-webkit-scrollbar-thumb:hover,
+.historyScrollArea::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.headerSearchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 400px;
+}
+
+.headerSearchBox input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  color: #1e293b;
+}
+
+.headerSearchBox input:focus {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.08);
+}
+
+.sectionTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.addAccBtn {
+  background: #1756AA;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.15);
+}
+
+.addAccBtn:hover {
+  background: #0f3f80;
+  transform: translateY(-1px);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  z-index: 2;
+}
+
+.searchBox input {
+  width: 100%;
+  padding: 12px 16px 12px 46px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  color: #1e293b;
+}
+
+.searchBox input:focus {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.08);
+}
+
+/* Accounts Grid */
+.accountsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.emptyAccounts {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  gap: 15px;
+  color: #64748b;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  color: #cbd5e1;
+}
+
+.accountCard {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+}
+
+.accountCard:hover {
+  border-color: #1756AA;
+  box-shadow: 0 16px 36px rgba(23, 86, 170, 0.08);
+  transform: translateY(-4px);
+}
+
+.accountBadge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border: 1px solid #a7f3d0;
+}
+
+
+.accountDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accountDetails h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bankName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1756AA;
+  text-transform: uppercase;
+}
+
+.accNo, .ifsc {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.payoutFormRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+}
+
+.amountInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  width: 130px;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+
+.amountInputWrap:focus-within {
+  border-color: #1756AA;
+}
+
+.amountCurrencySymbol {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.amountInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+  min-width: 0;
+}
+
+.modeGroup {
+  display: flex;
+  gap: 4px;
+}
+
+.modeBtnImps, .modeBtnNeft {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modeBtnImps {
+  background: #1756AA;
+  color: white;
+}
+
+.modeBtnNeft {
+  background: #10b981;
+  color: white;
+}
+
+.modeBtnImps:hover, .modeBtnNeft:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.deleteAccBtn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  transition: opacity 0.2s ease;
+}
+
+.deleteAccBtn:hover {
+  opacity: 0.8;
+}
+
+/* Right Column (Sidecards) */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.sideCard {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sideCardTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.surchargeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.surchargeRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.surchargeRow strong {
+  color: #ef4444;
+}
+
+.noteText {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+/* Transactions list */
+.txnList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.txnItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.txnItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.txnDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.txnDetails h4 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.txnDetails p {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.txnId {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.txnRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.txnAmount {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.statusBadge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 50px;
+  text-transform: uppercase;
+}
+
+.success {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.failed {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* Modals styling */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modalCard {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  padding: 30px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.closeBtn {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.modalInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.modalInputWrap label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.modalInputField {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.modalInputField:focus {
+  border-color: #1756AA;
+}
+
+.modalAdharRow {
+  display: flex;
+  gap: 10px;
+}
+
+.modalValidateBtn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-weight: 750;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.modalValidateBtn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.modalSuccess {
+  background: #16a34a !important;
+}
+
+.modalSubmitBtn {
+  width: 100%;
+  background: #cbd5e1;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.modalSuccessBtn {
+  background: #1756AA;
+}
+
+/* Confirm Details Modal Grid */
+.confirmGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1.5px solid #f1f5f9;
+}
+
+.confirmItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.confirmItem label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.confirmItem span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.confirmAmount {
+  color: #ef4444 !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+}
+
+.confirmBadge {
+  background: rgba(23, 86, 170, 0.1);
+  color: #1756AA;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  width: fit-content;
+}
+
+.confirmActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.modalCancelBtn, .modalConfirmBtn, .modalDeleteBtn {
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.modalCancelBtn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modalConfirmBtn {
+  background: #1756AA;
+  color: white;
+}
+
+.modalDeleteBtn {
+  background: #ef4444;
+  color: white;
+}
+
+/* Delete modal prompts */
+.deletePrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.deletePromptIcon {
+  font-size: 3rem;
+  color: #ef4444;
+}
+
+.deletePrompt h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.deletePrompt p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.deleteActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.deleteActions button {
+  flex: 1;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.receiptModalCard {
+  background: white;
+  border-radius: 24px;
+  width: 95%;
+  max-width: 760px;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.modalBodyGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.modalGridLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalGridRight {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.receiptTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.receiptTitle svg {
+  color: #1756AA;
+}
+
+.receiptTicket {
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
+  overflow: hidden;
+  position: relative;
+}
+
+.receiptHeader {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border-bottom: 1.5px dashed #cbd5e1;
+}
+
+.receiptLogo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50px;
+  background: rgba(23, 86, 170, 0.1);
+  color: #1756AA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.receiptBankName {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1e293b;
+  flex: 1;
+}
+
+.receiptAccNo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.receiptDivider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  height: 20px;
+  margin-top: -10px;
+  margin-bottom: -10px;
+  z-index: 5;
+}
+
+.dividerDotLeft, .dividerDotRight {
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  position: absolute;
+}
+
+.dividerDotLeft {
+  left: -8px;
+  border-left-color: transparent;
+}
+
+.dividerDotRight {
+  right: -8px;
+  border-right-color: transparent;
+}
+
+.dividerLine {
+  width: 100%;
+  border-bottom: 1.5px dashed #cbd5e1;
+  margin: 0 8px;
+}
+
+.receiptBody {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.receiptAmountBlock {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+}
+
+.receiptAmountLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.receiptAmountDisplay {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1px;
+}
+
+.chargeBadgeRow {
+  display: flex;
+  justify-content: center;
+}
+
+.chargeBadge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #ea580c;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.receiptDetailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.receiptDetailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.detailValue {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.modeHighlight {
+  color: #1756AA;
+  background: rgba(23, 86, 170, 0.08);
+  width: fit-content;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.detailTotalAmount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #10b981;
+}
+
+/* Secure PIN Entry Panel */
+.securePinPanel {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.panelTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.lockIcon {
+  color: #ca8a04;
+}
+
+.digitInputRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.pinDigitBox {
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.pinDigitBox:focus {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.1);
+  transform: scale(1.05);
+}
+
+.secureBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+/* Remarks Area */
+.remarkBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.remarkLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.remarkInput {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+.remarkInput:focus {
+  border-color: #1756AA;
+}
+
+.payoutReadyBtn {
+  background: #10b981 !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
+}
+
+.payoutReadyBtn:hover {
+  background: #059669 !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════
+   RESPONSIVE DESIGN override
+   ════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .payoutGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .heroSection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .heroContent {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .modalBodyGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .receiptModalCard {
+    max-width: 460px;
+    padding: 20px;
+  }
+
+  .container {
+    padding: 15px;
+    gap: 20px;
+  }
+  
+  .heroSection {
+    padding: 24px;
+    border-radius: 16px;
+  }
+
+  .heroTitle {
+    font-size: 1.8rem;
+  }
+
+  .walletCard {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .accountsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeaderRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .headerSearchBox {
+    grid-column: span 2;
+    max-width: 100%;
+  }
+
+  .cardSection {
+    padding: 20px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .addAccBtn span {
+    display: none;
+  }
+  
+  .payoutFormRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .modeGroup {
+    width: 100%;
+  }
+
+  .modeGroup button {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+  }
+}
+
+.addAccountViewCard {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 120px; /* Forces space below so dropdown opens downwards */
+}
+
+.viewHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 20px;
+}
+
+.backBtn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.05);
+}
+
+.backBtn:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.addAccountForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.inlineFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.saveAccountBtn {
+  background: #1756AA;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 15px rgba(23, 86, 170, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  align-self: center;
+  min-width: 200px;
+}
+
+.saveAccountBtn:hover {
+  background: #0f3f80;
+  transform: translateY(-2px);
+}
+
+.presetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presetLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .inlineFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modern Datatable Card */
+.tableCard {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tableResponsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+}
+
+.premiumTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.premiumTable th {
+  padding: 14px 16px;
+  background: linear-gradient(90deg, #1756AA 0%, #0d1b3e 100%);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: none;
+}
+
+.premiumTable th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.premiumTable th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.premiumTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #1e293b;
+}
+
+.premiumTable tr:last-child td {
+  border-bottom: none;
+}
+
+.premiumTable tr:hover td {
+  background: #fafbfb;
+}
+
+.printIconBtn {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1756AA;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.printIconBtn:hover {
+  background: #1756AA;
+  color: white;
+  border-color: #1756AA;
+  transform: scale(1.05);
+}
+
+/* Surcharge Card & Row layout styling */
+.topRow {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.surchargeCard {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.surchargeTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.surchargeList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.surchargeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.surchargeItem:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.surchargeSlab {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.surchargeFee {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #e11d48;
+}
+
+@media (max-width: 1024px) {
+  .topRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+

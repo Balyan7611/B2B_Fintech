@@ -1,0 +1,676 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronDown, FiDatabase, FiX, FiCheck, FiZap, FiSettings, FiActivity, FiArrowRight, FiInfo
+} from 'react-icons/fi';
+import { 
+  FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
+} from 'react-icons/fa';
+import styles from '../MemberPages/MemberPages.module.css';
+
+// ── CUSTOM SEARCHABLE DROPDOWN COMPONENT ──
+const CustomSearchSelect = ({ options, placeholder, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const dropdownRef = useRef(null);
+
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ 
+          padding: '12px 16px', border: '1px solid #CBD5E1', borderRadius: '10px', 
+          cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+          background: '#fff', height: '45px', boxSizing: 'border-box'
+        }}>
+        <span style={{ color: value ? '#1E293B' : '#94A3B8', fontSize: '0.9rem', fontWeight: 600 }}>{value || placeholder}</span>
+        <FiChevronDown style={{ color: '#94A3B8', transform: isOpen ? 'rotate(180deg)' : 'none', transition: '0.3s' }} />
+      </div>
+      {isOpen && (
+        <div style={{ 
+          position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, background: '#fff', 
+          border: '1px solid #E2E8F0', borderRadius: '10px', zIndex: 150, 
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' 
+        }}>
+          <div style={{ padding: '10px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+            <input 
+              autoFocus
+              type="text" 
+              placeholder="Search service..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', outline: 'none', fontSize: '0.85rem', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+             {filtered.map((opt, i) => (
+               <div 
+                 key={i} 
+                 onClick={() => { onChange(opt); setIsOpen(false); setSearch(""); }}
+                 style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid #F1F5F9', fontSize: '0.85rem', color: '#1E293B', fontWeight: 600 }}
+                 onMouseEnter={(e) => e.target.style.background = '#F8FAFC'}
+                 onMouseLeave={(e) => e.target.style.background = 'transparent'}
+               >
+                 {opt}
+               </div>
+             ))}
+             {filtered.length === 0 && <div style={{ padding: '15px', color: '#94A3B8', fontSize: '0.85rem', textAlign: 'center' }}>No services found</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ListOperator = () => {
+  const dispatch = useDispatch();
+
+  // Selected Service (On/Off list)
+  const [selectedService, setSelectedService] = useState("");
+  const [tableSearch, setTableSearch] = useState("");
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Custom Modal State
+  const [modal, setModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    type: "confirm" // 'alert' | 'confirm'
+  });
+
+  // Add/Edit Form State
+  const [formModal, setFormModal] = useState({
+    show: false,
+    mode: "add", // "add" | "edit"
+    id: null,
+    name: "",
+    opCode: "",
+    status: true
+  });
+
+  const showCustomAlert = (title, message) => {
+    setModal({
+      show: true,
+      title,
+      message,
+      onConfirm: null,
+      type: "alert"
+    });
+  };
+
+  const showCustomConfirm = (title, message, onConfirm) => {
+    setModal({
+      show: true,
+      title,
+      message,
+      onConfirm,
+      type: "confirm"
+    });
+  };
+
+  // Service Options (Matching On/Off Services page)
+  const serviceOptions = [
+    "Recharge", "MOBILE POSTPAID", "DTH", "Electricity", "Water", "GAS",
+    "LPG Gas", "Insurance", "Internet", "Landline Postpaid", "EMI", "FasTag",
+    "Education", "Cable Tv", "Municipal Tax", "AEPS", "Aadhar Pay", "Payment Gateway",
+    "Scan & Pay", "NSDL PAN", "mATM", "Settlement", "Fund Transfer", "My Services",
+    "mATM OnBoard", "Credit Card", "Money Transfer", "Broadband", "DataCard", "BroadBand",
+    "Digital Voucher", "Prepaid DataCard", "Metro", "Prebooking", "WiFi", "E-Challan",
+    "Broadband Postpaid", "Pay Credit Card Bills", "Account Verification", "DMT PPI",
+    "Account Opening", "Loan", "Mobile Prepaid", "Hospital", "Hospital Pathology",
+    "Donation", "Health Insurance", "Housing Society", "Life Insurance", "Loan Repay",
+    "Muncipal Service", "Recurring Deposit", "Clubs Association", "Rental", "Subscription",
+    "NPMC", "NPS", "Prepaid Meter", "Neeraj Bar"
+  ];
+
+  // Operator Registry State List (Mapped to actual Member Panel services data)
+  const [operatorRegistry, setOperatorRegistry] = useState([
+    // Recharge / Mobile Prepaid
+    { id: 1, name: 'Airtel Mobile', type: 'Recharge', opCode: 'AT', status: true },
+    { id: 2, name: 'Jio Prepaid', type: 'Recharge', opCode: 'JIO', status: true },
+    { id: 3, name: 'Vodafone Idea (Vi)', type: 'Recharge', opCode: 'VI', status: true },
+    { id: 4, name: 'BSNL Prepaid', type: 'Recharge', opCode: 'BSNL', status: false },
+    { id: 5, name: 'MTNL', type: 'Recharge', opCode: 'MTNL', status: true },
+
+    // MOBILE POSTPAID
+    { id: 101, name: 'Airtel Postpaid', type: 'MOBILE POSTPAID', opCode: 'AT_POST', status: true },
+    { id: 102, name: 'Jio Postpaid', type: 'MOBILE POSTPAID', opCode: 'JIO_POST', status: true },
+    { id: 103, name: 'Vi Postpaid', type: 'MOBILE POSTPAID', opCode: 'VI_POST', status: true },
+
+    // DTH
+    { id: 6, name: 'Airtel Digital Tv', type: 'DTH', opCode: 'AD', status: true },
+    { id: 7, name: 'Dish Tv', type: 'DTH', opCode: 'DS', status: true },
+    { id: 8, name: 'Sun Direct', type: 'DTH', opCode: 'SD', status: true },
+    { id: 9, name: 'Tata Sky', type: 'DTH', opCode: 'TS', status: true },
+    { id: 10, name: 'Videocon D2h', type: 'DTH', opCode: 'VD', status: true },
+
+    // Water (From Member Panel Water.jsx)
+    { id: 11, name: 'Bangalore Water Supply (BWSSB)', type: 'Water', opCode: 'BWSSB', status: true },
+    { id: 12, name: 'Bhopal Municipal Corporation', type: 'Water', opCode: 'BMCW', status: true },
+    { id: 13, name: 'Delhi Jal Board', type: 'Water', opCode: 'DJB', status: true },
+    { id: 14, name: 'Greater Warangal Municipal Corporation', type: 'Water', opCode: 'GWMC', status: true },
+    { id: 15, name: 'Hyderabad Metro Water (HMWSSB)', type: 'Water', opCode: 'HMWSSB', status: true },
+    { id: 16, name: 'MCGM Water Department', type: 'Water', opCode: 'MCGM', status: true },
+    { id: 17, name: 'New Delhi Municipal Council (NDMC)', type: 'Water', opCode: 'NDMCW', status: true },
+
+    // Electricity (From Member Panel Electricity.jsx)
+    { id: 18, name: 'Adani Electricity Mumbai Limited', type: 'Electricity', opCode: 'ADANI', status: true },
+    { id: 19, name: 'Ajmer Vidyut Vitran Nigam', type: 'Electricity', opCode: 'AVVNL', status: true },
+    { id: 20, name: 'BESCOM - BENGALURU', type: 'Electricity', opCode: 'BESCOM', status: true },
+    { id: 21, name: 'BEST - MUMBAI', type: 'Electricity', opCode: 'BEST', status: true },
+    { id: 22, name: 'BSES Rajdhani - DELHI', type: 'Electricity', opCode: 'BSESR', status: true },
+    { id: 23, name: 'BSES Yamuna - DELHI', type: 'Electricity', opCode: 'BSESY', status: true },
+    { id: 24, name: 'CESC - WEST BENGAL', type: 'Electricity', opCode: 'CESCWB', status: true },
+    { id: 25, name: 'MSEDC - MAHARASHTRA', type: 'Electricity', opCode: 'MSEDCL', status: true },
+    { id: 26, name: 'Punjab State Power Corporation', type: 'Electricity', opCode: 'PSPCL', status: true },
+    { id: 27, name: 'Torrent Power', type: 'Electricity', opCode: 'TORRENT', status: true },
+
+    // LPG Gas (From Member Panel LPGGas.jsx)
+    { id: 28, name: 'Bharat Petroleum (BPCL)', type: 'LPG Gas', opCode: 'BPCL', status: true },
+    { id: 29, name: 'Hindustan Petroleum (HPCL)', type: 'LPG Gas', opCode: 'HPCL', status: true },
+    { id: 30, name: 'Indane Gas (Indian Oil)', type: 'LPG Gas', opCode: 'INDANE', status: true },
+
+    // Gas (Piped Gas - From Member Panel Gas.jsx)
+    { id: 31, name: 'Aavantika Gas Ltd', type: 'GAS', opCode: 'AAVANTIKA', status: true },
+    { id: 32, name: 'Adani Gas', type: 'GAS', opCode: 'ADANIGAS', status: true },
+    { id: 33, name: 'Gail Gas Limited', type: 'GAS', opCode: 'GAIL', status: true },
+    { id: 34, name: 'Gujarat Gas', type: 'GAS', opCode: 'GUJGAS', status: true },
+    { id: 35, name: 'Indraprastha Gas', type: 'GAS', opCode: 'IGL', status: true },
+    { id: 36, name: 'Mahanagar Gas', type: 'GAS', opCode: 'MGL', status: true },
+
+    // Cable TV (From Member Panel CableTV.jsx)
+    { id: 37, name: 'ACT Digital TV', type: 'Cable Tv', opCode: 'ACT', status: true },
+    { id: 38, name: 'Asianet Digital', type: 'Cable Tv', opCode: 'ASIANET', status: true },
+    { id: 39, name: 'DEN Networks', type: 'Cable Tv', opCode: 'DEN', status: true },
+    { id: 40, name: 'Hathway Digital', type: 'Cable Tv', opCode: 'HATHWAY', status: true },
+    { id: 41, name: 'Siti Networks', type: 'Cable Tv', opCode: 'SITI', status: true },
+    { id: 42, name: 'Tata Play Fiber', type: 'Cable Tv', opCode: 'TATAFIBER', status: true },
+
+    // Fastag (From Member Panel Fastag.jsx)
+    { id: 43, name: 'Airtel Payments Bank Fastag', type: 'FasTag', opCode: 'AIRTELFT', status: true },
+    { id: 44, name: 'Axis Bank Fastag', type: 'FasTag', opCode: 'AXISFT', status: true },
+    { id: 45, name: 'HDFC Bank - Fastag', type: 'FasTag', opCode: 'HDFCFT', status: true },
+    { id: 46, name: 'ICICI Bank Fastag', type: 'FasTag', opCode: 'ICICIFT', status: true },
+    { id: 47, name: 'Paytm Payments Bank Fastag', type: 'FasTag', opCode: 'PAYTMFT', status: true },
+    { id: 48, name: 'State Bank of India Fastag', type: 'FasTag', opCode: 'SBIFT', status: true },
+
+    // AEPS
+    { id: 49, name: 'ICICI AEPS Gateway', type: 'AEPS', opCode: 'ICICI_AEPS', status: true },
+    { id: 50, name: 'Fino AEPS Node', type: 'AEPS', opCode: 'FINO_AEPS', status: true },
+    { id: 51, name: 'Yes Bank AEPS', type: 'AEPS', opCode: 'YES_AEPS', status: false },
+
+    // Aadhar Pay
+    { id: 52, name: 'ICICI AadharPay Node', type: 'Aadhar Pay', opCode: 'ICICI_AP', status: true },
+    { id: 53, name: 'Fino AadharPay Node', type: 'Aadhar Pay', opCode: 'FINO_AP', status: true },
+
+    // mATM
+    { id: 54, name: 'NSDL mATM Channel', type: 'mATM', opCode: 'NSDL_MATM', status: true },
+    { id: 55, name: 'Fino mATM Terminal', type: 'mATM', opCode: 'FINO_MATM', status: true }
+  ]);
+
+  // Fetch Operators for Selected Service
+  let serviceOperators = [];
+  if (selectedService) {
+    serviceOperators = operatorRegistry.filter(op => 
+      op.type.toLowerCase() === selectedService.toLowerCase()
+    );
+
+    // Dynamic fallback operators if the service doesn't have custom ones pre-populated yet
+    if (serviceOperators.length === 0) {
+      serviceOperators = [
+        { id: `gen-1-${selectedService}`, name: `${selectedService} provider 1`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}01`, status: true },
+        { id: `gen-2-${selectedService}`, name: `${selectedService} provider 2`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}02`, status: true },
+        { id: `gen-3-${selectedService}`, name: `${selectedService} provider 3`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}03`, status: false }
+      ];
+    }
+  }
+
+  // Filter list by table search input
+  const filteredOperators = serviceOperators.filter(op => 
+    op.name.toLowerCase().includes(tableSearch.toLowerCase()) || 
+    op.opCode.toLowerCase().includes(tableSearch.toLowerCase())
+  );
+
+  // Pagination Logic
+  const totalEntries = filteredOperators.length;
+  const totalPages = Math.ceil(totalEntries / entriesPerPage);
+  const startIndex = (currentPage - 1) * entriesPerPage;
+  const paginatedOperators = filteredOperators.slice(startIndex, startIndex + entriesPerPage);
+
+  // Toggle Operator Status
+  const handleToggleStatus = (id) => {
+    // If it's a generated ID, update state dynamically
+    if (typeof id === 'string' && id.startsWith('gen-')) {
+      showCustomAlert("Demo Mode", "Generated demo operators cannot toggle status.");
+      return;
+    }
+    setOperatorRegistry(prev => prev.map(op => 
+      op.id === id ? { ...op, status: !op.status } : op
+    ));
+  };
+
+  // Delete Registry Entry
+  const handleDeleteOperator = (id, name) => {
+    if (typeof id === 'string' && id.startsWith('gen-')) {
+      showCustomAlert("Demo Mode", "Generated demo operators cannot be deleted.");
+      return;
+    }
+    showCustomConfirm(
+      "Delete Registry Entry",
+      `Are you sure you want to remove ${name} from the operator registry?`,
+      () => {
+        setOperatorRegistry(prev => prev.filter(op => op.id !== id));
+        showCustomAlert("Success", "Operator entry deleted successfully.");
+      }
+    );
+  };
+
+  // Submit Add / Edit Form
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!formModal.name || !formModal.opCode) {
+      showCustomAlert("Validation Warning", "Please fill in all required fields.");
+      return;
+    }
+
+    if (formModal.mode === "add") {
+      const newEntry = {
+        id: Date.now(),
+        name: formModal.name,
+        type: selectedService,
+        opCode: formModal.opCode.toUpperCase(),
+        status: formModal.status
+      };
+      setOperatorRegistry(prev => [...prev, newEntry]);
+      setFormModal({ ...formModal, show: false });
+      showCustomAlert("Success", "New operator registry added successfully!");
+    } else {
+      if (typeof formModal.id === 'string' && formModal.id.startsWith('gen-')) {
+        showCustomAlert("Demo Mode", "Generated demo operators cannot be edited.");
+        return;
+      }
+      setOperatorRegistry(prev => prev.map(op => 
+        op.id === formModal.id 
+          ? { ...op, name: formModal.name, opCode: formModal.opCode.toUpperCase(), status: formModal.status } 
+          : op
+      ));
+      setFormModal({ ...formModal, show: false });
+      showCustomAlert("Success", "Operator entry updated successfully!");
+    }
+  };
+
+  return (
+    <div className={styles.container} style={{ padding: '15px 12px', maxWidth: '100%' }}>
+      {/* ── MAIN CARD ── */}
+      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', borderRadius: '16px', overflow: 'hidden', background: '#fff' }}>
+        
+        {/* CARD INTERNAL HEADER (Polished & height decreased) */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 20px', borderBottom: '1px solid #F1F5F9', flexWrap: 'wrap', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: 'rgba(23, 86, 170, 0.1)', color: '#1756AA', borderRadius: '8px' }}>
+              <FiDatabase style={{ fontSize: '1.1rem' }} />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0D1B3E' }}>Operator Registry</h3>
+          </div>
+          <button 
+            onClick={() => setFormModal({ show: true, mode: "add", id: null, name: "", opCode: "", status: true })}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: '#1756AA', 
+              color: '#fff', border: 'none', borderRadius: '8px', 
+              padding: '8px 16px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(23, 86, 170, 0.15)'
+            }}
+          >
+            <FiPlus /> <span>Add Operator</span>
+          </button>
+        </div>
+
+        {/* CONTENT VIEW AREA */}
+        <div style={{ padding: '24px' }}>
+           
+           {/* SINGLE SEARCHABLE DROPDOWN FILTER (Aligned to a single row) */}
+           <div style={{ background: '#F8FAFC', padding: '12px 20px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+             <label style={{ fontWeight: 800, color: '#4E6080', fontSize: '0.9rem', whiteSpace: 'nowrap', margin: 0 }}>
+               Service:
+             </label>
+             <CustomSearchSelect 
+               options={serviceOptions} 
+               placeholder="Search & Select Service..." 
+               value={selectedService} 
+               onChange={(val) => { setSelectedService(val); setCurrentPage(1); }} 
+             />
+           </div>
+
+           {/* ── TOOLBAR ── */}
+           <div className="global-table-toolbar" style={{ padding: '10px 0px 20px 0px', flexWrap: 'wrap', gap: '15px', borderBottom: 'none' }}>
+             <div className={styles.pillRow} style={{ alignItems: 'center' }}>
+               <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>Show</span>
+               <select 
+                 value={entriesPerPage}
+                 onChange={(e) => { setEntriesPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                 className={styles.selectEntries} 
+                 style={{ borderRadius: '8px', border: '1px solid #CBD5E1', height: '35px', padding: '0 5px' }}
+               >
+                 <option value={10}>10</option>
+                 <option value={25}>25</option>
+                 <option value={50}>50</option>
+               </select>
+               <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
+             </div>
+
+             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
+               <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
+               <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
+               <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
+               <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
+               <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
+             </div>
+
+             <div className="global-search-box" style={{ maxWidth: '300px', margin: 0 }}>
+               <FiSearch />
+               <input 
+                 type="text" 
+                 value={tableSearch}
+                 onChange={(e) => { setTableSearch(e.target.value); setCurrentPage(1); }}
+                 placeholder="Search operators..." 
+                 style={{ borderRadius: '10px', height: '40px', boxSizing: 'border-box' }}
+               />
+             </div>
+           </div>
+
+           {/* ── TABLE (Configured columns to match user screenshot) ── */}
+           <div className={styles.tableWrapper} style={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden' }}>
+             <table className={styles.table} style={{ width: '100%', minWidth: '900px', tableLayout: 'auto' }}>
+               <thead>
+                 <tr style={{ background: 'linear-gradient(90deg, #0D1B5E 0%, #1a2f8a 100%)' }}>
+                   <th style={{ width: '80px', textAlign: 'center' }}>ID</th>
+                   <th style={{ width: '180px', textAlign: 'center' }}>Active/DeActive</th>
+                   <th style={{ width: '320px', textAlign: 'left' }}>Operator Name</th>
+                   <th style={{ width: '180px', textAlign: 'left' }}>Operator Code</th>
+                   <th style={{ width: '180px', textAlign: 'left' }}>ServiceName</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {paginatedOperators.map((item, idx) => (
+                   <tr key={item.id} className={styles.hoverRow}>
+                     <td style={{ fontWeight: 700, color: '#A0AEC0', textAlign: 'center' }}>{startIndex + idx + 1}</td>
+                     <td style={{ textAlign: 'center' }}>
+                        {/* Custom switch slider matching Active/DeActive styling */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                          <div 
+                            onClick={() => handleToggleStatus(item.id)}
+                            style={{
+                              width: '38px',
+                              height: '20px',
+                              borderRadius: '10px',
+                              background: item.status ? '#1756AA' : '#CBD5E1',
+                              position: 'relative',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div style={{
+                              width: '14px',
+                              height: '14px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              position: 'absolute',
+                              left: item.status ? '21px' : '3px',
+                              transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+                            }} />
+                          </div>
+                        </div>
+                     </td>
+                     <td>
+                       <span style={{ color: '#1756AA', fontSize: '0.95rem', fontWeight: 800 }}>{item.name}</span>
+                     </td>
+                     <td style={{ textAlign: 'left', fontWeight: 800, color: '#1E293B' }}>{item.opCode}</td>
+                     <td style={{ textAlign: 'left' }}>
+                        <span style={{ background: '#F0F7FF', color: '#1756AA', padding: '4px 12px', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 800 }}>
+                          {selectedService}
+                        </span>
+                     </td>
+                   </tr>
+                 ))}
+                 {paginatedOperators.length === 0 && (
+                   <tr>
+                     <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                       <FiInfo style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
+                       <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>{selectedService ? `No operator records found for "${selectedService}".` : "Please select a service from the dropdown to view operator registry."}</p>
+                     </td>
+                   </tr>
+                 )}
+               </tbody>
+             </table>
+           </div>
+
+           {/* ── PAGINATION ── */}
+           {totalPages > 1 && (
+             <div className="global-pagination" style={{ padding: '25px 0px 0px 0px', borderTop: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div style={{ fontSize: '0.85rem', color: '#718096', fontWeight: 600 }}>
+                 Showing {startIndex + 1} to {Math.min(startIndex + entriesPerPage, totalEntries)} of {totalEntries} records
+               </div>
+               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                 <button 
+                   onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                   disabled={currentPage === 1}
+                   className="global-page-btn" 
+                   style={{ borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                 >
+                   <FiChevronLeft />
+                 </button>
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '35px', height: '35px', background: '#1756AA', color: 'white', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem' }}>
+                   {currentPage}
+                 </div>
+                 <button 
+                   onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                   disabled={currentPage === totalPages}
+                   className="global-page-btn" 
+                   style={{ borderRadius: '8px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                 >
+                   <FiChevronRight />
+                 </button>
+               </div>
+             </div>
+           )}
+        </div>
+      </div>
+
+      {/* ── ADD/EDIT OPERATOR FORM OVERLAY MODAL ── */}
+      {formModal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 999
+        }}>
+          <form onSubmit={handleFormSubmit} style={{
+            background: '#ffffff', borderRadius: '16px', width: '400px', maxWidth: '90%',
+            padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '16px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
+              <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0D1B3E' }}>
+                {formModal.mode === "add" ? "Add Operator" : "Edit Operator"}
+              </h4>
+              <FiX style={{ cursor: 'pointer', color: '#94A3B8', fontSize: '1.2rem' }} onClick={() => setFormModal({ ...formModal, show: false })} />
+            </div>
+
+            <div className={styles.formGroup} style={{ margin: 0 }}>
+               <label className={styles.label} style={{ fontWeight: 700, color: '#4E6080', marginBottom: '6px' }}>Service Category</label>
+               <input 
+                 type="text" 
+                 value={selectedService} 
+                 disabled 
+                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#F1F5F9', color: '#64748B', fontWeight: 600 }} 
+               />
+            </div>
+
+            <div className={styles.formGroup} style={{ margin: 0 }}>
+               <label className={styles.label} style={{ fontWeight: 700, color: '#4E6080', marginBottom: '6px' }}>Operator Name *</label>
+               <input 
+                 type="text" 
+                 value={formModal.name} 
+                 onChange={(e) => setFormModal({ ...formModal, name: e.target.value })}
+                 placeholder="e.g. Airtel Prepaid" 
+                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', outline: 'none', color: '#1E293B', fontWeight: 600, boxSizing: 'border-box' }} 
+               />
+            </div>
+
+            <div className={styles.formGroup} style={{ margin: 0 }}>
+               <label className={styles.label} style={{ fontWeight: 700, color: '#4E6080', marginBottom: '6px' }}>Operator Code *</label>
+               <input 
+                 type="text" 
+                 value={formModal.opCode} 
+                 onChange={(e) => setFormModal({ ...formModal, opCode: e.target.value })}
+                 placeholder="e.g. AT" 
+                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', outline: 'none', color: '#1E293B', fontWeight: 600, boxSizing: 'border-box' }} 
+               />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
+               <span style={{ fontWeight: 700, color: '#4E6080', fontSize: '0.9rem' }}>Operator Status</span>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <div 
+                   onClick={() => setFormModal({ ...formModal, status: !formModal.status })}
+                   style={{
+                     width: '38px',
+                     height: '20px',
+                     borderRadius: '10px',
+                     background: formModal.status ? '#1756AA' : '#CBD5E1',
+                     position: 'relative',
+                     cursor: 'pointer',
+                     transition: 'background-color 0.2s',
+                     display: 'flex',
+                     alignItems: 'center'
+                   }}
+                 >
+                   <div style={{
+                     width: '14px',
+                     height: '14px',
+                     borderRadius: '50%',
+                     background: '#fff',
+                     position: 'absolute',
+                     left: formModal.status ? '21px' : '3px',
+                     transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                     boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+                   }} />
+                 </div>
+                 <span style={{ fontSize: '0.8rem', fontWeight: 800, color: formModal.status ? '#1756AA' : '#64748B' }}>
+                   {formModal.status ? 'ONLINE' : 'OFFLINE'}
+                 </span>
+               </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <button 
+                type="button"
+                onClick={() => setFormModal({ ...formModal, show: false })}
+                style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#fff', color: '#64748B', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#1756AA', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── CUSTOM ALERT/CONFIRM MODAL ── */}
+      {modal.show && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '14px', width: '360px', maxWidth: '90%',
+            padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center', border: '1px solid #E2E8F0'
+          }}>
+            <div style={{
+              width: '48px', height: '48px', borderRadius: '50%',
+              background: modal.type === 'confirm' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(23, 86, 170, 0.1)',
+              color: modal.type === 'confirm' ? '#EF4444' : '#1756AA',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.4rem', margin: '0 auto 16px auto'
+            }}>
+              <FiInfo />
+            </div>
+            
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: 800, color: '#0D1B3E' }}>
+              {modal.title}
+            </h4>
+            <p style={{ margin: '0 0 20px 0', fontSize: '0.85rem', color: '#64748B', fontWeight: 600, lineHeight: '1.4' }}>
+              {modal.message}
+            </p>
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              {modal.type === 'confirm' ? (
+                <>
+                  <button 
+                    onClick={() => setModal({ ...modal, show: false })}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0',
+                      background: '#fff', color: '#64748B', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      modal.onConfirm();
+                      setModal({ ...modal, show: false });
+                    }}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
+                      background: '#1756AA', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    Confirm
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={() => setModal({ ...modal, show: false })}
+                  style={{
+                    padding: '10px 24px', borderRadius: '8px', border: 'none',
+                    background: '#1756AA', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer'
+                  }}
+                >
+                  Okay
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ListOperator;

@@ -1,0 +1,174 @@
+.container {
+  padding: 24px;
+  background-color: var(--color-background);
+  min-height: calc(100vh - 60px);
+  animation: fadeIn 0.4s ease;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0; /* Full bleed container for mobile */
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.inlineFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(23, 86, 170, 0.03);
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(23, 86, 170, 0.05);
+}
+
+@media (max-width: 768px) {
+  .inlineFilterRow {
+    gap: 8px;
+    padding: 6px;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.customDropdown {
+  position: relative;
+  width: 220px;
+  z-index: 100;
+}
+
+.dropdownHeader {
+  height: 42px;
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0 16px 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.dropdownHeader.active {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.1);
+}
+
+.selectedVal {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0D1B3E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  font-size: 1rem;
+  color: #718096;
+  transition: transform 0.3s;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
+
+.dropdownList {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownItem {
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4E6080;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdownItem:hover {
+  background: rgba(23, 86, 170, 0.05);
+  color: #1756AA;
+}
+
+.itemActive {
+  background: #1756AA !important;
+  color: #fff !important;
+}
+
+@media (max-width: 768px) {
+  .customDropdown {
+    width: 150px;
+  }
+  .dropdownHeader {
+    height: 36px;
+    padding: 0 10px 0 32px;
+  }
+  .selectedVal {
+    font-size: 0.75rem;
+  }
+  .inputIcon {
+    left: 10px;
+    font-size: 0.9rem;
+  }
+}
+
+.submitBtn {
+  height: 42px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #1756AA 0%, #0D1B3E 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.2);
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(23, 86, 170, 0.3);
+  filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+  .submitBtn {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 0.7rem;
+    gap: 6px;
+    white-space: nowrap;
+  }
+}
+
+/* AdminTable handles the rest */

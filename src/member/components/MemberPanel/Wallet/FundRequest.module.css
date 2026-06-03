@@ -1,0 +1,1319 @@
+/* Premium Unified Retailer Fund Request CSS Module */
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 4px 6px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Toast Message styling */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: #10b981;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 750;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+.toastError {
+  background: #ef4444;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.25);
+}
+
+/* Header Area - Highly Compact & Sleek */
+.heroSection {
+  background: linear-gradient(135deg, #1756AA 0%, #0d1b3e 100%);
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 10px 25px rgba(23, 86, 170, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heroTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  background: linear-gradient(to right, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.heroSub {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.walletCard {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 10px;
+  padding: 8px 16px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.walletLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.walletAmount {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Premium Section Cards */
+.premiumSectionCard {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeader {
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+}
+
+.sectionTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerIcon {
+  font-size: 1.6rem;
+  color: #1756AA;
+}
+
+.sectionHeading {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.sectionSubHeading {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  font-weight: 600;
+}
+
+/* SPECIFIC FORM CARD DECORATIONS */
+.formCard {
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03);
+  position: relative;
+}
+
+.formCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(23, 86, 170, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Form Styles */
+.compactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.compactFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.formLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Modern Input Wrappers with Icons */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+
+.inputWrapper:focus-within .inputIcon {
+  color: #1756AA;
+}
+
+.inputCurrencyPrefix {
+  position: absolute;
+  left: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+
+.inputWrapper:focus-within .inputCurrencyPrefix {
+  color: #1756AA;
+}
+
+/* Beautiful custom select, text and date inputs */
+.selectInput, .textInput, .dateInput, .textInputPrefix {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px 8px 38px;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  background-color: #f8fafc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* Custom Vector Arrow for Select Field */
+.selectInput {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 38px !important;
+}
+
+.textInputPrefix {
+  padding-left: 32px;
+  font-weight: 800;
+  color: #1756AA;
+}
+
+.selectInput:focus, .textInput:focus, .dateInput:focus, .textInputPrefix:focus {
+  border-color: #1756AA;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(23, 86, 170, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Slimmed Side-by-Side Upload Row Styling */
+.uploadSubmitRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  border-top: 1.5px solid #f1f5f9;
+  padding-top: 16px;
+  width: 100%;
+}
+
+.compactUploadZone {
+  width: auto;
+  min-width: 250px;
+  max-width: 320px;
+}
+
+.hiddenFileField {
+  display: none !important;
+}
+
+.compactUploadLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 0 14px;
+  height: 40px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compactUploadLabel:hover {
+  border-color: #1756AA;
+  background: #f0f5ff;
+  transform: translateY(-1px);
+}
+
+.compactUploadIcon {
+  font-size: 1.1rem;
+  color: #1756AA;
+}
+
+.compactUploadText {
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #475569;
+}
+
+.btnSaveSubmit {
+  border: none;
+  background: linear-gradient(135deg, #1756AA 0%, #0d1b3e 100%);
+  color: white;
+  height: 40px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.82rem;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: auto;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.btnSaveSubmit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(23, 86, 170, 0.25);
+}
+
+/* REAL ATM / CREDIT CARDS STYLING */
+.bankCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.bankCardItem {
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Gloss reflective card overlay */
+.bankCardItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bankCardItem:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* CARD ATM THEMES: LIGHT & PREMIUM COLOR SCHEMES */
+
+/* ICICI Card: Platinum Mist */
+.cardTheme1 {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.6) 0%, rgba(226, 232, 240, 0.5) 100%);
+  color: #1e293b;
+  box-shadow: 0 10px 30px rgba(148, 163, 184, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.cardTheme1 .cardBankName, .cardTheme1 .cardHolderName, .cardTheme1 .cardIfscText {
+  color: #0f172a;
+}
+.cardTheme1 .cardMetaLabel {
+  color: #64748b;
+}
+.cardTheme1 .copyCardBtn {
+  background: rgba(15, 23, 42, 0.06);
+  color: #334155;
+}
+.cardTheme1 .copyCardBtn:hover {
+  background: #0f172a;
+  color: white;
+}
+.cardTheme1 .cardQrBtn {
+  background: #1e293b;
+  color: white;
+}
+.cardTheme1 .cardQrBtn:hover {
+  background: #0f172a;
+}
+
+/* Equitas Card: Champagne Rose Gold */
+.cardTheme2 {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.65) 0%, rgba(253, 230, 138, 0.55) 100%);
+  color: #78350f;
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.cardTheme2 .cardBankName, .cardTheme2 .cardHolderName, .cardTheme2 .cardIfscText {
+  color: #451a03;
+}
+.cardTheme2 .cardMetaLabel {
+  color: #b45309;
+}
+.cardTheme2 .copyCardBtn {
+  background: rgba(120, 53, 15, 0.07);
+  color: #78350f;
+}
+.cardTheme2 .copyCardBtn:hover {
+  background: #78350f;
+  color: white;
+}
+.cardTheme2 .cardQrBtn {
+  background: #78350f;
+  color: white;
+}
+.cardTheme2 .cardQrBtn:hover {
+  background: #451a03;
+}
+
+/* PNB Card: Pearl Mint Green */
+.cardTheme3 {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.65) 0%, rgba(187, 247, 208, 0.55) 100%);
+  color: #064e3b;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.cardTheme3 .cardBankName, .cardTheme3 .cardHolderName, .cardTheme3 .cardIfscText {
+  color: #022c22;
+}
+.cardTheme3 .cardMetaLabel {
+  color: #047857;
+}
+.cardTheme3 .copyCardBtn {
+  background: rgba(6, 78, 59, 0.07);
+  color: #064e3b;
+}
+.cardTheme3 .copyCardBtn:hover {
+  background: #064e3b;
+  color: white;
+}
+.cardTheme3 .cardQrBtn {
+  background: #064e3b;
+  color: white;
+}
+.cardTheme3 .cardQrBtn:hover {
+  background: #022c22;
+}
+
+/* SBI Card: Lavendar Pearl */
+.cardTheme4 {
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.65) 0%, rgba(233, 213, 255, 0.55) 100%);
+  color: #581c87;
+  box-shadow: 0 10px 30px rgba(147, 51, 234, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.cardTheme4 .cardBankName, .cardTheme4 .cardHolderName, .cardTheme4 .cardIfscText {
+  color: #3b0764;
+}
+.cardTheme4 .cardMetaLabel {
+  color: #7e22ce;
+}
+.cardTheme4 .copyCardBtn {
+  background: rgba(88, 28, 135, 0.07);
+  color: #581c87;
+}
+.cardTheme4 .copyCardBtn:hover {
+  background: #581c87;
+  color: white;
+}
+.cardTheme4 .cardQrBtn {
+  background: #581c87;
+  color: white;
+}
+.cardTheme4 .cardQrBtn:hover {
+  background: #3b0764;
+}
+
+/* ATM Card Header Layout */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cardBankLogo {
+  font-size: 1.4rem;
+  background: rgba(255, 255, 255, 0.55);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.cardBankIdentity {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+  flex: 1;
+}
+
+.cardBankName {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+}
+
+.cardType {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.contactlessIcon {
+  opacity: 0.6;
+}
+
+/* Real EMV Card Smart Chip Design */
+.emvChip {
+  width: 42px;
+  height: 30px;
+  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  margin-top: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.chipLine {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chipLine:nth-child(1) {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.chipLine:nth-child(2) {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+}
+
+.chipLine:nth-child(3) {
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* ATM Card Body Layout */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.cardAccBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardAccNumber {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 4px 0 0 0;
+  display: inline-block;
+  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.8), -0.5px -0.5px 0 rgba(0, 0, 0, 0.1);
+}
+
+.cardLowerRow {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 12px;
+}
+
+.cardHolderBlock, .cardIfscBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardHolderName {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 750;
+}
+
+.cardIfscText {
+  font-size: 0.78rem;
+  font-family: monospace;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+}
+
+.cardMetaLabel {
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  opacity: 0.75;
+}
+
+.copyFlex {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyCardBtn {
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  transition: all 0.2s ease;
+}
+
+.checkIcon {
+  color: #10b981 !important;
+  font-size: 0.75rem;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 10px;
+}
+
+.cardBranchText {
+  font-size: 0.68rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.cardQrBtn {
+  border: none;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.cardQrBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Reports Table & List Card */
+.tableCard {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tableHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.sectionTitle svg {
+  color: #1756AA;
+}
+
+.dateFilterContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dateGroup label {
+  font-size: 0.7rem;
+  font-weight: 750;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.dateGroup input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.btnFilterSubmit {
+  border: none;
+  background: #ff4757;
+  color: white;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-weight: 750;
+  cursor: pointer;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
+  transition: opacity 0.2s;
+}
+
+.btnFilterSubmit:hover {
+  opacity: 0.9;
+}
+
+/* Toolbar Controls */
+.toolbarControls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+}
+
+.rowLimiter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.rowLimiter select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  outline: none;
+  font-weight: 700;
+}
+
+.toolbarExportActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 250px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.searchContainer input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  outline: none;
+  color: #1e293b;
+}
+
+.searchContainer input:focus {
+  border-color: #1756AA;
+}
+
+/* Premium Table matching AePS layout */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+}
+
+.premiumTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.premiumTable th {
+  padding: 14px 16px;
+  background: linear-gradient(90deg, #1756AA 0%, #0d1b3e 100%);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: none;
+  white-space: nowrap;
+}
+
+.premiumTable th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.premiumTable th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.premiumTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.premiumTable tr:last-child td {
+  border-bottom: none;
+}
+
+.premiumTable tr:hover td {
+  background: #fafbfb;
+}
+
+.requestIdCode {
+  font-family: monospace;
+  font-weight: 800;
+  color: #1756AA;
+}
+
+.refIdCode {
+  font-family: monospace;
+  font-weight: 750;
+  color: #475569;
+}
+
+.viewSlipBtn {
+  border: none;
+  background: rgba(23, 86, 170, 0.08);
+  color: #1756AA;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.viewSlipBtn:hover {
+  background: #1756AA;
+  color: white;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pending {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.approved {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.rejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Pagination Section */
+.paginationSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.showingText {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 6px;
+}
+
+.paginationControls button {
+  border: 1px solid #e2e8f0;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.paginationControls button:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.paginationControls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.activePageBtn {
+  background: #1756AA !important;
+  color: white !important;
+  border-color: #1756AA !important;
+}
+
+/* Modal Overlay & Card Popups */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 440px;
+  padding: 25px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: #f1f5f9;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* QR Scanner modal body */
+.qrModalBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.qrOutlineFrame {
+  width: 160px;
+  height: 160px;
+  border-radius: 16px;
+  padding: 8px;
+  border: 2px solid #1756AA;
+  background: white;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(23, 86, 170, 0.15);
+}
+
+.scanOutlineLine {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+  animation: qrSweep 2.5s infinite ease-in-out;
+  z-index: 5;
+}
+
+.emulatedQrCode {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.qrCornerSquare {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 4px solid #0f172a;
+  background: transparent;
+  border-radius: 6px;
+}
+
+.qrCenterDot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #0f172a;
+  border-radius: 2px;
+}
+
+.qrCentralUpiBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1756AA;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 2px solid white;
+}
+
+.qrDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.qrDetails strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.qrDetails span {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.qrTip {
+  margin-top: 10px;
+  font-size: 0.72rem !important;
+  color: #475569 !important;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  line-height: 1.4;
+}
+
+/* Slip Modal details */
+.slipModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.slipMockContainer {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.slipMockHeader h4 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.slipMockHeader span {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.slipDetailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.slipDetailGrid div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slipDetailGrid span {
+  font-size: 0.65rem;
+  font-weight: 750;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.slipDetailGrid strong {
+  font-size: 0.82rem;
+  color: #1e293b;
+}
+
+.slipAttachedName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1756AA;
+  background: rgba(23, 86, 170, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Keyframes */
+@keyframes qrSweep {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* RESPONSIVE LAYOUT OVERRIDES */
+@media (max-width: 1200px) {
+  .compactFormGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .toolbarControls {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .compactFormGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .uploadSubmitRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compactUploadZone, .btnSaveSubmit {
+    max-width: unset;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 4px;
+    gap: 12px;
+  }
+
+  .heroSection {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 20px;
+  }
+
+  .walletCard {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .dateFilterContainer {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .btnFilterSubmit {
+    width: 100%;
+  }
+
+  .paginationSection {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+}

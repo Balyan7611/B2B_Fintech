@@ -1,0 +1,456 @@
+/* ═══════════════════════════════════════════
+   PAGE SHELL
+   ═══════════════════════════════════════════ */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 16px 48px;
+  min-height: 100%;
+  background: linear-gradient(145deg, #eef2ff 0%, #e3e9f8 100%);
+  animation: fadeUp 0.45s ease-out;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pageHeading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  max-width: 880px;
+}
+.headingIcon { font-size: 1.3rem; color: #C9A84C; }
+.pageHeading span {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  font-family: Arial, sans-serif;
+  flex: 1;
+}
+
+/* Eye Preview Button */
+.previewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #1756AA, #0D1B3E);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  box-shadow: 0 4px 14px rgba(23,86,170,0.35);
+  transition: all 0.22s ease;
+  font-family: Arial, sans-serif;
+}
+.previewBtn:hover {
+  background: linear-gradient(135deg, #0D1B3E, #1756AA);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(23,86,170,0.45);
+}
+
+/* ── PREVIEW MODAL ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,27,62,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeUp 0.3s ease-out;
+  padding: 20px;
+}
+
+.modalBox {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 880px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.modalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  border: none;
+  font-size: 1rem;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+.modalClose:hover {
+  background: #e53e3e;
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+/* Scale certificate to fit modal */
+.previewScaler {
+  width: 100%;
+}
+
+
+
+.certWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 880px;
+}
+
+/* ═══════════════════════════════════════════
+   CERTIFICATE CARD
+   ═══════════════════════════════════════════ */
+.certCard {
+  width: 100%;
+  border-radius: 6px;
+  background: #fff;
+  position: relative;
+  outline: 4px solid #C9A84C;
+  outline-offset: -1px;
+  box-shadow: 0 28px 70px rgba(13, 27, 62, 0.16);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  overflow: hidden;
+}
+
+/* ── Watermark (faint center logo) ── */
+.watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+.watermarkImg {
+  width: 420px;
+  height: auto;
+  opacity: 0.04;
+  filter: grayscale(100%);
+}
+
+/* ── Inner gold border frame ── */
+.innerFrame {
+  position: relative;
+  z-index: 1;
+  margin: 12px;
+  border: 2px solid #C9A84C;
+  border-radius: 3px;
+  padding-bottom: 0;
+}
+
+/* ── Corner ornaments ── */
+.corner {
+  position: absolute;
+  font-size: 1rem;
+  color: #C9A84C;
+  line-height: 1;
+  display: block;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+}
+.cornerTL { top: 7px;    left: 9px;  transform: none; }
+.cornerTR { top: 7px;    right: 9px; transform: none; }
+.cornerBL { bottom: 7px; left: 9px;  transform: none; }
+.cornerBR { bottom: 7px; right: 9px; transform: none; }
+
+/* ── HEADER ── */
+.certHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px 30px 0;
+}
+
+.logo {
+  width: 220px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 8px rgba(23, 86, 170, 0.14));
+}
+
+/* ── GOLD ORNAMENTAL DIVIDER ── */
+.goldDivider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  margin-top: 8px;
+}
+.goldLine {
+  flex: 1;
+  height: 1.5px;
+  background: #C9A84C;
+}
+.diamond {
+  font-size: 0.65rem;
+  color: #C9A84C;
+  flex-shrink: 0;
+}
+
+/* ── TITLE BLOCK ── */
+.titleBlock {
+  text-align: center;
+  padding: 10px 30px 2px;
+}
+.certOfText {
+  margin: 0 0 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: #1756AA;
+  font-family: Arial, sans-serif;
+}
+.certTitle {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 400;
+  color: #0D1B3E;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+}
+.titleUnderline {
+  width: 200px;
+  height: 0;
+  border: none;
+  border-top: 1px solid #C9A84C;
+  margin: 6px auto 0;
+}
+
+/* ── BODY ── */
+.certBody {
+  padding: 10px 80px 6px;
+  text-align: center;
+}
+.subtext {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  color: #888;
+  font-style: italic;
+}
+.memberName {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  color: #0D1B3E;
+  font-family: 'Georgia', serif;
+}
+.nameBold { font-weight: 700; }
+
+.dottedRule {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 2px dashed #C9A84C;
+  margin: 8px 0;
+  opacity: 0.6;
+}
+.appointText {
+  margin: 4px 0 2px;
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.8;
+  font-family: Arial, sans-serif;
+}
+.companyName {
+  margin: 2px 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1756AA;
+  letter-spacing: 0.6px;
+  font-family: Arial, sans-serif;
+}
+.cityText {
+  margin: 1px 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  font-family: Arial, sans-serif;
+  text-transform: capitalize;
+}
+
+/* ── FOOTER ── */
+.certFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 10px 30px 16px;
+  gap: 8px;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex: 1;
+  min-height: 80px;
+}
+
+/* Seal — center piece */
+.footerSeal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.sealRing {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2.5px solid #C9A84C;
+  background: linear-gradient(135deg, #fffdf0, #fff9e6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 0 6px #C9A84C55,
+    0 4px 14px rgba(201,168,76,0.3);
+}
+.sealLogo {
+  width: 60px;
+  height: auto;
+  object-fit: contain;
+}
+.sealLabel {
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #C9A84C;
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.footerSignLine {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 1px dashed #374151;
+  margin: 3px 0;
+}
+.footerLabel {
+  font-size: 0.54rem;
+  font-weight: 800;
+  color: #374151;
+  letter-spacing: 2px;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+}
+.footerValue {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1756AA;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.6px;
+}
+
+/* Powered By column */
+.poweredByLabel {
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #555;
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+}
+.poweredLogo {
+  width: 94px !important;
+  height: 44px !important;
+  max-width: 94px !important;
+  max-height: 44px !important;
+  object-fit: contain;
+  display: block;
+}
+
+
+/* ═══════════════════════════════════════════
+   DOWNLOAD BUTTON
+   ═══════════════════════════════════════════ */
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 44px;
+  background: linear-gradient(135deg, #1756AA 0%, #0D1B3E 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.6px;
+  box-shadow: 0 6px 22px rgba(23, 86, 170, 0.42);
+  transition: all 0.25s ease;
+  font-family: Arial, sans-serif;
+}
+.downloadBtn:hover {
+  background: linear-gradient(135deg, #0D1B3E 0%, #1756AA 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(23, 86, 170, 0.52);
+}
+.downloadBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.3);
+}
+
+/* Dark mode */
+.dark.page { background: linear-gradient(145deg, #0F172A 0%, #1E293B 100%); }
+.dark .pageHeading span { color: #F1F5F9; }
+.dark .certCard { background: #1e293b; }
+.dark .innerFrame { background: #1e293b; }
+
+/* Responsive */
+@media (max-width: 680px) {
+  .certBody  { padding: 10px 22px 6px; }
+  .certFooter { padding: 10px 22px 14px; flex-direction: column; align-items: center; gap: 20px; }
+  .certTitle  { font-size: 1.8rem; }
+  .memberName { font-size: 1.1rem; }
+  .logo { width: 160px; }
+  .footerRight { justify-content: center; }
+}

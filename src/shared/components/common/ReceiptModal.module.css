@@ -1,0 +1,574 @@
+/* ════════════════════════════════════════
+   RECEIPT MODAL — CSS MODULES
+   html2canvas safe — all hardcoded hex
+════════════════════════════════════════ */
+
+/* ── OVERLAY ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 27, 62, 0.45);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ── MODAL SHELL ── */
+.modal {
+  background: #ffffff;
+  width: 96%;
+  max-width: 940px;
+  max-height: 92vh;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 32px 64px -16px rgba(13, 27, 62, 0.35);
+  animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── MODAL HEADER ── */
+.modalHeader {
+  padding: 14px 24px;
+  background: #F8FAFF;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1756AA;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #A0AEC0;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #E53E3E;
+}
+
+/* ── TOOLBAR ── */
+.toolbarRow {
+  padding: 12px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #EDF2F7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.sizeSelector {
+  display: flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 100px;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.sizePill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4A5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.sizePillActive {
+  background: #0D1B3E;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(13, 27, 62, 0.22);
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #1756AA 0%, #0D1B3E 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(13, 27, 62, 0.2);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(13, 27, 62, 0.28);
+}
+
+.btnSecondary {
+  background: #ffffff;
+  color: #4A5568;
+  border: 1.5px solid #E2E8F0;
+}
+
+.btnSecondary:hover {
+  background: #F8FAFF;
+  border-color: #CBD5E1;
+}
+
+/* ── RECEIPT VIEWPORT ── */
+.receiptViewport {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: 36px;
+  background: #EAECF0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ── RECEIPT WRAPPER ── */
+.receiptWrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', 'Poppins', sans-serif;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════
+   SHARED PRIMITIVES
+════════════════════════════════════════ */
+
+.receiptLogo {
+  object-fit: contain;
+  display: block;
+  max-width: 100%;
+}
+
+/* ── TICK CIRCLE — dark green, prominent ── */
+.tickCircle {
+  border-radius: 50%;
+  background: #DCFCE7;
+  border: 2px solid #16A34A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(21, 128, 61, 0.25);
+}
+
+.dashedDivider {
+  border: none;
+  border-top: 2px dashed #E2E8F0;
+  margin: 14px 0;
+}
+
+.receiptFooter {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* ════════════════════════════════════════
+   STANDARD LAYOUT (A4 / A5)
+════════════════════════════════════════ */
+
+.standardReceipt {
+  padding: 32px;
+}
+
+.standardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.branding {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tagline {
+  font-size: 0.72rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.standardBody {
+  display: grid;
+  grid-template-columns: 1.1fr 1.9fr;
+  gap: 20px;
+}
+
+/* LEFT: AMOUNT CARD */
+.amountCard {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+.amountLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.amountText {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #0D1B3E;
+  margin: 10px 0;
+}
+
+.miniDivider {
+  height: 1px;
+  background: #E2E8F0;
+  margin: 12px 0;
+}
+
+.userInfo {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.userInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.userInfoLabel {
+  font-size: 0.65rem;
+  color: #718096;
+  font-weight: 600;
+}
+
+.userInfoVal {
+  font-size: 0.68rem;
+  color: #0D1B3E;
+  font-weight: 800;
+}
+
+/* RIGHT: 2x2 GRID */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-content: start;
+}
+
+.infoCard {
+  background: #F8FAFF;
+  border: 1px solid #EDF2F7;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.infoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(23, 86, 170, 0.10);
+  border: 1.5px solid rgba(23, 86, 170, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1756AA;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.infoLabel {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #A0AEC0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: block;
+}
+
+.infoVal {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin-top: 2px;
+  display: block;
+  word-break: break-all;
+}
+
+/* ════════════════════════════════════════
+   CARD LAYOUT
+════════════════════════════════════════ */
+
+.cardReceipt {
+  padding: 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardBranding {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cardTagline {
+  font-size: 0.62rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.cardAmountBlock {
+  background: #0D1B3E;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.cardAmountLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cardAmountValue {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 6px 0;
+}
+
+.cardUserRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.cardInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cardInfoCell {
+  background: #F8FAFF;
+  border: 1px solid #EDF2F7;
+  border-radius: 8px;
+  padding: 9px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cardInfoIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(23, 86, 170, 0.10);
+  border: 1.5px solid rgba(23, 86, 170, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1756AA;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.cardInfoLabel {
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #A0AEC0;
+  text-transform: uppercase;
+  display: block;
+}
+
+.cardInfoVal {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  display: block;
+  word-break: break-all;
+  margin-top: 1px;
+}
+
+/* ════════════════════════════════════════
+   THERMAL LAYOUT (80mm / 58mm)
+════════════════════════════════════════ */
+
+.thermalReceipt {
+  padding: 16px;
+}
+
+.thermalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.thermalAmount {
+  text-align: center;
+  padding: 10px 0 6px;
+}
+
+.thermalAmountLabel {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.thermalAmountValue {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #0D1B3E;
+  margin-top: 4px;
+}
+
+.thermalUserRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: #4A5568;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.thermalInfoList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thermalInfoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F8FAFF;
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+
+.thermalInfoIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(23, 86, 170, 0.10);
+  border: 1.5px solid rgba(23, 86, 170, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1756AA;
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.thermalInfoLabel {
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #A0AEC0;
+  text-transform: uppercase;
+  display: block;
+}
+
+.thermalInfoVal {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  display: block;
+  word-break: break-all;
+  margin-top: 1px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media print {
+  .overlay {
+    display: none !important;
+  }
+}

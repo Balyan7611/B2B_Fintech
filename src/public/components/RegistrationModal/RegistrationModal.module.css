@@ -1,0 +1,137 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(5, 12, 30, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: overlayIn 0.22s ease;
+}
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.12);
+  animation: modalIn 0.35s cubic-bezier(0.34,1.5,0.64,1);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.88) translateY(28px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Header ── */
+.header {
+  background: #ffffff;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #F0F5FF;
+}
+.headerTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0D1B3E;
+  margin: 0;
+}
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stepIndicator {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1756AA;
+  white-space: nowrap;
+  background: #F0F7FF;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.closeBtn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #F8FAFF;
+  border: none;
+  color: #64748B;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+.closeBtn:hover { background: #fee2e2; color: #ef4444; transform: rotate(90deg); }
+
+/* ── Progress Bar ── */
+.progressBar {
+  display: flex;
+  height: 4px;
+  background: #F0F5FF;
+}
+.seg {
+  flex: 1;
+  background: #E8EFF9;
+  transition: background 0.45s ease;
+}
+.segDone   { background: #27AE60; }
+.segActive {
+  background: linear-gradient(90deg, #1756AA, #4A90D9);
+  position: relative; overflow: hidden;
+}
+.segActive::after {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer { to { left: 200%; } }
+
+/* ── Step Labels ── */
+.stepLabels {
+  display: flex;
+  padding: 0;
+  border-bottom: 1px solid #EEF3FC;
+  background: #FAFCFF;
+}
+.stepLabel {
+  flex: 1;
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #a0aec0;
+  padding: 8px 4px;
+  transition: color 0.3s ease;
+  letter-spacing: 0.2px;
+}
+.labelActive { color: #1756AA; font-weight: 700; }
+.labelDone   { color: #27AE60; font-weight: 600; }
+
+/* ── Body ── */
+.body {
+  padding: 22px 22px 20px;
+  min-height: 260px;
+  animation: stepSlide 0.3s ease;
+}
+@keyframes stepSlide {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 520px) {
+  .modal { border-radius: 14px; }
+  .body  { padding: 18px 14px; }
+  .stepLabel { font-size: 0.56rem; }
+}

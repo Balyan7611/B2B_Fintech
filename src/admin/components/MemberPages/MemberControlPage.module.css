@@ -1,0 +1,1228 @@
+.memberControlPage {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1.5px solid #EEF2F6;
+  box-shadow: 0 10px 30px rgba(13, 27, 62, 0.04);
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease-out;
+  padding: 0;
+  margin: 16px 20px 32px 20px;
+  width: calc(100% - 40px);
+}
+
+.memberControlTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: #F8FAFF;
+  border-bottom: 1.5px solid #EEF2F6;
+}
+
+.controlPageTitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #1756AA;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.pageBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #EBF3FC;
+  color: #1756AA;
+  border: 1px solid rgba(23, 86, 170, 0.15);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pageBackBtn:hover {
+  background: #1756AA;
+  color: #ffffff;
+  border-color: #1756AA;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.2);
+  transform: translateX(-3px);
+}
+
+/* Profile Header Block */
+.memberModalProfileHeader {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1.5px solid #F1F5F9;
+  align-items: center;
+  background: linear-gradient(to right, #F8FAFF 0%, #ffffff 100%);
+}
+
+.memberAvatarCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1756AA, #124d96);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(23, 86, 170, 0.2);
+  flex-shrink: 0;
+}
+
+.memberHeaderDetails {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.memberNameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.memberNameRow h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0D1B3E;
+  margin: 0;
+}
+
+.statusTag {
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statusTagActive {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27AE60;
+  border: 1.5px solid rgba(39, 174, 96, 0.25);
+}
+
+.statusTagDeactive {
+  background: rgba(229, 62, 62, 0.1);
+  color: #E53E3E;
+  border: 1.5px solid rgba(229, 62, 62, 0.25);
+}
+
+.statusTagWarning {
+  background: rgba(234, 162, 31, 0.1);
+  color: #EAA21F;
+  border: 1.5px solid rgba(234, 162, 31, 0.25);
+}
+
+.memberHeaderSubtext {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.78rem;
+  color: #718096;
+}
+
+.memberHeaderSubtext span {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* Split Columns Modal Body Layout */
+.memberModalBody {
+  display: flex;
+  gap: 20px;
+  padding: 16px 24px;
+  background: #ffffff;
+}
+
+.memberModalBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memberModalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memberModalBody::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 10px;
+}
+
+.memberModalBody::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+.modalLeftColumn {
+  flex: 1.75;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modalRightColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1.5px solid #EEF2F6;
+  padding-left: 28px;
+}
+
+/* Balances Display Row */
+.memberModalBalancesRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.memberBalCard {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #E2E8F0;
+  transition: transform 0.25s;
+}
+
+.memberBalCard:hover {
+  transform: translateY(-2px);
+}
+
+.balCardMain {
+  background: linear-gradient(135deg, #1756AA, #124d96);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.balCardAeps {
+  background: linear-gradient(135deg, #27AE60, #1e924a);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.balCardHold {
+  background: #ffffff;
+  color: #0D1B3E;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 12px rgba(13, 27, 62, 0.02);
+}
+
+.balCardLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0.85;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balCardVal {
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Actions Section */
+.memberActionsSection {
+  flex: 1;
+}
+
+.modalSectionTitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0D1B3E;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.actionsIconGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.actionIconCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid #E2E8F0;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.actionIconCard:hover {
+  border-color: #1756AA;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(13, 27, 62, 0.04);
+}
+
+.actionIconCardActive {
+  border-color: #1756AA;
+  background: rgba(23, 86, 170, 0.03);
+  box-shadow: 0 4px 10px rgba(23, 86, 170, 0.06);
+}
+
+.actionIconCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.actionIconCard:hover .actionIconCircle {
+  transform: scale(1.08);
+}
+
+.actionIconLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #4E6080;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Account Specifications */
+.memberSpecsSection {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1.5px solid #EEF2F6;
+  padding: 16px 20px;
+}
+
+.specsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 20px;
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.specLabel {
+  font-size: 0.65rem;
+  color: #718096;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.specVal {
+  font-size: 0.8rem;
+  color: #0D1B3E;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.badgeSpec {
+  display: inline-flex;
+  align-self: flex-start;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badgeSpecGreen {
+  background: rgba(39, 174, 96, 0.08);
+  color: #27AE60;
+  border: 1px solid rgba(39, 174, 96, 0.15);
+}
+
+.badgeSpecRed {
+  background: rgba(229, 62, 62, 0.08);
+  color: #E53E3E;
+  border: 1px solid rgba(229, 62, 62, 0.15);
+}
+
+.badgeSpecOrange {
+  background: rgba(234, 162, 31, 0.08);
+  color: #EAA21F;
+  border: 1px solid rgba(234, 162, 31, 0.15);
+}
+
+/* Edit Profile Form Page */
+.editProfileFormPage {
+  padding: 24px 28px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.formSection {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #F1F5F9;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(13, 27, 62, 0.01);
+}
+
+.formSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid #F1F5F9;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.formSectionTitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1756AA;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleBadge {
+  background: rgba(39, 174, 96, 0.08);
+  color: #27AE60;
+  border: 1px solid rgba(39, 174, 96, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #4E6080;
+}
+
+.formInput {
+  padding: 8px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #0D1B3E;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.formInput:focus {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 3px rgba(23, 86, 170, 0.08);
+}
+
+.formInput[readonly] {
+  background: #F8FAFF;
+  border-color: #E2E8F0;
+  color: #718096;
+  cursor: not-allowed;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 20px;
+  padding: 6px 0;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #0D1B3E;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.radioLabel input {
+  cursor: pointer;
+  accent-color: #1756AA;
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.formCheckbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #1756AA;
+}
+
+.checkboxText {
+  font-size: 0.78rem;
+  color: #4E6080;
+  font-weight: 600;
+}
+
+.fullWidthRow {
+  grid-column: span 3;
+}
+
+.editPageActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1.5px solid #F1F5F9;
+  margin-top: 8px;
+}
+
+.editCancelBtn {
+  padding: 9px 24px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748B;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editCancelBtn:hover {
+  background: #F8FAFF;
+  color: #0D1B3E;
+  border-color: #CBD5E1;
+}
+
+.editSaveBtn {
+  padding: 9px 28px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1756AA, #124d96);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.2);
+}
+
+.editSaveBtn:hover {
+  background: linear-gradient(135deg, #124d96, #0e3b75);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(23, 86, 170, 0.3);
+}
+
+/* ── FULL PAGE FUND & WALLET MANAGEMENT ── */
+.fundManagementPage {
+  padding: 24px 28px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.fundPageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #F1F5F9;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.fundPageTitle {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1756AA;
+  margin: 0;
+}
+
+.fundMemberBadge {
+  background: rgba(23, 86, 170, 0.08);
+  border: 1px solid rgba(23, 86, 170, 0.15);
+  color: #1756AA;
+  font-size: 0.76rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.fundSplitGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 28px;
+}
+
+.fundBalancesPanel {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panelSubtitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.miniBalCardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.miniBalCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #ffffff;
+}
+
+.miniBalLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #718096;
+}
+
+.miniBalVal {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0D1B3E;
+}
+
+.miniBalMain {
+  border-left: 4px solid #27AE60;
+}
+
+.miniBalAeps {
+  border-left: 4px solid #1756AA;
+}
+
+.miniBalHold {
+  border-left: 4px solid #E53E3E;
+}
+
+.miniBalCredit {
+  border-left: 4px solid #2B6CB0;
+}
+
+.fundInputsPanel {
+  background: #ffffff;
+  border: 1px solid #F1F5F9;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.fundFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.fundInputLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #4E6080;
+}
+
+.fundAmountWrapper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.fundAmountWrapper:focus-within {
+  border-color: #1756AA;
+  box-shadow: 0 0 0 3px rgba(23, 86, 170, 0.08);
+}
+
+.fundCurrencyPrefix {
+  padding: 0 14px;
+  background: #F1F5F9;
+  border-right: 1.5px solid #CBD5E1;
+  color: #4E6080;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.fundAmountInput {
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0D1B3E;
+}
+
+.fundInputRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fundSelectInput, .fundInputText {
+  padding: 8px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #0D1B3E;
+  outline: none;
+  width: 100%;
+  background: #ffffff;
+}
+
+.fundSelectInput:focus, .fundInputText:focus {
+  border-color: #1756AA;
+}
+
+.fundTextareaInput {
+  padding: 10px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #0D1B3E;
+  outline: none;
+  width: 100%;
+  min-height: 70px;
+  font-family: inherit;
+  resize: none;
+}
+
+.fundTextareaInput:focus {
+  border-color: #1756AA;
+}
+
+.fundActionsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1.5px solid #F1F5F9;
+  margin-top: 12px;
+}
+
+.fundCancelBtn {
+  padding: 9px 24px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748B;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fundCancelBtn:hover {
+  background: #F8FAFF;
+  color: #0D1B3E;
+  border-color: #CBD5E1;
+}
+
+.fundConfirmBtn {
+  padding: 9px 28px;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.confirmBtnAdd {
+  background: linear-gradient(135deg, #27AE60, #219653);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+}
+
+.confirmBtnAdd:hover {
+  background: linear-gradient(135deg, #219653, #1e8449);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.3);
+}
+
+.confirmBtnDeduct {
+  background: linear-gradient(135deg, #E53E3E, #C53030);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
+}
+
+.confirmBtnDeduct:hover {
+  background: linear-gradient(135deg, #C53030, #9B2C2C);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(229, 62, 62, 0.3);
+}
+
+.confirmBtnBlue {
+  background: linear-gradient(135deg, #1756AA, #124d96);
+  box-shadow: 0 4px 12px rgba(23, 86, 170, 0.2);
+}
+
+.confirmBtnBlue:hover {
+  background: linear-gradient(135deg, #124d96, #0e3b75);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(23, 86, 170, 0.3);
+}
+
+/* ── WALLET CONFIRMATION OVERLAY MODAL ── */
+.fundConfirmModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13, 27, 62, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.fundConfirmModalCard {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  box-shadow: 0 20px 48px rgba(13, 27, 62, 0.15);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: slideUp 0.25s ease-out;
+}
+
+.confirmModalIconCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 20px;
+}
+
+.fundConfirmModalCard h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin: 0 0 8px;
+}
+
+.fundConfirmModalCard p {
+  font-size: 0.85rem;
+  color: #64748B;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.confirmDetailsBox {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.confirmDetailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dashed #E2E8F0;
+}
+
+.confirmDetailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748B;
+}
+
+.detailValue {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0D1B3E;
+}
+
+.detailValueAmount {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #0D1B3E;
+}
+
+.confirmModalActions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirmModalCancelBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid #E2E8F0;
+  background: #ffffff;
+  color: #64748B;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmModalCancelBtn:hover {
+  background: #F8FAFF;
+  color: #0D1B3E;
+  border-color: #CBD5E0;
+}
+
+.confirmModalProceedBtn {
+  flex: 1.2;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmModalProceedBtn:hover {
+  transform: translateY(-1px);
+}
+
+.sendOtpBtn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #1756AA, #124d96);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(23, 86, 170, 0.15);
+}
+
+.sendOtpBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #124d96, #0e3b75);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(23, 86, 170, 0.25);
+}
+
+.sendOtpBtn:disabled {
+  background: #E2E8F0;
+  color: #A0AEC0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── CUSTOM ERROR ALERT OVERLAY MODAL ── */
+.errorModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13, 27, 62, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.errorModalCard {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  box-shadow: 0 20px 48px rgba(229, 62, 62, 0.15);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: slideUp 0.25s ease-out;
+}
+
+.errorModalIconCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(229, 62, 62, 0.1);
+  color: #E53E3E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto 20px;
+}
+
+.errorModalCard h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0D1B3E;
+  margin: 0 0 8px;
+}
+
+.errorMessageText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #E53E3E;
+  line-height: 1.5;
+  margin: 0 0 24px;
+  background: rgba(229, 62, 62, 0.05);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(229, 62, 62, 0.1);
+}
+
+.errorModalActions {
+  display: flex;
+}
+
+.errorModalCloseBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #E53E3E, #C53030);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 6px 16px rgba(229, 62, 62, 0.25);
+}
+
+.errorModalCloseBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(229, 62, 62, 0.35);
+}
+
+/* RESPONSIVE SCALING & DYNAMIC LAYOUTS */
+@media (max-width: 1024px) {
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .fullWidthRow {
+    grid-column: span 2 !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .fundSplitGrid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .memberModalBody {
+    flex-direction: column !important;
+    gap: 24px !important;
+    padding: 16px 20px !important;
+  }
+  .modalLeftColumn {
+    flex: 1 !important;
+    width: 100% !important;
+  }
+  .modalRightColumn {
+    flex: 1 !important;
+    width: 100% !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+    border-top: 1.5px solid #EEF2F6;
+    padding-top: 24px !important;
+  }
+  .actionsIconGrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .memberControlPage {
+    margin: 8px 6px 24px 6px !important;
+    width: calc(100% - 12px) !important;
+    border-radius: 12px !important;
+  }
+  .memberControlTopBar {
+    padding: 12px 16px !important;
+  }
+  .controlPageTitle {
+    font-size: 0.78rem !important;
+  }
+  .specsGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px 16px !important;
+  }
+  .memberModalBalancesRow {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .memberModalBalancesRow > div:last-child {
+    grid-column: span 2 !important;
+  }
+}
+
+@media (max-width: 580px) {
+  .hideOnMobile {
+    display: none;
+  }
+  .formGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .fullWidthRow {
+    grid-column: span 1 !important;
+  }
+  .memberModalBody {
+    padding: 12px 12px !important;
+    gap: 16px !important;
+  }
+  .memberModalProfileHeader {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding: 16px 12px !important;
+    gap: 12px !important;
+  }
+  .memberHeaderDetails {
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+  .memberNameRow {
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+  .memberHeaderSubtext {
+    justify-content: flex-start !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    font-size: 0.72rem !important;
+  }
+  .miniBalCardGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .fundInputRow {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .fundPageHeader {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .fundManagementPage, .editProfileFormPage {
+    padding: 16px 12px !important;
+  }
+  .actionsIconGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .actionIconCard {
+    padding: 6px 4px !important;
+  }
+  .actionIconCircle {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.85rem !important;
+  }
+  .actionIconLabel {
+    font-size: 0.64rem !important;
+  }
+  .memberSpecsSection {
+    padding: 12px 14px !important;
+  }
+  .specsGrid {
+    gap: 8px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .memberControlTopBar {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+  .pageBackBtn {
+    align-self: auto !important;
+    width: auto !important;
+    justify-content: flex-start !important;
+  }
+  .controlPageTitle {
+    text-align: right !important;
+    width: auto !important;
+    font-size: 0.72rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .actionsIconGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

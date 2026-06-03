@@ -1,0 +1,286 @@
+import { useState } from 'react';
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaCogs,
+  FaDatabase,
+  FaExclamationTriangle,
+  FaEye, FaEyeSlash,
+  FaLock,
+  FaServer,
+  FaShieldAlt,
+  FaTools,
+  FaUserShield
+} from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { API } from '../../api/endpoints';
+import { SITE_CONFIG } from '../../config/siteConfig';
+import styles from '../../pages/LoginPage.module.css';
+import { decodeToken } from '../../utils/authUtils';
+
+const AdminLoginPage = () => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [adminId, setAdminId] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [locationStatus, setLocationStatus] = useState(null);
+
+  const checkLocationBeforeLogin = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Browser does not support geolocation'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocationStatus({
+            status: 'on',
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          resolve(position);
+        },
+        (error) => {
+          let errorMsg = '';
+          switch(error.code) {
+            case 1:
+              errorMsg = '❌ Location access denied. Please enable location to login as Admin.';
+              break;
+            case 2:
+              errorMsg = '❌ Location unavailable. Please check your device settings.';
+              break;
+            case 3:
+              errorMsg = '❌ Location request timeout. Please try again.';
+              break;
+            default:
+              errorMsg = '❌ Location access required for Admin login.';
+          }
+          setLocationStatus({
+            status: 'off',
+            error: errorMsg
+          });
+          reject(new Error(errorMsg));
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    });
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    if (adminId.trim().length >= 3) setStep(2);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await checkLocationBeforeLogin();
+
+      const response = await API.login({ loginID: adminId, password: password });
+      
+      if (response.status) {
+        const token = response.refreshToken || response.accessToken;
+        
+        if (!token) throw new Error("Token missing from server");
+        
+        localStorage.setItem('admin_token', token);
+        localStorage.setItem('access_token', token);
+        const decoded = decodeToken(token);
+        
+        if (decoded && (decoded.role === '1' || decoded.role === 1)) {
+            navigate('/admin/dashboard');
+        } else {
+            setError("Unauthorized access - Admin only");
+        }
+      } else {
+        setError(response.mess || "Admin Authentication Failed");
+      }
+    } catch (err) {
+      setError(err.message || "Admin Authentication Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const requestLocationAgain = () => {
+    setLocationStatus(null);
+    setError('');
+  };
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.loginContainer}>
+        {/* LEFT PANEL: Branding & Visuals */}
+        <div className={styles.brandingPanel} style={{ background: 'linear-gradient(135deg, #06113C 0%, #1756AA 100%)' }}>
+          <div className={styles.brandingContent}>
+            <Link to="/" className={styles.logoWrap}>
+              <img src={SITE_CONFIG.logo} alt="Logo" className={styles.logoImg} />
+            </Link>
+            <div className={styles.heroText}>
+              <h1 className={styles.mainTitle}>Admin Control</h1>
+              <p className={styles.mainSub}>Authorized access for system administration and infrastructure management.</p>
+            </div>
+
+            <div className={styles.featureGrid}>
+                <div className={styles.featurePill}>
+                  <div className={styles.featureIconBox}><FaServer /></div>
+                  <span>Endpoint Monitoring</span>
+                </div>
+                <div className={styles.featurePill}>
+                  <div className={styles.featureIconBox}><FaDatabase /></div>
+                  <span>Database Integrity</span>
+                </div>
+                <div className={styles.featurePill}>
+                  <div className={styles.featureIconBox}><FaCogs /></div>
+                  <span>System Configuration</span>
+                </div>
+            </div>
+
+            <div className={styles.trustBadge}>
+              <FaShieldAlt className={styles.trustIcon} style={{ color: '#F59E0B' }} />
+              <div>
+                <p className={styles.trustTitle}>Secure Admin Channel</p>
+                <p className={styles.trustSub}>End-to-End Encrypted Session</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL: Authentication Form */}
+        <div className={styles.authPanel}>
+          <div className={styles.formCard}>
+             {/* Mobile Logo */}
+             <div className={styles.mobileLogoBox}>
+               <img src={SITE_CONFIG.logo} alt="Logo" className={styles.mobileLogo} />
+             </div>
+
+             <div className={styles.formHeader}>
+               <h2 className={styles.welcomeTitle}>{step === 2 ? 'Security Key' : 'Admin Access'}</h2>
+               <p className={styles.welcomeSub}>
+                 {step === 2 ? `Verifying Admin: ${adminId}` : 'Restricted area. Please authenticate.'}
+               </p>
+             </div>
+
+             <div className={styles.progressTrack}>
+                <div className={`${styles.progressFill} ${step === 2 ? styles.progressHalf : ''}`}></div>
+             </div>
+
+             {locationStatus && locationStatus.status === 'off' && step === 2 && (
+              <div style={{ 
+                background: '#f8d7da', 
+                color: '#721c24', 
+                padding: '12px', 
+                borderRadius: '8px', 
+                margin: '15px 0',
+                textAlign: 'center',
+                fontSize: '14px'
+              }}>
+                <FaExclamationTriangle style={{ marginRight: '8px' }} />
+                {locationStatus.error}
+                <button 
+                  onClick={requestLocationAgain}
+                  style={{ 
+                    marginLeft: '10px', 
+                    padding: '5px 10px', 
+                    background: '#dc3545',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+             <div className={styles.formContent}>
+                {step === 1 ? (
+                  <form onSubmit={handleNext} className={styles.animatedStep}>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>ADMINISTRATOR ID</label>
+                      <div className={styles.inputWrap}>
+                        <div className={styles.inputIconBox}><FaUserShield /></div>
+                        <input
+                          className={styles.input}
+                          placeholder="e.g. ADMIN_001"
+                          value={adminId}
+                          onChange={(e) => setAdminId(e.target.value)}
+                          autoFocus
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" className={styles.primaryBtn}>
+                      Verify Identity <FaArrowRight />
+                    </button>
+
+                    <div className={styles.registerLinkRow}>
+                       <Link to="/member/login" className={styles.textLink}>← Back to Member Login</Link>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleLogin} className={styles.animatedStep}>
+                    {error && (
+                      <div className={styles.errorAlert}>
+                        <FaExclamationTriangle />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>PRIVATE SECURITY KEY</label>
+                      <div className={styles.inputWrap}>
+                        <div className={styles.inputIconBox}><FaLock /></div>
+                        <input
+                          className={styles.input}
+                          type={showPwd ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          autoFocus
+                          required
+                        />
+                        <button className={styles.eyeBtn} type="button" onClick={() => setShowPwd(!showPwd)}>
+                          {showPwd ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className={`${styles.primaryBtn} ${loading ? styles.btnLoading : ''}`}
+                      disabled={loading || (locationStatus?.status === 'off')}
+                    >
+                      {loading ? <div className={styles.spinner}></div> : <>Grant Admin Access <FaShieldAlt /></>}
+                    </button>
+
+                    <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>
+                       <FaArrowLeft /> Switch Admin Account
+                    </button>
+                  </form>
+                )}
+             </div>
+
+             <div className={styles.formFooter}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#718096', fontSize: '0.75rem', fontWeight: 600, justifyContent: 'center' }}>
+                   <FaTools /> System Version 2.0.1
+                </div>
+                <p className={styles.copyright} style={{ marginTop: '15px' }}>© {new Date().getFullYear()} {SITE_CONFIG.companyName}. Admin Use Only.</p>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminLoginPage;
