@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import { 
   FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronDown, FiDatabase, FiX, FiCheck, FiZap, FiSettings, FiActivity, FiArrowRight, FiInfo
 } from 'react-icons/fi';
@@ -123,7 +124,7 @@ const ListOperator = () => {
   };
 
   // Service Options (Matching On/Off Services page)
-  const serviceOptions = [
+  const [serviceOptions, setServiceOptions] = useState([
     "Recharge", "MOBILE POSTPAID", "DTH", "Electricity", "Water", "GAS",
     "LPG Gas", "Insurance", "Internet", "Landline Postpaid", "EMI", "FasTag",
     "Education", "Cable Tv", "Municipal Tax", "AEPS", "Aadhar Pay", "Payment Gateway",
@@ -135,92 +136,53 @@ const ListOperator = () => {
     "Donation", "Health Insurance", "Housing Society", "Life Insurance", "Loan Repay",
     "Muncipal Service", "Recurring Deposit", "Clubs Association", "Rental", "Subscription",
     "NPMC", "NPS", "Prepaid Meter", "Neeraj Bar"
-  ];
+  ]);
 
   // Operator Registry State List (Mapped to actual Member Panel services data)
-  const [operatorRegistry, setOperatorRegistry] = useState([
-    // Recharge / Mobile Prepaid
-    { id: 1, name: 'Airtel Mobile', type: 'Recharge', opCode: 'AT', status: true },
-    { id: 2, name: 'Jio Prepaid', type: 'Recharge', opCode: 'JIO', status: true },
-    { id: 3, name: 'Vodafone Idea (Vi)', type: 'Recharge', opCode: 'VI', status: true },
-    { id: 4, name: 'BSNL Prepaid', type: 'Recharge', opCode: 'BSNL', status: false },
-    { id: 5, name: 'MTNL', type: 'Recharge', opCode: 'MTNL', status: true },
+  const [operatorRegistry, setOperatorRegistry] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
 
-    // MOBILE POSTPAID
-    { id: 101, name: 'Airtel Postpaid', type: 'MOBILE POSTPAID', opCode: 'AT_POST', status: true },
-    { id: 102, name: 'Jio Postpaid', type: 'MOBILE POSTPAID', opCode: 'JIO_POST', status: true },
-    { id: 103, name: 'Vi Postpaid', type: 'MOBILE POSTPAID', opCode: 'VI_POST', status: true },
-
-    // DTH
-    { id: 6, name: 'Airtel Digital Tv', type: 'DTH', opCode: 'AD', status: true },
-    { id: 7, name: 'Dish Tv', type: 'DTH', opCode: 'DS', status: true },
-    { id: 8, name: 'Sun Direct', type: 'DTH', opCode: 'SD', status: true },
-    { id: 9, name: 'Tata Sky', type: 'DTH', opCode: 'TS', status: true },
-    { id: 10, name: 'Videocon D2h', type: 'DTH', opCode: 'VD', status: true },
-
-    // Water (From Member Panel Water.jsx)
-    { id: 11, name: 'Bangalore Water Supply (BWSSB)', type: 'Water', opCode: 'BWSSB', status: true },
-    { id: 12, name: 'Bhopal Municipal Corporation', type: 'Water', opCode: 'BMCW', status: true },
-    { id: 13, name: 'Delhi Jal Board', type: 'Water', opCode: 'DJB', status: true },
-    { id: 14, name: 'Greater Warangal Municipal Corporation', type: 'Water', opCode: 'GWMC', status: true },
-    { id: 15, name: 'Hyderabad Metro Water (HMWSSB)', type: 'Water', opCode: 'HMWSSB', status: true },
-    { id: 16, name: 'MCGM Water Department', type: 'Water', opCode: 'MCGM', status: true },
-    { id: 17, name: 'New Delhi Municipal Council (NDMC)', type: 'Water', opCode: 'NDMCW', status: true },
-
-    // Electricity (From Member Panel Electricity.jsx)
-    { id: 18, name: 'Adani Electricity Mumbai Limited', type: 'Electricity', opCode: 'ADANI', status: true },
-    { id: 19, name: 'Ajmer Vidyut Vitran Nigam', type: 'Electricity', opCode: 'AVVNL', status: true },
-    { id: 20, name: 'BESCOM - BENGALURU', type: 'Electricity', opCode: 'BESCOM', status: true },
-    { id: 21, name: 'BEST - MUMBAI', type: 'Electricity', opCode: 'BEST', status: true },
-    { id: 22, name: 'BSES Rajdhani - DELHI', type: 'Electricity', opCode: 'BSESR', status: true },
-    { id: 23, name: 'BSES Yamuna - DELHI', type: 'Electricity', opCode: 'BSESY', status: true },
-    { id: 24, name: 'CESC - WEST BENGAL', type: 'Electricity', opCode: 'CESCWB', status: true },
-    { id: 25, name: 'MSEDC - MAHARASHTRA', type: 'Electricity', opCode: 'MSEDCL', status: true },
-    { id: 26, name: 'Punjab State Power Corporation', type: 'Electricity', opCode: 'PSPCL', status: true },
-    { id: 27, name: 'Torrent Power', type: 'Electricity', opCode: 'TORRENT', status: true },
-
-    // LPG Gas (From Member Panel LPGGas.jsx)
-    { id: 28, name: 'Bharat Petroleum (BPCL)', type: 'LPG Gas', opCode: 'BPCL', status: true },
-    { id: 29, name: 'Hindustan Petroleum (HPCL)', type: 'LPG Gas', opCode: 'HPCL', status: true },
-    { id: 30, name: 'Indane Gas (Indian Oil)', type: 'LPG Gas', opCode: 'INDANE', status: true },
-
-    // Gas (Piped Gas - From Member Panel Gas.jsx)
-    { id: 31, name: 'Aavantika Gas Ltd', type: 'GAS', opCode: 'AAVANTIKA', status: true },
-    { id: 32, name: 'Adani Gas', type: 'GAS', opCode: 'ADANIGAS', status: true },
-    { id: 33, name: 'Gail Gas Limited', type: 'GAS', opCode: 'GAIL', status: true },
-    { id: 34, name: 'Gujarat Gas', type: 'GAS', opCode: 'GUJGAS', status: true },
-    { id: 35, name: 'Indraprastha Gas', type: 'GAS', opCode: 'IGL', status: true },
-    { id: 36, name: 'Mahanagar Gas', type: 'GAS', opCode: 'MGL', status: true },
-
-    // Cable TV (From Member Panel CableTV.jsx)
-    { id: 37, name: 'ACT Digital TV', type: 'Cable Tv', opCode: 'ACT', status: true },
-    { id: 38, name: 'Asianet Digital', type: 'Cable Tv', opCode: 'ASIANET', status: true },
-    { id: 39, name: 'DEN Networks', type: 'Cable Tv', opCode: 'DEN', status: true },
-    { id: 40, name: 'Hathway Digital', type: 'Cable Tv', opCode: 'HATHWAY', status: true },
-    { id: 41, name: 'Siti Networks', type: 'Cable Tv', opCode: 'SITI', status: true },
-    { id: 42, name: 'Tata Play Fiber', type: 'Cable Tv', opCode: 'TATAFIBER', status: true },
-
-    // Fastag (From Member Panel Fastag.jsx)
-    { id: 43, name: 'Airtel Payments Bank Fastag', type: 'FasTag', opCode: 'AIRTELFT', status: true },
-    { id: 44, name: 'Axis Bank Fastag', type: 'FasTag', opCode: 'AXISFT', status: true },
-    { id: 45, name: 'HDFC Bank - Fastag', type: 'FasTag', opCode: 'HDFCFT', status: true },
-    { id: 46, name: 'ICICI Bank Fastag', type: 'FasTag', opCode: 'ICICIFT', status: true },
-    { id: 47, name: 'Paytm Payments Bank Fastag', type: 'FasTag', opCode: 'PAYTMFT', status: true },
-    { id: 48, name: 'State Bank of India Fastag', type: 'FasTag', opCode: 'SBIFT', status: true },
-
-    // AEPS
-    { id: 49, name: 'ICICI AEPS Gateway', type: 'AEPS', opCode: 'ICICI_AEPS', status: true },
-    { id: 50, name: 'Fino AEPS Node', type: 'AEPS', opCode: 'FINO_AEPS', status: true },
-    { id: 51, name: 'Yes Bank AEPS', type: 'AEPS', opCode: 'YES_AEPS', status: false },
-
-    // Aadhar Pay
-    { id: 52, name: 'ICICI AadharPay Node', type: 'Aadhar Pay', opCode: 'ICICI_AP', status: true },
-    { id: 53, name: 'Fino AadharPay Node', type: 'Aadhar Pay', opCode: 'FINO_AP', status: true },
-
-    // mATM
-    { id: 54, name: 'NSDL mATM Channel', type: 'mATM', opCode: 'NSDL_MATM', status: true },
-    { id: 55, name: 'Fino mATM Terminal', type: 'mATM', opCode: 'FINO_MATM', status: true }
-  ]);
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await API.service.getAll();
+        if (res && res.status === true && Array.isArray(res.data)) {
+          setServiceOptions(res.data.map(item => item.name));
+          setErrorMsg('');
+        } else {
+          setErrorMsg('Failed to load services from API.');
+        }
+      } catch (err) {
+        console.error("Error loading service options:", err);
+        setErrorMsg('Failed to connect to service API.');
+      }
+    };
+    
+    const fetchOperators = async () => {
+      try {
+        const res = await API.operator.getAll();
+        if (res && res.status === true && Array.isArray(res.data)) {
+          setOperatorRegistry(res.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            type: item.serviceId === 1 ? 'Recharge' : item.serviceId === 2 ? 'MOBILE POSTPAID' : 'DTH',
+            opCode: item.operatorCode,
+            status: item.isActive,
+            ...item
+          })));
+          setErrorMsg('');
+        } else {
+          setErrorMsg('Failed to load operators from API.');
+        }
+      } catch (err) {
+        console.error("Error loading operators registry:", err);
+        setErrorMsg('Failed to connect to operator API.');
+      }
+    };
+    
+    fetchServices();
+    fetchOperators();
+  }, []);
 
   // Fetch Operators for Selected Service
   let serviceOperators = [];
@@ -228,15 +190,6 @@ const ListOperator = () => {
     serviceOperators = operatorRegistry.filter(op => 
       op.type.toLowerCase() === selectedService.toLowerCase()
     );
-
-    // Dynamic fallback operators if the service doesn't have custom ones pre-populated yet
-    if (serviceOperators.length === 0) {
-      serviceOperators = [
-        { id: `gen-1-${selectedService}`, name: `${selectedService} provider 1`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}01`, status: true },
-        { id: `gen-2-${selectedService}`, name: `${selectedService} provider 2`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}02`, status: true },
-        { id: `gen-3-${selectedService}`, name: `${selectedService} provider 3`, type: selectedService, opCode: `${selectedService.substring(0,3).toUpperCase()}03`, status: false }
-      ];
-    }
   }
 
   // Filter list by table search input
@@ -339,6 +292,12 @@ const ListOperator = () => {
             <FiPlus /> <span>Add Operator</span>
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 24px 0 24px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         {/* CONTENT VIEW AREA */}
         <div style={{ padding: '24px' }}>
@@ -454,7 +413,7 @@ const ListOperator = () => {
                    <tr>
                      <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                        <FiInfo style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
-                       <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>{selectedService ? `No operator records found for "${selectedService}".` : "Please select a service from the dropdown to view operator registry."}</p>
+                       <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>{selectedService ? "No data available in table" : "Please select a service from the dropdown to view operator registry."}</p>
                      </td>
                    </tr>
                  )}

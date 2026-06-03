@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import {
   FaArrowLeft, FaEdit, FaHandHoldingUsd, FaMoneyBillWave,
   FaCreditCard, FaExchangeAlt, FaUserLock, FaRupeeSign,
@@ -21,6 +22,23 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
     businessName: '', businessAddress: '', businessCity: '',
     businessState: 'Uttar Pradesh', businessPincode: '', businessPostOffice: ''
   });
+
+  const [genderOptions, setGenderOptions] = useState(['Male', 'Female']);
+
+  useEffect(() => {
+    const fetchGenders = async () => {
+      try {
+        const res = await API.gender.getAll();
+        if (res && Array.isArray(res)) {
+          const mapped = res.map(g => g.name).filter(Boolean);
+          if (mapped.length > 0) setGenderOptions(mapped);
+        }
+      } catch (err) {
+        console.error("Error fetching genders:", err);
+      }
+    };
+    fetchGenders();
+  }, []);
 
   const [activeActionType, setActiveActionType] = useState(null); // null | 'addFund' | 'deductFund' | 'addAeps' | 'deductAeps' | 'creditLimit' | 'holdAmt'
   const [actionAmount, setActionAmount] = useState('');
@@ -295,26 +313,18 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
               <div className={styles.formGroup}>
                 <label>Gender</label>
                 <div className={styles.radioGroup}>
-                  <label className={styles.radioLabel}>
-                    <input 
-                      type="radio" 
-                      name="gender" 
-                      value="Male" 
-                      checked={profileForm.gender === 'Male'} 
-                      onChange={e => setProfileForm({ ...profileForm, gender: e.target.value })}
-                    />
-                    Male
-                  </label>
-                  <label className={styles.radioLabel}>
-                    <input 
-                      type="radio" 
-                      name="gender" 
-                      value="Female" 
-                      checked={profileForm.gender === 'Female'} 
-                      onChange={e => setProfileForm({ ...profileForm, gender: e.target.value })}
-                    />
-                    Female
-                  </label>
+                  {genderOptions.map(g => (
+                    <label key={g} className={styles.radioLabel}>
+                      <input 
+                        type="radio" 
+                        name="gender" 
+                        value={g} 
+                        checked={profileForm.gender === g} 
+                        onChange={e => setProfileForm({ ...profileForm, gender: e.target.value })}
+                      />
+                      {g}
+                    </label>
+                  ))}
                 </div>
               </div>
 

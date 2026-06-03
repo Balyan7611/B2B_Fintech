@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import {
-  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiX, FiCheck, FiMail, FiPhone, FiUser, FiArrowLeft, FiImage, FiLink, FiDollarSign, FiGlobe, FiMapPin, FiBriefcase
+  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiX, FiCheck, FiMail, FiPhone, FiUser, FiArrowLeft, FiImage, FiLink, FiDollarSign, FiGlobe, FiMapPin, FiBriefcase, FiDatabase
 } from 'react-icons/fi';
 import {
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint
@@ -15,17 +16,36 @@ const ManageCompany = () => {
   const [viewState, setViewState] = useState('table'); // 'table' or 'add'
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
 
-  const [localCompanies, setLocalCompanies] = useState([
-    {
-      id: 1,
-      name: SITE_CONFIG.companyName,
-      owner: SITE_CONFIG.ownerName,
-      email: SITE_CONFIG.email,
-      phone: SITE_CONFIG.phone,
-      status: 'ACTIVE',
-      addDate: '09/08/2022'
+  const [localCompanies, setLocalCompanies] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const fetchCompanies = async () => {
+    try {
+      const res = await API.company.getAll();
+      if (res && res.status === true && Array.isArray(res.data)) {
+        setLocalCompanies(res.data.map(item => ({
+          id: item.id,
+          name: item.companyName || item.name,
+          owner: item.ownerName || item.owner,
+          email: item.email,
+          phone: item.mobile || item.phone,
+          status: item.isActive ? 'ACTIVE' : 'INACTIVE',
+          addDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-GB') : 'N/A',
+          ...item
+        })));
+        setErrorMsg('');
+      } else {
+        setErrorMsg(res?.mess || 'Failed to fetch companies from API.');
+      }
+    } catch (err) {
+      console.error("Error fetching companies:", err);
+      setErrorMsg('Failed to connect to the company API.');
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   const initialForm = {
     member: '', companyName: '', logo: '', signature: '', favicon: '', ownerName: '',
@@ -37,9 +57,34 @@ const ManageCompany = () => {
 
   const [formData, setFormData] = useState(initialForm);
 
-  const handleDelete = () => {
-    setLocalCompanies(localCompanies.filter(c => c.id !== showConfirmModal.id));
+  const handleDelete = async () => {
+    try {
+      const id = showConfirmModal.id;
+      const res = await API.company.delete(id);
+      if (res && res.status === true) {
+        fetchCompanies();
+      } else {
+        setLocalCompanies(localCompanies.filter(c => c.id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting company:", err);
+      setLocalCompanies(localCompanies.filter(c => c.id !== showConfirmModal.id));
+    }
     setShowConfirmModal({ isOpen: false, id: null });
+  };
+
+  const handleToggleStatus = async (id) => {
+    try {
+      const res = await API.company.toggleStatus(id);
+      if (res && res.status === true) {
+        fetchCompanies();
+      } else {
+        setLocalCompanies(localCompanies.map(c => c.id === id ? { ...c, status: c.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : c));
+      }
+    } catch (err) {
+      console.error("Error toggling company status:", err);
+      setLocalCompanies(localCompanies.map(c => c.id === id ? { ...c, status: c.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : c));
+    }
   };
 
   const handleInputChange = (e) => {
@@ -119,6 +164,12 @@ const ManageCompany = () => {
             </button>
           </div>
 
+          {errorMsg && (
+            <div style={{ margin: '15px 20px 0 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+              <span>⚠️</span> {errorMsg}
+            </div>
+          )}
+
           <div className="global-table-toolbar" style={{ padding: '20px 25px', flexWrap: 'wrap', gap: '20px', borderBottom: 'none' }}>
             <div className={styles.pillRow} style={{ alignItems: 'center' }}>
               <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>Show</span>
@@ -184,13 +235,35 @@ const ManageCompany = () => {
                       </div>
                     </td>
                     <td style={{ textAlign: 'left' }}>
-                      <span style={{ background: '#ECFDF5', color: '#059669', padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-block' }}>
-                        ● ACTIVE
+                      <span 
+                        onClick={() => handleToggleStatus(comp.id)}
+                        style={{ 
+                          background: comp.status === 'ACTIVE' ? '#ECFDF5' : '#FEF2F2', 
+                          color: comp.status === 'ACTIVE' ? '#059669' : '#EF4444', 
+                          padding: '6px 14px', 
+                          borderRadius: '20px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: 700, 
+                          display: 'inline-block',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ● {comp.status}
                       </span>
                     </td>
                     <td style={{ textAlign: 'left', color: '#64748B', fontWeight: 600, fontSize: '0.85rem' }}>{comp.addDate}</td>
                   </tr>
                 ))}
+                {localCompanies.length === 0 && (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

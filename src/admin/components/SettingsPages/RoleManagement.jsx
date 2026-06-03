@@ -22,20 +22,7 @@ import {
 import { API } from '../../../api/endpoints';
 import styles from '../MemberPages/MemberPages.module.css';
 
-const ALL_AVAILABLE_SERVICES = [
-  // Admin Defaults
-  'All 57 Services Active', 'Gateway Direct API', 'Fund Settlement', 'Full System Access', 'Role Creation', 'News Broadcast', 'System Configuration',
-  // Retailer / Distributor Defaults
-  'Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)',
-  'Fastag Recharge', 'Pan Card', 'Broadband Postpaid', 'Insurance Premium', 'LPG Gas Booking',
-  // Other Services
-  'Recharge', 'MOBILE POSTPAID', 'DTH', 'Electricity', 'Water', 'GAS', 'LPG Gas', 'Insurance', 'Internet', 'Landline Postpaid',
-  'EMI', 'Fastag', 'Education', 'Cable Tv', 'Municipal Tax', 'AEPS', 'Payment Gateway', 'Scan & Pay', 'NSDL PAN',
-  'mATM', 'Settlement', 'Fund Transfer', 'My Services', 'MATM OnBoard', 'Credit Card', 'Money Transfer', 'Broadband', 'DataCard',
-  'Digital Voucher', 'Prepaid DataCard', 'Metro', 'Prebooking', 'WiFi', 'E-Challan', 'Pay Credit Card Bills',
-  'Account Verification', 'DMT PPI', 'Account Opening', 'Loan', 'Donation', 'Health Insurance', 'Housing Society', 'Life Insurance',
-  'Loan Repay', 'Muncipal Service', 'Recurring Deposit', 'Clubs Association', 'Rental', 'Subscription', 'NPMC', 'NPS', 'Prepaid Meter'
-];
+
 
 const RoleManagement = () => {
   const [roles, setRoles] = useState([]);
@@ -54,6 +41,8 @@ const RoleManagement = () => {
   const [assignRole, setAssignRole] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
   const [serviceSearch, setServiceSearch] = useState('');
+  const [dbServices, setDbServices] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
   const [formData, setFormData] = useState({
     id: 0,
     name: '',
@@ -77,15 +66,18 @@ const RoleManagement = () => {
       if (response && Array.isArray(response) && response.length > 0) {
         setRoles(response);
         setFilteredRoles(response);
+        setErrorMsg('');
       } else if (response && !Array.isArray(response) && response.id) {
         setRoles([response]);
         setFilteredRoles([response]);
+        setErrorMsg('');
       } else {
         setRoles([]);
         setFilteredRoles([]);
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
+      setErrorMsg('Failed to connect to the roles API.');
       setRoles([]);
       setFilteredRoles([]);
     } finally {
@@ -106,9 +98,26 @@ const RoleManagement = () => {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const res = await API.service.getAll();
+      if (res && res.status === true && Array.isArray(res.data)) {
+        const activeServices = res.data.filter(s => s.isActive);
+        setDbServices(activeServices);
+      } else {
+        const msg = res?.mess || res?.message || 'Failed to retrieve services from API.';
+        setErrorMsg(`Services Load Error: ${msg}`);
+      }
+    } catch (err) {
+      console.error("Error loading services for RoleManagement:", err);
+      setErrorMsg(`Failed to connect to services API: ${err.message || 'Connection error'}`);
+    }
+  };
+
   useEffect(() => { 
     fetchRoles(); 
     fetchMasterRoles();
+    fetchServices();
   }, []);
 
   const filterRoles = useCallback(() => {
@@ -127,28 +136,19 @@ const RoleManagement = () => {
     filterRoles();
   }, [filterRoles]);
 
-  const getAssignedServices = (roleName) => {
-    const roleLower = roleName?.toLowerCase() || '';
-    const stored = localStorage.getItem(`assigned_services_${roleLower}`);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+  const getAssignedServices = (role) => {
+    if (!role || !role.menuStr || !dbServices || dbServices.length === 0) return [];
     
-    if (roleLower === 'retailer' || roleLower === 'retailer1') {
-      return ['Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)'];
-    } else if (roleLower === 'distributor') {
-      return ['Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)', 'Fastag Recharge', 'Pan Card', 'Broadband Postpaid'];
-    } else if (roleLower === 'master distributor' || roleLower === 'master') {
-      return ['Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Aadhar Pay', 'Money Transfer (DMT)', 'Utility Bill Payment (BBPS)', 'Fastag Recharge', 'Pan Card', 'Broadband Postpaid', 'Insurance Premium', 'LPG Gas Booking'];
-    } else if (roleLower === 'admin') {
-      return ['All 57 Services Active', 'Gateway Direct API', 'Fund Settlement', 'Full System Access', 'Role Creation', 'News Broadcast', 'System Configuration'];
-    } else {
-      return ['Mobile Prepaid', 'DTH Recharge', 'AEPS Cash Withdrawal', 'Utility Bill Payment (BBPS)', 'Aadhar Pay', 'Money Transfer (DMT)', 'Pan Card API'];
-    }
+    const ids = role.menuStr.split(',').map(id => id.trim()).filter(Boolean);
+    return ids.map(id => {
+      const s = dbServices.find(service => service.id.toString() === id.toString());
+      return s ? { id: s.id, name: s.name } : null;
+    }).filter(Boolean);
+  };
+
+  const getModalServices = () => {
+    if (!dbServices || dbServices.length === 0) return [];
+    return dbServices.map(s => ({ id: s.id.toString(), name: s.name }));
   };
 
   const handleDelete = async () => {
@@ -251,45 +251,65 @@ const RoleManagement = () => {
 
   const openAssignModal = (role) => {
     setAssignRole(role);
-    const currentlyAssigned = getAssignedServices(role.name);
+    const currentlyAssigned = role.menuStr ? role.menuStr.split(',').map(id => id.trim()).filter(Boolean) : [];
     setSelectedServices(currentlyAssigned);
     setServiceSearch('');
     setIsAssignModalOpen(true);
     setHoveredRole(null);
   };
 
-  const toggleServiceSelection = (service) => {
+  const toggleServiceSelection = (serviceId) => {
     setSelectedServices(prev => 
-      prev.includes(service) 
-        ? prev.filter(s => s !== service) 
-        : [...prev, service]
+      prev.includes(serviceId) 
+        ? prev.filter(id => id !== serviceId) 
+        : [...prev, serviceId]
     );
   };
 
   const handleSelectAllServices = () => {
-    setSelectedServices(ALL_AVAILABLE_SERVICES);
+    setSelectedServices(getModalServices().map(s => s.id));
   };
 
   const handleDeselectAllServices = () => {
     setSelectedServices([]);
   };
 
-  const handleSaveAssignedServices = (e) => {
+  const handleSaveAssignedServices = async (e) => {
     if (e) e.preventDefault();
     if (assignRole) {
-      const roleLower = assignRole.name?.toLowerCase() || '';
-      localStorage.setItem(`assigned_services_${roleLower}`, JSON.stringify(selectedServices));
-      setIsAssignModalOpen(false);
-      fetchRoles();
+      setLoading(true);
+      try {
+        const newMenuStr = selectedServices.join(',');
+        const updatedRole = {
+          ...assignRole,
+          menuStr: newMenuStr
+        };
+        await API.saveRole(updatedRole);
+        setIsAssignModalOpen(false);
+        fetchRoles();
+      } catch (err) {
+        console.error('Error saving assigned services:', err);
+        alert(err.message || 'Failed to assign services.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const removeServiceFromRole = (role, serviceToRemove) => {
-    const roleLower = role.name?.toLowerCase() || '';
-    const current = getAssignedServices(role.name);
-    const updated = current.filter(s => s !== serviceToRemove);
-    localStorage.setItem(`assigned_services_${roleLower}`, JSON.stringify(updated));
-    setRoles(prev => [...prev]);
+  const removeServiceFromRole = async (role, serviceIdToRemove) => {
+    try {
+      const ids = role.menuStr ? role.menuStr.split(',').map(id => id.trim()).filter(Boolean) : [];
+      const updatedIds = ids.filter(id => id.toString() !== serviceIdToRemove.toString());
+      const updatedRole = {
+        ...role,
+        menuStr: updatedIds.join(',')
+      };
+      await API.saveRole(updatedRole);
+      fetchRoles();
+    } catch (error) {
+      console.error('Error removing service from role:', error);
+      alert(error.message || 'Failed to remove service.');
+    }
   };
 
   const handleExport = (type) => {
@@ -340,6 +360,12 @@ const RoleManagement = () => {
             <FiPlus size={16} /> <span>Add New Role</span>
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 20px 0 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         <div className="global-table-toolbar" style={{ padding: '10px 15px', flexWrap: 'wrap', gap: '15px', borderBottom: 'none' }}>
           <div className={styles.pillRow} style={{ alignItems: 'center' }}>
@@ -516,7 +542,7 @@ const RoleManagement = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FiList style={{ color: '#1756AA', fontSize: '1rem' }} />
               <h4 style={{ margin: 0, fontSize: '0.8rem', color: '#0D1B3E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Services ({getAssignedServices(hoveredRole.name).length})
+                Services ({getAssignedServices(hoveredRole).length})
               </h4>
             </div>
             <button
@@ -542,43 +568,49 @@ const RoleManagement = () => {
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
-            {getAssignedServices(hoveredRole.name).map((service, idx) => (
-              <span key={idx} style={{
-                background: '#F0F7FF',
-                color: '#1756AA',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                border: '1px solid rgba(23, 86, 170, 0.08)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                {service}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeServiceFromRole(hoveredRole, service);
-                  }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#E53E3E',
-                    cursor: 'pointer',
-                    padding: 0,
-                    marginLeft: '2px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem'
-                  }}
-                  title="Remove Service"
-                >
-                  <FiX size={10} />
-                </button>
+            {getAssignedServices(hoveredRole).length > 0 ? (
+              getAssignedServices(hoveredRole).map((service, idx) => (
+                <span key={idx} style={{
+                  background: '#F0F7FF',
+                  color: '#1756AA',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  border: '1px solid rgba(23, 86, 170, 0.08)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {service.name}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeServiceFromRole(hoveredRole, service.id);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#E53E3E',
+                      cursor: 'pointer',
+                      padding: 0,
+                      marginLeft: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem'
+                    }}
+                    title="Remove Service"
+                  >
+                    <FiX size={10} />
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span style={{ fontSize: '0.75rem', color: '#718096', fontStyle: 'italic' }}>
+                No active services assigned
               </span>
-            ))}
+            )}
           </div>
         </div>
       )}
@@ -764,47 +796,53 @@ const RoleManagement = () => {
 
             {/* Services Grid (Scrollable) */}
             <div style={{ flex: 1, overflowY: 'auto', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
-                {ALL_AVAILABLE_SERVICES.filter(service => 
-                  service.toLowerCase().includes(serviceSearch.toLowerCase())
-                ).map((service, idx) => {
-                  const isChecked = selectedServices.includes(service);
-                  return (
-                    <div 
-                      key={idx}
-                      onClick={() => toggleServiceSelection(service)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 10px',
-                        background: isChecked ? '#F0F7FF' : '#ffffff',
-                        border: isChecked ? '1px solid #1756AA' : '1px solid #E2E8F0',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s'
-                      }}
-                    >
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '4px',
-                        border: isChecked ? 'none' : '2px solid #CBD5E1',
-                        background: isChecked ? '#1756AA' : '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}>
-                        {isChecked && <FiCheck style={{ color: '#fff', fontSize: '0.7rem', strokeWidth: 4 }} />}
+              {getModalServices().length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                  {getModalServices().filter(service => 
+                    service.name.toLowerCase().includes(serviceSearch.toLowerCase())
+                  ).map((service, idx) => {
+                    const isChecked = selectedServices.includes(service.id);
+                    return (
+                      <div 
+                        key={idx}
+                        onClick={() => toggleServiceSelection(service.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          background: isChecked ? '#F0F7FF' : '#ffffff',
+                          border: isChecked ? '1px solid #1756AA' : '1px solid #E2E8F0',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '4px',
+                          border: isChecked ? 'none' : '2px solid #CBD5E1',
+                          background: isChecked ? '#1756AA' : '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          {isChecked && <FiCheck style={{ color: '#fff', fontSize: '0.7rem', strokeWidth: 4 }} />}
+                        </div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isChecked ? '#0D1B3E' : '#4E6080' }}>
+                          {service.name}
+                        </span>
                       </div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: isChecked ? '#0D1B3E' : '#4E6080' }}>
-                        {service}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '30px', color: '#718096', fontSize: '0.85rem' }}>
+                  No services available
+                </div>
+              )}
             </div>
 
             {/* Footer Actions */}

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { showLoader, hideLoader, setNotification } from '../../../store/slices/uiSlice';
+import { API } from '../../../api/endpoints';
 import {
   FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiSettings, FiActivity, FiLayers, FiImage
 } from 'react-icons/fi';
@@ -16,12 +18,39 @@ const ServiceManagement = () => {
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
   const [showImageModal, setShowImageModal] = useState({ isOpen: false, imageUrl: null });
 
-  const [localServices, setLocalServices] = useState([
-    { id: 1, name: 'Recharge', apiName: 'SoniTechno', url: 'Prepaid.aspx', sectionType: '1', price: '100.00', status: true, onOff: true, position: 2, image: '' },
-    { id: 2, name: 'MOBILE POSTPAID', apiName: 'SoniTechno', url: 'NewBBPS.aspx?SType=MOBILE POSTPAID', sectionType: '2', price: '0.00', status: true, onOff: true, position: 1, image: '' },
-    { id: 3, name: 'DTH', apiName: 'SoniTechno', url: 'DTH.aspx', sectionType: '1', price: '0.00', status: true, onOff: true, position: 3, image: '' },
-    { id: 4, name: 'Electricity', apiName: 'SoniTechno', url: 'NewBBPS.aspx?SType=Electricity', sectionType: '2', price: '0.00', status: true, onOff: true, position: 4, image: '' },
-  ]);
+  const [localServices, setLocalServices] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const fetchServices = async () => {
+    try {
+      const res = await API.service.getAll();
+      if (res && res.status === true && Array.isArray(res.data)) {
+        setLocalServices(res.data.map(item => ({
+          id: item.id,
+          name: item.name,
+          apiName: item.apiName || 'SoniTechno',
+          url: item.url || '',
+          sectionType: item.sectionType || 'Utility',
+          price: item.price !== undefined && item.price !== null ? item.price.toFixed(2) : '0.00',
+          status: item.isActive,
+          onOff: item.onOff || item.isActive,
+          position: item.position || 0,
+          image: item.imageUrl || '',
+          ...item
+        })));
+        setErrorMsg('');
+      } else {
+        setErrorMsg(res?.mess || 'Failed to fetch services from API.');
+      }
+    } catch (err) {
+      console.error("Error fetching services:", err);
+      setErrorMsg('Failed to connect to the service API.');
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   const [formData, setFormData] = useState({
     id: '', name: '', url: '', price: '0', image: '', sectionType: '', api: '',
@@ -31,6 +60,7 @@ const ServiceManagement = () => {
   });
 
   const handleDelete = () => {
+    // Delete service not present in OpenAPI, fallback to local toggle
     setLocalServices(localServices.filter(s => s.id !== showConfirmModal.id));
     setShowConfirmModal({ isOpen: false, id: null });
   };
@@ -57,18 +87,27 @@ const ServiceManagement = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (formData.id) {
-      setLocalServices(localServices.map(s => s.id === formData.id ? { ...s, ...formData } : s));
-    } else {
-      const newService = {
-        ...formData,
-        id: Date.now(),
-        category: formData.sectionType || 'General',
-        addDate: new Date().toLocaleDateString('en-GB')
-      };
-      setLocalServices([newService, ...localServices]);
-    }
-    setIsModalOpen(false);
+    dispatch(showLoader());
+    
+    setTimeout(() => {
+      if (formData.id) {
+        setLocalServices(localServices.map(s => s.id === formData.id ? { ...s, ...formData } : s));
+      } else {
+        const newService = {
+          ...formData,
+          id: Date.now(),
+          category: formData.sectionType || 'General',
+          addDate: new Date().toLocaleDateString('en-GB')
+        };
+        setLocalServices([newService, ...localServices]);
+      }
+      dispatch(hideLoader());
+      dispatch(setNotification({
+        type: 'success',
+        message: formData.id ? 'Service updated successfully!' : 'Service created successfully!'
+      }));
+      setIsModalOpen(false);
+    }, 800);
   };
 
   return (
@@ -88,6 +127,12 @@ const ServiceManagement = () => {
             <FiPlus size={16} /> <span>Add New Service</span>
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 20px 0 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         {/* ── TOOLBAR ── */}
         <div className="global-table-toolbar" style={{ padding: '10px 15px', flexWrap: 'wrap', gap: '15px', borderBottom: 'none' }}>
@@ -185,6 +230,16 @@ const ServiceManagement = () => {
                   </td>
                 </tr>
               ))}
+              {localServices.length === 0 && (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

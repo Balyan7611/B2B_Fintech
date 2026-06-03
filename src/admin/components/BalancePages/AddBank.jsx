@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import { 
   setAddBankSearchQuery, 
   setAddBankSelectedBank, 
@@ -25,12 +26,33 @@ const AddBank = () => {
   
   // Use local state for the list to demonstrate 'Add' functionality
   const [localBankList, setLocalBankList] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
   
-  useEffect(() => {
-    if (addBankList.length > 0) {
-      setLocalBankList(addBankList);
+  const fetchBanks = async () => {
+    try {
+      const res = await API.bank.getAll();
+      if (res && res.status === true && Array.isArray(res.data)) {
+        setLocalBankList(res.data.map(item => ({
+          id: item.id,
+          name: item.bankName || item.bankCode,
+          ifsc: item.ifscrequired ? 'Required' : 'Not Required',
+          status: item.isActive ? 'Active' : 'InActive',
+          date: item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
+          ...item
+        })));
+        setErrorMsg('');
+      } else {
+        setErrorMsg(res?.mess || 'Failed to fetch banks from API.');
+      }
+    } catch (err) {
+      console.error("Error fetching banks:", err);
+      setErrorMsg('Failed to connect to the bank API.');
     }
-  }, [addBankList]);
+  };
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
   
   const panelRef = useRef(null);
   const inputRef = useRef(null);
@@ -104,28 +126,53 @@ const AddBank = () => {
     }
   };
 
-  const handleRegisterBank = () => {
+  const handleRegisterBank = async () => {
     if (!manualBankName || !manualIfsc) {
       alert("Please fill in both Bank Name and IFSC Code.");
       return;
     }
 
-    if (editingBank) {
-      // Update Logic
-      const updatedList = localBankList.map(b => 
-        b.id === editingBank.id ? { ...b, name: manualBankName, ifsc: manualIfsc } : b
-      );
-      setLocalBankList(updatedList);
-    } else {
-      // Add Logic
-      const newBank = {
-        id: Date.now(),
-        name: manualBankName,
-        ifsc: manualIfsc,
-        status: addBankIsActive ? 'Active' : 'InActive',
-        date: new Date().toLocaleDateString('en-GB')
+    try {
+      const payload = {
+        id: editingBank ? editingBank.id : 0,
+        bankCode: manualBankName.substring(0, 4).toUpperCase(),
+        bankName: manualBankName,
+        ifscrequired: manualIfsc ? true : false,
+        supportsImps: true,
+        supportsNeft: true,
+        supportsRtgs: true,
+        supportsPayout: true,
+        supportsVa: false,
+        isHighSpeedEnabled: true,
+        maxTpsallowed: 10,
+        isActive: addBankIsActive,
+        priorityOrder: 1
       };
-      setLocalBankList([newBank, ...localBankList]);
+      
+      if (editingBank) {
+        await API.bank.update(payload);
+      } else {
+        await API.bank.create(payload);
+      }
+      fetchBanks();
+    } catch (err) {
+      console.error("Error registering bank:", err);
+      // Fallback local logic
+      if (editingBank) {
+        const updatedList = localBankList.map(b => 
+          b.id === editingBank.id ? { ...b, name: manualBankName, ifsc: manualIfsc } : b
+        );
+        setLocalBankList(updatedList);
+      } else {
+        const newBank = {
+          id: Date.now(),
+          name: manualBankName,
+          ifsc: manualIfsc,
+          status: addBankIsActive ? 'Active' : 'InActive',
+          date: new Date().toLocaleDateString('en-GB')
+        };
+        setLocalBankList([newBank, ...localBankList]);
+      }
     }
     closeModals();
   };
@@ -291,6 +338,12 @@ const AddBank = () => {
             <FaPlus /> Add Bank
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         {/* Top Controls */}
         <div className={styles.topControls}>

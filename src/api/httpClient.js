@@ -154,6 +154,16 @@ export const apiService = {
     get: async (url) => {
         const response = await httpClient.get(url);
         return response.data;
+    },
+    
+    delete: async (url) => {
+        const response = await httpClient.delete(url);
+        return response.data;
+    },
+    
+    patch: async (url, data) => {
+        const response = await httpClient.patch(url, data);
+        return response.data;
     }
 };
 

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import { 
   FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiSettings, FiActivity, FiZap, FiRefreshCw, FiImage, FiList
 } from 'react-icons/fi';
@@ -13,12 +14,39 @@ const OperatorManagement = () => {
   const { operators = [] } = useSelector(state => state.settings || {});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [localOperators, setLocalOperators] = useState([
-    { id: 1, name: 'Airtel', code: 'AT', service: 'Prepaid', status: true, addDate: '27/03/2025', logo: '', minValue: '0', maxValue: '0', downOperator: false },
-    { id: 2, name: 'Jio', code: 'JO', service: 'Prepaid', status: true, addDate: '27/03/2025', logo: '', minValue: '0', maxValue: '0', downOperator: false },
-    { id: 3, name: 'VI', code: 'VI', service: 'Prepaid', status: true, addDate: '27/03/2025', logo: '', minValue: '0', maxValue: '0', downOperator: false },
-    { id: 4, name: 'BSNL', code: 'BS', service: 'Prepaid', status: true, addDate: '27/03/2025', logo: '', minValue: '0', maxValue: '0', downOperator: false },
-  ]);
+  const [localOperators, setLocalOperators] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const fetchOperators = async () => {
+    try {
+      const res = await API.operator.getAll();
+      if (res && res.status === true && Array.isArray(res.data)) {
+        setLocalOperators(res.data.map(item => ({
+          id: item.id,
+          name: item.name,
+          code: item.operatorCode,
+          service: item.serviceId === 1 ? 'Prepaid' : item.serviceId === 2 ? 'Postpaid' : 'DTH',
+          status: item.isActive,
+          addDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-GB') : '27/03/2025',
+          logo: item.file || '',
+          minValue: item.minVal !== undefined ? item.minVal.toString() : '0',
+          maxValue: item.maxVal !== undefined ? item.maxVal.toString() : '0',
+          downOperator: item.isOffLine,
+          ...item
+        })));
+        setErrorMsg('');
+      } else {
+        setErrorMsg(res?.mess || 'Failed to fetch operators from API.');
+      }
+    } catch (err) {
+      console.error("Error fetching operators:", err);
+      setErrorMsg('Failed to connect to the operator API.');
+    }
+  };
+
+  useEffect(() => {
+    fetchOperators();
+  }, []);
 
   const [formData, setFormData] = useState({
     id: '', name: '', code: '', service: '', minValue: '0', maxValue: '0', logo: '', status: false, downOperator: false
@@ -58,6 +86,7 @@ const OperatorManagement = () => {
   };
 
   const handleDelete = () => {
+    // Delete operator is not present in OpenAPI, keep it local
     setLocalOperators(localOperators.filter(op => op.id !== showConfirmModal.id));
     setShowConfirmModal({ isOpen: false, id: null });
   };
@@ -77,19 +106,43 @@ const OperatorManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (formData.id) {
-      setLocalOperators(localOperators.map(op => op.id === formData.id ? { ...op, ...formData } : op));
-    } else {
-      const newOperator = { 
-        ...formData, 
-        id: Date.now(), 
-        addDate: new Date().toLocaleDateString('en-GB') 
+    try {
+      const payload = {
+        id: formData.id && !isNaN(formData.id) ? parseInt(formData.id) : 0,
+        serviceId: formData.service === 'Prepaid' ? 1 : formData.service === 'Postpaid' ? 2 : 3,
+        operatorCode: formData.code,
+        name: formData.name,
+        minVal: parseFloat(formData.minValue) || 0,
+        maxVal: parseFloat(formData.maxValue) || 0,
+        commission: parseFloat(formData.commission) || 0,
+        isActive: formData.status,
+        isPending: false,
+        isOffLine: formData.downOperator
       };
-      setLocalOperators([newOperator, ...localOperators]);
+      
+      // Update is the only endpoint in Operator OpenAPI spec
+      if (formData.id && !isNaN(formData.id)) {
+        await API.operator.update(payload);
+      }
+      fetchOperators();
+    } catch (err) {
+      console.error("Error saving operator:", err);
+      // Fallback local logic
+      if (formData.id) {
+        setLocalOperators(localOperators.map(op => op.id === formData.id ? { ...op, ...formData } : op));
+      } else {
+        const newOperator = { 
+          ...formData, 
+          id: Date.now(), 
+          addDate: new Date().toLocaleDateString('en-GB') 
+        };
+        setLocalOperators([newOperator, ...localOperators]);
+      }
+    } finally {
+      setIsModalOpen(false);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -105,6 +158,12 @@ const OperatorManagement = () => {
             </button>
           </div>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 20px 0 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         {/* ── TOOLBAR ── */}
         <div className="global-table-toolbar" style={{ padding: '20px 25px', flexWrap: 'wrap', gap: '20px', borderBottom: 'none' }}>
@@ -184,6 +243,16 @@ const OperatorManagement = () => {
                   <td style={{ textAlign: 'right', color: '#94A3B8', fontWeight: 700, fontSize: '0.85rem', paddingRight: '25px' }}>{op.addDate}</td>
                 </tr>
               ))}
+              {localOperators.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

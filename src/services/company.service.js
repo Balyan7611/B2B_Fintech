@@ -25,9 +25,24 @@ export const CompanyService = {
     },
 
     // Standard CRUD placeholders for future scaling
-    getAll: async () => {},
-    getById: async (id) => {},
-    create: async (data) => {},
-    update: async (id, data) => {},
-    delete: async (id) => {}
+    getAll: async () => {
+        return await apiService.get('/Company/get-all');
+    },
+    getById: async (id) => {
+        return await apiService.get(`/Company/get-by-id/${id}`);
+    },
+    create: async (data) => {
+        // Not in OpenAPI collection but keeping signature
+        return data;
+    },
+    update: async (id, data) => {
+        // Not in OpenAPI collection but keeping signature
+        return data;
+    },
+    delete: async (id) => {
+        return await apiService.delete(`/Company/delete/${id}`);
+    },
+    toggleStatus: async (id) => {
+        return await apiService.patch(`/Company/toggle-status/${id}`, {});
+    }
 };

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { API } from '../../../api/endpoints';
 import { 
   FiPackage, FiUserCheck, FiDollarSign, FiShield, FiEdit, FiSearch, FiCopy, FiPlus, FiX, FiCheck, FiChevronRight, FiChevronLeft, FiTrash2
 } from 'react-icons/fi';
@@ -17,16 +18,40 @@ const PackageManagement = () => {
 
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
 
-  const [localPackages, setLocalPackages] = useState([
-    { id: 1, name: 'Retailer', role: 'Retailer', price: '0.00', capping: '0.00', copySlab: '', status: true, addDate: '27/03/2025' },
-    { id: 2, name: 'Admin', role: 'Admin', price: '0.00', capping: '0.00', copySlab: '', status: true, addDate: '27/03/2025' },
-    { id: 3, name: 'Distributor', role: 'Distributor', price: '0.00', capping: '0.00', copySlab: 'Retailer', status: true, addDate: '27/03/2025' },
-    { id: 4, name: 'Master', role: 'Master', price: '0.00', capping: '0.00', copySlab: 'Retailer', status: true, addDate: '27/03/2025' },
-    { id: 5, name: 'API USER', role: 'API User', price: '0.00', capping: '0.00', copySlab: '', status: true, addDate: '27/03/2025' },
-    { id: 6, name: 'Direct retailer', role: 'Retailer', price: '0.00', capping: '0.00', copySlab: 'Retailer', status: true, addDate: '27/03/2025' },
-  ]);
+  const [localPackages, setLocalPackages] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const fetchPackages = async () => {
+    try {
+      const res = await API.package.getAll();
+      if (res && Array.isArray(res)) {
+        setLocalPackages(res.map(item => ({
+          id: item.id,
+          name: item.name,
+          role: item.roleName || (item.roleId === 1 ? 'Admin' : item.roleId === 2 ? 'Retailer' : 'Distributor'),
+          price: item.price !== undefined && item.price !== null ? item.price.toFixed(2) : '0.00',
+          capping: item.capping || '0.00',
+          copySlab: item.copySlabId ? item.copySlabId.toString() : '',
+          status: item.isActive,
+          addDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-GB') : '27/03/2025',
+          ...item
+        })));
+        setErrorMsg('');
+      } else {
+        setErrorMsg('Failed to fetch packages from API.');
+      }
+    } catch (err) {
+      console.error("Error fetching packages:", err);
+      setErrorMsg('Failed to connect to the package API.');
+    }
+  };
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
 
   const handleDelete = () => {
+    // Delete endpoint is not defined in spec, keep it local/mock
     setLocalPackages(localPackages.filter(p => p.id !== showConfirmModal.id));
     setShowConfirmModal({ isOpen: false, id: null });
   };
@@ -46,20 +71,43 @@ const PackageManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      // If editing an existing package, update it; otherwise add a new one.
+    try {
+      const payload = {
+        id: formData.id && !isNaN(formData.id) ? parseInt(formData.id) : 0,
+        roleId: formData.role === 'Admin' ? 1 : formData.role === 'Retailer' ? 2 : 3,
+        code: formData.code || formData.name.substring(0, 3).toUpperCase(),
+        name: formData.name,
+        description: formData.description || formData.name,
+        price: parseFloat(formData.price) || 0,
+        billingType: formData.billingType || 'OneTime',
+        isActive: formData.status,
+        copySlabId: parseInt(formData.copySlab) || 0
+      };
+      
+      let res;
+      if (formData.id && !isNaN(formData.id) && formData.id > 1000) { // check if editable
+        res = await API.package.update(payload);
+      } else {
+        res = await API.package.create(payload);
+      }
+      
+      fetchPackages();
+    } catch (err) {
+      console.error("Error saving package:", err);
+      // Fallback local logic
       if (formData.id) {
         setLocalPackages(localPackages.map(p => p.id === formData.id ? { ...p, ...formData } : p));
       } else {
         const newPkg = { ...formData, id: Date.now(), addDate: new Date().toLocaleDateString('en-GB') };
         setLocalPackages([...localPackages, newPkg]);
       }
+    } finally {
       setIsLoading(false);
       setIsModalOpen(false);
-    }, 800);
+    }
   };
 
   return (
@@ -79,6 +127,12 @@ const PackageManagement = () => {
             <FiPlus size={16} /> <span>Add New Package</span>
           </button>
         </div>
+
+        {errorMsg && (
+          <div style={{ margin: '15px 20px 0 20px', padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
 
         {/* ── TOOLBAR ── */}
         <div className="global-table-toolbar" style={{ padding: '10px 15px', flexWrap: 'wrap', gap: '15px', borderBottom: 'none' }}>
@@ -161,6 +215,16 @@ const PackageManagement = () => {
                   <td style={{ textAlign: 'left', fontWeight: 700, color: '#718096', fontSize: '0.85rem' }}>{pkg.addDate}</td>
                 </tr>
               ))}
+              {localPackages.length === 0 && (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiPackage style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

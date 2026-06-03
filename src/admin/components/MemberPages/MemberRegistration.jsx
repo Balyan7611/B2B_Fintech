@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import { 
   FaUser, FaMapMarkerAlt, FaBriefcase, FaIdCard, FaCheck, FaChevronRight, FaChevronLeft,
   FaCalendarAlt, FaEnvelope, FaMobileAlt, FaBuilding, FaSearch, FaUserTag, FaUserPlus, FaTimes, FaGlobeAmericas,
@@ -21,6 +22,23 @@ const MemberRegistration = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
+  const [genderOptions, setGenderOptions] = useState(['Male', 'Female']);
+
+  useEffect(() => {
+    const fetchGenders = async () => {
+      try {
+        const res = await API.gender.getAll();
+        if (res && Array.isArray(res)) {
+          // If there is data, map gender objects to names, e.g. [{id: 1, name: "Male"}]
+          const mapped = res.map(g => g.name).filter(Boolean);
+          if (mapped.length > 0) setGenderOptions(mapped);
+        }
+      } catch (err) {
+        console.error("Error fetching genders:", err);
+      }
+    };
+    fetchGenders();
+  }, []);
 
   const indianStates = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
@@ -313,7 +331,7 @@ const MemberRegistration = () => {
                 </div>
               )}
               {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} />}
-              {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} />}
+              {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} />}
               {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={indianStates} />}
               {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={indianStates} />}
             </div>
@@ -380,7 +398,7 @@ const Step1 = ({ form, onChange }) => (
   </div>
 );
 
-const Step2 = ({ form, onChange }) => (
+const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female'] }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
     <div className={styles.gridTwo}>
       <div className={styles.formGroup}>
@@ -400,7 +418,7 @@ const Step2 = ({ form, onChange }) => (
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>GENDER</label>
         <div className={styles.pillRow} style={{ gap: '8px' }}>
-          {['Male', 'Female'].map(g => (
+          {genderOptions.map(g => (
             <button 
               key={g}
               type="button"
