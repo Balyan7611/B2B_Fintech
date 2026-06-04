@@ -309,12 +309,12 @@ const OnOffServices = () => {
                    </div>
                  </div>
               ))}
-              {filteredServices.length === 0 && (
+              {filteredServices.length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#64748B' }}>
                   <FiInfo style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
                   <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>No services matched your search query.</p>
                 </div>
-              )}
+              ) : null}
            </div>
 
            {/* ACTIONS BUTTONS AND MESSAGES */}

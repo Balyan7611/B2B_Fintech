@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   addSupportEntry,
@@ -160,13 +162,7 @@ const AddSupport = () => {
             <span>rows</span>
           </div>
 
-          <div className={styles.exportBtns}>
-            <button className={styles.expBtn} title="Copy"><FaCopy /></button>
-            <button className={styles.expBtn} title="Excel"><FaFileExcel /></button>
-            <button className={styles.expBtn} title="CSV"><FaFileCsv /></button>
-            <button className={styles.expBtn} title="PDF"><FaFilePdf /></button>
-            <button className={styles.expBtn} title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="addsupport_report" sheetName="Report" />
 
           <div className={styles.searchBox}>
             <FaSearch className={styles.searchIcon} />

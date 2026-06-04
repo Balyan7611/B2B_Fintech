@@ -7,6 +7,7 @@ import {
 import {
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint
 } from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
 import { SITE_CONFIG } from '../../../config/siteConfig';
 
@@ -18,8 +19,10 @@ const ManageCompany = () => {
 
   const [localCompanies, setLocalCompanies] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchCompanies = async () => {
+    setIsLoading(true);
     try {
       const res = await API.company.getAll();
       if (res && res.status === true && Array.isArray(res.data)) {
@@ -40,6 +43,8 @@ const ManageCompany = () => {
     } catch (err) {
       console.error("Error fetching companies:", err);
       setErrorMsg('Failed to connect to the company API.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -181,13 +186,14 @@ const ManageCompany = () => {
               <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-              <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-              <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-              <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-              <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-              <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-            </div>
+            <ExportButtons 
+              headers={['S.NO', 'NAME', 'OWNER', 'EMAIL', 'PHONE', 'STATUS', 'ADD DATE']}
+              rows={localCompanies.map((comp, idx) => [
+                idx + 1, comp.name, comp.owner, comp.email, comp.phone, comp.status, comp.addDate
+              ])}
+              fileNamePrefix="company_report"
+              sheetName="Companies"
+            />
 
             <div className="global-search-box" style={{ maxWidth: '300px' }}>
               <FiSearch />
@@ -254,7 +260,13 @@ const ManageCompany = () => {
                     <td style={{ textAlign: 'left', color: '#64748B', fontWeight: 600, fontSize: '0.85rem' }}>{comp.addDate}</td>
                   </tr>
                 ))}
-                {localCompanies.length === 0 && (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Loading data...</span>
+                    </td>
+                  </tr>
+                ) : localCompanies.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -263,7 +275,7 @@ const ManageCompany = () => {
                       </div>
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>

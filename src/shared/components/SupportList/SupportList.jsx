@@ -8,9 +8,10 @@ import {
   openChat,
 } from '../../../store/slices/supportSlice';
 import { 
-  FaSearch, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv,
-  FaCommentDots, FaCheck, FaTimes, FaChevronLeft, FaChevronRight, FaUserCircle 
+  FaSearch, FaCommentDots, FaCheck, FaTimes, FaChevronLeft, FaChevronRight, FaUserCircle 
 } from 'react-icons/fa';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../common/ExportButtons';
 import styles from './SupportList.module.css';
 import ChatPopup from './ChatPopup';
 import { FaTimesCircle } from 'react-icons/fa';
@@ -76,13 +77,7 @@ const SupportList = () => {
             <span>rows</span>
           </div>
 
-          <div className={styles.exportRow}>
-            <button className={styles.exportBtn} title="Copy"><FaCopy /></button>
-            <button className={styles.exportBtn} title="Excel"><FaFileExcel /></button>
-            <button className={styles.exportBtn} title="CSV"><FaFileCsv /></button>
-            <button className={styles.exportBtn} title="PDF"><FaFilePdf /></button>
-            <button className={styles.exportBtn} title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="complain_report" sheetName="Report" />
 
           <div className={styles.searchBox}>
             <FaSearch className={styles.searchIcon} />
@@ -157,7 +152,12 @@ const SupportList = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="9" className={styles.noData}>No records found</td>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>

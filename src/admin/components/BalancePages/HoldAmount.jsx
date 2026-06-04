@@ -6,7 +6,9 @@ import {
   FaEdit, FaTrash 
 } from 'react-icons/fa';
 import { addHoldAmount, deleteHoldAmount, updateHoldAmount } from '../../../store/slices/balanceSlice';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from './HoldAmount.module.css';
+import { FiDatabase } from 'react-icons/fi';
 
 const HoldAmount = () => {
   const dispatch = useDispatch();
@@ -278,13 +280,14 @@ const HoldAmount = () => {
             <span>rows</span>
           </div>
 
-          <div className={styles.exportRow}>
-            <button className={styles.exportBtn} title="Copy"><FaCopy /></button>
-            <button className={styles.exportBtn} title="Excel"><FaFileExcel /></button>
-            <button className={styles.exportBtn} title="CSV"><FaFileCsv /></button>
-            <button className={styles.exportBtn} title="PDF"><FaFilePdf /></button>
-            <button className={styles.exportBtn} title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['S.No', 'Member Name', 'Member ID', 'Amount', 'Reason', 'Add Date']}
+            rows={currentData.map((row, index) => [
+              startIndex + index + 1, row.name, row.memberId, row.amount, row.reason, row.date
+            ])}
+            fileNamePrefix="hold_amount_report"
+            sheetName="Hold Amounts"
+          />
 
           <div className={styles.searchBox}>
             <FaSearch className={styles.searchIcon} />
@@ -349,7 +352,12 @@ const HoldAmount = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="5" className={styles.noData}>No records found</td>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>

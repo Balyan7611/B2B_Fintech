@@ -1,5 +1,6 @@
 import React from 'react';
-import { FiX, FiDownload, FiZoomIn } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
+import { FiX, FiDownload, FiZoomIn, FiDatabase } from 'react-icons/fi';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const KYCViewModal = ({ isOpen, onClose, documentName, imageUrl }) => {

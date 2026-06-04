@@ -5,6 +5,8 @@ import {
   FaChevronLeft, FaChevronRight, FaEdit, FaTrash, FaPowerOff, 
   FaTimes, FaCheck, FaChevronDown, FaUser 
 } from 'react-icons/fa';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from './MemberBankDetails.module.css';
 import { toggleMemberBankStatus } from '../../../store/slices/balanceSlice';
 
@@ -262,13 +264,14 @@ const MemberBankDetails = () => {
             <span>rows</span>
           </div>
 
-          <div className={styles.exportRow}>
-            <button className={styles.exportBtn} title="Copy"><FaCopy /></button>
-            <button className={styles.exportBtn} title="Excel"><FaFileExcel /></button>
-            <button className={styles.exportBtn} title="CSV"><FaFileCsv /></button>
-            <button className={styles.exportBtn} title="PDF"><FaFilePdf /></button>
-            <button className={styles.exportBtn} title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['S.No', 'Member Name', 'Member ID', 'Bank Name', 'IFSC', 'Branch', 'Account No', 'Added On']}
+            rows={currentData.map((row, index) => [
+              startIndex + index + 1, row.name, row.memberId, row.bankName, row.ifsc, row.branch, row.accNo, row.date
+            ])}
+            fileNamePrefix="member_bank_details"
+            sheetName="Member Banks"
+          />
 
           <div className={styles.searchBox}>
             <FaSearch className={styles.searchIcon} />
@@ -343,7 +346,12 @@ const MemberBankDetails = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="7" className={styles.noData}>No data available</td>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>

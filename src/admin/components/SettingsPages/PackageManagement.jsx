@@ -4,11 +4,12 @@ import {
   FiPackage, FiUserCheck, FiDollarSign, FiShield, FiEdit, FiSearch, FiCopy, FiPlus, FiX, FiCheck, FiChevronRight, FiChevronLeft, FiTrash2
 } from 'react-icons/fi';
 import { FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint, FaRupeeSign } from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const PackageManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -22,10 +23,11 @@ const PackageManagement = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchPackages = async () => {
+    setIsLoading(true);
     try {
       const res = await API.package.getAll();
-      if (res && Array.isArray(res)) {
-        setLocalPackages(res.map(item => ({
+      if (res && res.status === true && Array.isArray(res.data)) {
+        setLocalPackages(res.data.map(item => ({
           id: item.id,
           name: item.name,
           role: item.roleName || (item.roleId === 1 ? 'Admin' : item.roleId === 2 ? 'Retailer' : 'Distributor'),
@@ -43,6 +45,8 @@ const PackageManagement = () => {
     } catch (err) {
       console.error("Error fetching packages:", err);
       setErrorMsg('Failed to connect to the package API.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -151,13 +155,14 @@ const PackageManagement = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['S.NO', 'PACKAGE NAME', 'ROLE', 'PRICE (₹)', 'CAPPING', 'STATUS', 'ADD DATE']}
+            rows={localPackages.map((pkg, idx) => [
+              idx + 1, pkg.name, pkg.role, pkg.price, pkg.capping, pkg.status ? 'ACTIVE' : 'INACTIVE', pkg.addDate
+            ])}
+            fileNamePrefix="package_report"
+            sheetName="Packages"
+          />
 
           <div className="global-search-box" style={{ maxWidth: '300px' }}>
             <FiSearch />
@@ -215,7 +220,13 @@ const PackageManagement = () => {
                   <td style={{ textAlign: 'left', fontWeight: 700, color: '#718096', fontSize: '0.85rem' }}>{pkg.addDate}</td>
                 </tr>
               ))}
-              {localPackages.length === 0 && (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Loading data...</span>
+                  </td>
+                </tr>
+              ) : localPackages.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -224,7 +235,7 @@ const PackageManagement = () => {
                     </div>
                   </td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
         </div>

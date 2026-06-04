@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   FaPlus, FaSearch, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv,
@@ -101,13 +103,7 @@ const StaffList = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className={styles.exportBtn} title="Copy" style={{ background: '#4A5568' }}><FaCopy /></button>
-            <button className={styles.exportBtn} title="Excel" style={{ background: '#27AE60' }}><FaFileExcel /></button>
-            <button className={styles.exportBtn} title="CSV" style={{ background: '#1756AA' }}><FaFileCsv /></button>
-            <button className={styles.exportBtn} title="PDF" style={{ background: '#E74C3C' }}><FaFilePdf /></button>
-            <button className={styles.exportBtn} title="Print" style={{ background: '#718096' }}><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="stafflist_report" sheetName="Report" />
 
           <div className={styles.tableSearch} style={{ background: '#fff' }}>
             <HiOutlineSearch style={{ color: '#1756AA', fontSize: '1.2rem' }} />

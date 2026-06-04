@@ -7,6 +7,7 @@ import {
 import { 
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
 } from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
 
 // ── CUSTOM SEARCHABLE DROPDOWN COMPONENT ──
@@ -161,8 +162,8 @@ const ListOperator = () => {
     const fetchOperators = async () => {
       try {
         const res = await API.operator.getAll();
-        if (res && res.status === true && Array.isArray(res.data)) {
-          setOperatorRegistry(res.data.map(item => ({
+        if (res && Array.isArray(res)) {
+          setOperatorRegistry(res.map(item => ({
             id: item.id,
             name: item.name,
             type: item.serviceId === 1 ? 'Recharge' : item.serviceId === 2 ? 'MOBILE POSTPAID' : 'DTH',
@@ -332,13 +333,14 @@ const ListOperator = () => {
                <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
              </div>
 
-             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-               <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-               <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-               <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-               <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-               <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-             </div>
+             <ExportButtons 
+               headers={['ID', 'Operator Name', 'Operator Code', 'ServiceName']}
+               rows={paginatedOperators.map((item, idx) => [
+                 startIndex + idx + 1, item.name, item.opCode, selectedService
+               ])}
+               fileNamePrefix="list_operator_report"
+               sheetName="Operators List"
+             />
 
              <div className="global-search-box" style={{ maxWidth: '300px', margin: 0 }}>
                <FiSearch />
@@ -409,14 +411,14 @@ const ListOperator = () => {
                      </td>
                    </tr>
                  ))}
-                 {paginatedOperators.length === 0 && (
+                 {paginatedOperators.length === 0 ? (
                    <tr>
                      <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                        <FiInfo style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>{selectedService ? "No data available in table" : "Please select a service from the dropdown to view operator registry."}</p>
                      </td>
                    </tr>
-                 )}
+                 ) : null}
                </tbody>
              </table>
            </div>

@@ -1,4 +1,5 @@
 import { apiService } from '../api/httpClient';
+import { ServiceRequestModel, ServiceResponseModel } from '../models/serviceModel';
 
 export const ServiceManagementService = {
     getAll: async (isActive = null) => {
@@ -6,10 +7,12 @@ export const ServiceManagementService = {
         if (isActive !== null) {
             url += `?isActive=${isActive}`;
         }
-        return await apiService.post(url, {});
+        const res = await apiService.post(url, {});
+        return ServiceResponseModel(res);
     },
     
     getById: async (id) => {
-        return await apiService.get(`/Service/get-service-by-id/${id}`);
+        const res = await apiService.get(`/Service/get-service-by-id/${id}`);
+        return ServiceResponseModel(res);
     }
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   FiFileText, FiLayers, FiSearch, FiEdit2, FiTrash2, 
@@ -225,13 +226,7 @@ const KYCDocuments = () => {
             <FiChevronDown style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: sideFilter !== 'All' ? '#1E7E34' : '#1756AA', pointerEvents: 'none' }} />
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="kycdocuments_report" sheetName="Report" />
 
           <div className="global-search-box">
             <FiSearch />

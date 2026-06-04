@@ -5,23 +5,23 @@ import { API } from '../../../api/endpoints';
 import {
   FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiSettings, FiActivity, FiLayers, FiImage
 } from 'react-icons/fi';
-import {
-  FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint
-} from 'react-icons/fa';
+import { FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint } from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const ServiceManagement = () => {
   const dispatch = useDispatch();
   const { services = [] } = useSelector(state => state.settings || {});
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
+  const [isLoading, setIsLoading] = useState(true);
   const [showImageModal, setShowImageModal] = useState({ isOpen: false, imageUrl: null });
 
   const [localServices, setLocalServices] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchServices = async () => {
+    setIsLoading(true);
     try {
       const res = await API.service.getAll();
       if (res && res.status === true && Array.isArray(res.data)) {
@@ -31,20 +31,22 @@ const ServiceManagement = () => {
           apiName: item.apiName || 'SoniTechno',
           url: item.url || '',
           sectionType: item.sectionType || 'Utility',
-          price: item.price !== undefined && item.price !== null ? item.price.toFixed(2) : '0.00',
+          price: item.price !== undefined && item.price !== null ? parseFloat(item.price).toFixed(2) : '0.00',
           status: item.isActive,
-          onOff: item.onOff || item.isActive,
-          position: item.position || 0,
-          image: item.imageUrl || '',
+          onOff: item.onoff || item.isActive,
+          position: item.orderBy || item.position || 0,
+          image: item.image || '',
           ...item
         })));
         setErrorMsg('');
       } else {
-        setErrorMsg(res?.mess || 'Failed to fetch services from API.');
+        setErrorMsg('Failed to fetch services from API.');
       }
     } catch (err) {
       console.error("Error fetching services:", err);
       setErrorMsg('Failed to connect to the service API.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -146,13 +148,14 @@ const ServiceManagement = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['Service Name', 'API Name', 'Service URL', 'SectionType', 'Price', 'Position']}
+            rows={localServices.map((service) => [
+              service.name, service.apiName, service.url, service.sectionType, service.price, service.position
+            ])}
+            fileNamePrefix="service_report"
+            sheetName="Services"
+          />
 
           <div className="global-search-box" style={{ maxWidth: '300px' }}>
             <FiSearch />
@@ -230,7 +233,13 @@ const ServiceManagement = () => {
                   </td>
                 </tr>
               ))}
-              {localServices.length === 0 && (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Loading data...</span>
+                  </td>
+                </tr>
+              ) : localServices.length === 0 ? (
                 <tr>
                   <td colSpan="10" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -239,7 +248,7 @@ const ServiceManagement = () => {
                     </div>
                   </td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
         </div>

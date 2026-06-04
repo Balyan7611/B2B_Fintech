@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   FaShieldAlt, FaSearch, FaChevronLeft, FaChevronRight,
@@ -82,13 +84,7 @@ const MemberSecurity = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className={styles.exportBtnColored} title="Copy" style={{ background: '#718096' }}><FaCopy /></button>
-            <button className={styles.exportBtnColored} title="Excel" style={{ background: '#27AE60' }}><FaFileExcel /></button>
-            <button className={styles.exportBtnColored} title="CSV" style={{ background: '#1756AA' }}><FaFileCsv /></button>
-            <button className={styles.exportBtnColored} title="PDF" style={{ background: '#E74C3C' }}><FaFilePdf /></button>
-            <button className={styles.exportBtnColored} title="Print" style={{ background: '#EAA21F' }}><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="membersecurity_report" sheetName="Report" />
 
           <div className={styles.tableSearch} style={{ background: '#fff', minWidth: '240px' }}>
             <FaSearch />

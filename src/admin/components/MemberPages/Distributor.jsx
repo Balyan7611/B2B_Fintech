@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   FaSearch, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv,
@@ -146,13 +148,7 @@ const Distributor = ({ onBack }) => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className={`${styles.exportBtnColored} ${styles.bg_copy}`} title="Copy Table"><FaCopy /></button>
-            <button className={`${styles.exportBtnColored} ${styles.bg_excel}`} title="Download Excel"><FaFileExcel /></button>
-            <button className={`${styles.exportBtnColored} ${styles.bg_pdf}`} title="Download PDF"><FaFilePdf /></button>
-            <button className={`${styles.exportBtnColored} ${styles.bg_csv}`} title="Download CSV"><FaFileCsv /></button>
-            <button className={`${styles.exportBtnColored} ${styles.bg_print}`} title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="distributor_report" sheetName="Report" />
 
           <div className={styles.tableSearch} style={{ background: '#fff', minWidth: '240px' }}>
             <FaSearch />

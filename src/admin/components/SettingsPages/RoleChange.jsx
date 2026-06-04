@@ -5,6 +5,7 @@ import {
 import { 
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
 } from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const RoleChange = () => {
@@ -197,17 +198,20 @@ const RoleChange = () => {
             <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>rows</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button className="global-export-btn btn-excel" title="Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-csv" title="CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-pdf" title="PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-copy" title="Copy"><FaCopy /></button>
-            <button className="global-export-btn btn-print" title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['SL', 'MemberID', 'Name', 'Role', 'ParentID']}
+            rows={fetchedMember ? [[1, fetchedMember.id, fetchedMember.name, fetchedMember.role, fetchedMember.parent.replace(/\s+/g, ' ')]] : []}
+            fileNamePrefix="role_change_report"
+            sheetName="Role Change"
+          />
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-             <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>Search:</span>
-             <input type="text" style={{ padding: '6px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', outline: 'none', fontSize: '0.85rem' }} />
+          <div className="global-search-box" style={{ maxWidth: '300px', margin: 0 }}>
+            <FiSearch />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              style={{ borderRadius: '10px' }}
+            />
           </div>
         </div>
 

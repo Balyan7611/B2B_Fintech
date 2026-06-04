@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useSelector } from 'react-redux';
 import { 
   FiSearch, FiEye, FiUser, FiCalendar, FiCheckCircle, 
@@ -90,13 +91,7 @@ const KYCDetails = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="kycdetails_report" sheetName="Report" />
 
           <div className="global-search-box">
             <FiSearch />

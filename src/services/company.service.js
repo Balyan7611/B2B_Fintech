@@ -1,23 +1,22 @@
 import { apiService } from '../api/httpClient';
+import { CompanyRequestModel, CompanyResponseModel } from '../models/companyModel';
 
 export const CompanyService = {
     getCompanyDetails: async (url) => {
         const response = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
-        return response;
+        const mapped = CompanyResponseModel(response);
+        return mapped.length > 0 ? mapped[0] : null;
     },
 
     fetchCompanyData: async (url) => {
         try {
             const res = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
             if (!res.status) throw new Error("Branding fetch failed");
-            return {
-                ...res.data,
-                primaryColor: res.data?.headerColor,
-                socialLinks: {
-                    fb: res.data?.faceBook,
-                    wa: res.data?.whastApp
-                }
-            };
+            const mapped = CompanyResponseModel(res);
+            if (mapped.length > 0) {
+                return mapped[0];
+            }
+            return null;
         } catch (err) {
             console.error("Company fetch error:", err);
             return null;
@@ -26,18 +25,20 @@ export const CompanyService = {
 
     // Standard CRUD placeholders for future scaling
     getAll: async () => {
-        return await apiService.get('/Company/get-all');
+        const res = await apiService.get('/Company/get-all');
+        return CompanyResponseModel(res);
     },
     getById: async (id) => {
-        return await apiService.get(`/Company/get-by-id/${id}`);
+        const res = await apiService.get(`/Company/get-by-id/${id}`);
+        return CompanyResponseModel(res);
     },
     create: async (data) => {
-        // Not in OpenAPI collection but keeping signature
-        return data;
+        const payload = CompanyRequestModel(data);
+        return payload;
     },
     update: async (id, data) => {
-        // Not in OpenAPI collection but keeping signature
-        return data;
+        const payload = CompanyRequestModel(data);
+        return payload;
     },
     delete: async (id) => {
         return await apiService.delete(`/Company/delete/${id}`);

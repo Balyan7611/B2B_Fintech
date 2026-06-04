@@ -1,12 +1,6 @@
 // src/components/RoleManagement.js
 import { useCallback, useEffect, useState } from 'react';
-import {
-  FaCopy,
-  FaFileCsv,
-  FaFileExcel,
-  FaFilePdf,
-  FaPrint
-} from 'react-icons/fa';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import {
   FiCheck,
   FiChevronLeft,
@@ -101,12 +95,11 @@ const RoleManagement = () => {
   const fetchServices = async () => {
     try {
       const res = await API.service.getAll();
-      if (res && res.status === true && Array.isArray(res.data)) {
-        const activeServices = res.data.filter(s => s.isActive);
+      if (res && Array.isArray(res)) {
+        const activeServices = res.filter(s => s.isActive);
         setDbServices(activeServices);
       } else {
-        const msg = res?.mess || res?.message || 'Failed to retrieve services from API.';
-        setErrorMsg(`Services Load Error: ${msg}`);
+        setErrorMsg('Failed to retrieve services from API.');
       }
     } catch (err) {
       console.error("Error loading services for RoleManagement:", err);
@@ -218,6 +211,22 @@ const RoleManagement = () => {
     } catch (err) { alert(err.message); }
   };
 
+  const handleToggleStatus = async (role) => {
+    try {
+      const updatedRole = {
+        ...role,
+        status: !role.status,
+        typeRole: role.typeRole || 1,
+        menuStr: role.menuStr || '1,2,3',
+        packageId: role.packageId || 2,
+        description: role.description || 'string',
+        service: role.service || 'string'
+      };
+      await API.saveRole(updatedRole);
+      fetchRoles();
+    } catch (err) { alert(err.message); }
+  };
+
   const handleMouseEnter = (e, role) => {
     if (hideTimeout) {
       clearTimeout(hideTimeout);
@@ -316,27 +325,7 @@ const RoleManagement = () => {
     }
   };
 
-  const handleExport = (type) => {
-    const exportData = filteredRoles.map(role => ({
-      'S.No': role.id,
-      'Role Name': role.name,
-      'Prefix': role.prefix,
-      'Start ID': role.startId,
-      'Price': role.price,
-      'Status': role.status ? 'Active' : 'Inactive',
-      'Add Date': role.addDate
-    }));
-    if (type === 'copy') {
-      navigator.clipboard.writeText(JSON.stringify(exportData));
-    } else if (type === 'csv') {
-      const csv = exportData.map(row => Object.values(row).join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'roles.csv';
-      link.click();
-    }
-  };
+  // handleExport logic has been delegated to the shared ExportButtons component
 
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
@@ -382,13 +371,20 @@ const RoleManagement = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table" onClick={() => handleExport('copy')}><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel" onClick={() => handleExport('excel')}><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF" onClick={() => handleExport('pdf')}><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV" onClick={() => handleExport('csv')}><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table" onClick={() => window.print()}><FaPrint /></button>
-          </div>
+          <ExportButtons
+            headers={['S.No', 'Role Name', 'Prefix', 'Start ID', 'Price', 'Status', 'Add Date']}
+            rows={filteredRoles.map((role, idx) => [
+              idx + 1,
+              role.name || '',
+              role.prefix || '',
+              role.startId || '',
+              role.price || '0',
+              role.status ? 'Active' : 'Inactive',
+              role.addDate || new Date().toLocaleDateString('en-GB')
+            ])}
+            fileNamePrefix="role_report"
+            sheetName="System Roles"
+          />
 
           <div className="global-search-box" style={{ maxWidth: '300px' }}>
             <FiSearch />
@@ -430,9 +426,36 @@ const RoleManagement = () => {
                   <tr key={role.id} className={styles.hoverRow}>
                     <td style={{ fontWeight: 700, color: '#A0AEC0' }}>{indexOfFirstEntry + idx + 1}</td>
                     <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                        <button className={styles.editBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F8FAFC', color: '#3B82F6', border: '1px solid #E2E8F0', cursor: 'pointer' }} onClick={() => handleEdit(role)} title="Edit Role"><FiEdit /></button>
-                        <button className={styles.deleteBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', cursor: 'pointer' }} title="Delete Role" onClick={() => setShowConfirmModal({ isOpen: true, id: role.id })}><FiTrash2 /></button>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                        <div 
+                          onClick={() => handleToggleStatus(role)}
+                          style={{
+                            width: '40px',
+                            height: '22px',
+                            background: role.status ? '#27AE60' : '#E53E3E',
+                            borderRadius: '12px',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            transition: 'background 0.3s ease'
+                          }}
+                          title={role.status ? 'Deactivate Role' : 'Activate Role'}
+                        >
+                          <div 
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              background: '#fff',
+                              borderRadius: '50%',
+                              position: 'absolute',
+                              top: '2px',
+                              left: role.status ? '20px' : '2px',
+                              transition: 'left 0.3s ease',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                        </div>
+                        <button className={styles.editBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F8FAFC', color: '#3B82F6', border: '1px solid #E2E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => handleEdit(role)} title="Edit Role"><FiEdit /></button>
+                        <button className={styles.deleteBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Delete Role" onClick={() => setShowConfirmModal({ isOpen: true, id: role.id })}><FiTrash2 /></button>
                       </div>
                     </td>
                     <td style={{ cursor: 'pointer' }}>

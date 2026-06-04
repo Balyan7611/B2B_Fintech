@@ -1,4 +1,5 @@
 import { apiService } from '../api/httpClient';
+import { BankRequestModel, BankResponseModel } from '../models/bankModel';
 
 export const BankService = {
     getAll: async (params = {}) => {
@@ -10,18 +11,22 @@ export const BankService = {
             status: params.status || null,
             memberID: params.memberID || 0
         };
-        return await apiService.post('/BankMaster/AllBankMaster', payload);
+        const res = await apiService.post('/BankMaster/AllBankMaster', payload);
+        return BankResponseModel(res);
     },
     
     getById: async (id) => {
-        return await apiService.get(`/BankMaster/${id}`);
+        const res = await apiService.get(`/BankMaster/${id}`);
+        return BankResponseModel(res);
     },
     
     create: async (data) => {
-        return await apiService.post('/BankMaster', data);
+        const payload = BankRequestModel(data);
+        return await apiService.post('/BankMaster', payload);
     },
     
     update: async (data) => {
-        return await apiService.put('/BankMaster', data);
+        const payload = BankRequestModel(data);
+        return await apiService.put('/BankMaster', payload);
     }
 };

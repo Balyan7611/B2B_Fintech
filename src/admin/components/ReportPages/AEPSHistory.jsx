@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useLocation } from 'react-router-dom';
 import { 
   FiSearch, FiFilter, FiCalendar, FiChevronLeft, FiChevronRight, FiCheckCircle, FiInfo, 
@@ -396,13 +397,7 @@ const AEPSHistory = () => {
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', flex: 1 }}>
-            <button className="global-export-btn btn-copy" title="Copy Table"><FaCopy /></button>
-            <button className="global-export-btn btn-excel" title="Download Excel"><FaFileExcel /></button>
-            <button className="global-export-btn btn-pdf" title="Download PDF"><FaFilePdf /></button>
-            <button className="global-export-btn btn-csv" title="Download CSV"><FaFileCsv /></button>
-            <button className="global-export-btn btn-print" title="Print Table"><FaPrint /></button>
-          </div>
+          <ExportButtons headers={[]} rows={[]} fileNamePrefix="aepshistory_report" sheetName="Report" />
 
           <div className="global-search-box">
             <FiSearch />
@@ -434,7 +429,7 @@ const AEPSHistory = () => {
                 <td colSpan="13" style={{ padding: '60px 0', color: '#A0AEC0', position: 'relative' }}>
                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', position: 'sticky', left: '50%', transform: 'translateX(-50%)', width: 'max-content' }}>
                      <FiDatabase style={{ fontSize: '2rem', opacity: 0.3 }} />
-                     <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#718096' }}>No transactions found</span>
+                     <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#718096' }}>No data available in table</span>
                    </div>
                 </td>
               </tr>

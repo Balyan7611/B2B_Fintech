@@ -8,10 +8,12 @@ import {
   setAddBankIsActive 
 } from '../../../store/slices/balanceSlice';
 import { 
-  FaSearch, FaEdit, FaTimes, FaCheck, FaSpinner, FaPlus, FaTrash,
-  FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv,
-  FaChevronLeft, FaChevronRight 
+  FaSearch, FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv,
+  FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaEdit, FaTrash,
+  FaCheck, FaSpinner
 } from 'react-icons/fa';
+import { FiDatabase } from 'react-icons/fi';
+import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from './AddBank.module.css';
 
 const AddBank = () => {
@@ -361,13 +363,14 @@ const AddBank = () => {
             <span>rows</span>
           </div>
 
-          <div className={styles.exportRow}>
-            <button className={styles.exportBtn} title="Copy"><FaCopy /></button>
-            <button className={styles.exportBtn} title="Excel"><FaFileExcel /></button>
-            <button className={styles.exportBtn} title="CSV"><FaFileCsv /></button>
-            <button className={styles.exportBtn} title="PDF"><FaFilePdf /></button>
-            <button className={styles.exportBtn} title="Print"><FaPrint /></button>
-          </div>
+          <ExportButtons 
+            headers={['S.No', 'Bank Name', 'IFSC Code', 'Status']}
+            rows={currentData.map((row, index) => [
+              startIndex + index + 1, row.name, row.ifsc, 'Active'
+            ])}
+            fileNamePrefix="add_bank_report"
+            sheetName="Added Banks"
+          />
 
           <div className={styles.searchBox}>
             <FaSearch className={styles.searchIcon} />
@@ -427,7 +430,12 @@ const AddBank = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="5" className={styles.noData}>No records found</td>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
