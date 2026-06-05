@@ -1,7 +1,8 @@
 import { apiService } from '../api/httpClient';
-import { CompanyRequestModel, CompanyResponseModel } from '../models/companyModel';
+import { CompanyResponseModel } from '../models/companyModel';
 
 export const CompanyService = {
+
     getCompanyDetails: async (url) => {
         const response = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
         const mapped = CompanyResponseModel(response);
@@ -10,21 +11,18 @@ export const CompanyService = {
 
     fetchCompanyData: async (url) => {
         try {
-            // Try get-by-url first; returns raw item (all fields) for updateSiteConfig
             const res = await apiService.get(`/Company/get-by-url?url=${encodeURIComponent(url)}`);
             if (res && res.status === true && res.data) {
                 const items = Array.isArray(res.data) ? res.data : [res.data];
-                if (items.length > 0) return items[0]; // raw item — all 30+ fields
+                if (items.length > 0) return items[0];
             }
-            // Fallback: load first company from get-all
             const allRes = await apiService.get('/Company/get-all');
             if (allRes && allRes.status === true && Array.isArray(allRes.data) && allRes.data.length > 0) {
-                return allRes.data[0]; // raw item — all 30+ fields
+                return allRes.data[0];
             }
             return null;
         } catch (err) {
-            console.error("Company fetch error:", err);
-            // Last resort fallback
+            console.error('Company fetch error:', err);
             try {
                 const allRes = await apiService.get('/Company/get-all');
                 if (allRes && allRes.status === true && Array.isArray(allRes.data) && allRes.data.length > 0) {
@@ -35,23 +33,29 @@ export const CompanyService = {
         }
     },
 
-    // Standard CRUD
     getAll: async () => {
         return await apiService.get('/Company/get-all');
     },
+
     getById: async (id) => {
         const res = await apiService.get(`/Company/get-by-id/${id}`);
         return CompanyResponseModel(res);
     },
+
+    // POST multipart/form-data → /api/Company/create
     create: async (formData) => {
-        return await apiService.post('/Company', formData);
+        return await apiService.post('/Company/create', formData);
     },
+
+    // POST multipart/form-data → /api/Company/update
     update: async (formData) => {
-        return await apiService.put('/Company', formData);
+        return await apiService.post('/Company/update', formData);
     },
+
     delete: async (id) => {
         return await apiService.delete(`/Company/delete/${id}`);
     },
+
     toggleStatus: async (id) => {
         return await apiService.patch(`/Company/toggle-status/${id}`, {});
     }

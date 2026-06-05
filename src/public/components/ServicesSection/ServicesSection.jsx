@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   FaMobileAlt, FaBolt, FaCreditCard, FaLock, 
   FaMoneyBillWave, FaUniversity, FaArrowRight,
-  FaChevronLeft, FaChevronRight
+  FaChevronLeft, FaChevronRight, FaExchangeAlt, FaFingerprint
 } from 'react-icons/fa';
 import styles from './ServicesSection.module.css';
 
@@ -43,6 +43,18 @@ const services = [
     title: 'MATM',
     description: 'Micro ATM service allows customers to withdraw cash, check balance, and perform banking transactions using debit cards.',
     color: 'var(--color-accent)',
+  },
+  {
+    icon: FaExchangeAlt,
+    title: 'DMT',
+    description: 'Domestic Money Transfer allows instant remittance to any bank account across India. Fast, secure, and available 24x7 for your convenience.',
+    color: '#8B5CF6',
+  },
+  {
+    icon: FaFingerprint,
+    title: 'AePS',
+    description: 'Aadhaar enabled Payment System lets customers perform secure banking transactions using only their Aadhaar number and fingerprint.',
+    color: '#EC4899',
   },
 ];
 

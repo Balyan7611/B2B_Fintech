@@ -1,18 +1,24 @@
 import { apiService } from '../api/httpClient';
-import { ServiceRequestModel, ServiceResponseModel } from '../models/serviceModel';
 
 export const ServiceManagementService = {
+    // Returns raw API response so component can access res.status and res.data directly
     getAll: async (isActive = null) => {
         let url = '/Service/get-all-services';
         if (isActive !== null) {
             url += `?isActive=${isActive}`;
         }
-        const res = await apiService.post(url, {});
-        return ServiceResponseModel(res);
+        return await apiService.post(url, {});
     },
-    
+
     getById: async (id) => {
-        const res = await apiService.get(`/Service/get-service-by-id/${id}`);
-        return ServiceResponseModel(res);
+        return await apiService.get(`/Service/get-service-by-id/${id}`);
+    },
+
+    create: async (payload) => {
+        return await apiService.post('/Service/create-service', payload);
+    },
+
+    update: async (id, payload) => {
+        return await apiService.put(`/Service/update-service/${id}`, payload);
     }
 };

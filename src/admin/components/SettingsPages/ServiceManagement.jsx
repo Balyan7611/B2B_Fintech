@@ -26,24 +26,28 @@ const ServiceManagement = () => {
       const res = await API.service.getAll();
       if (res && res.status === true && Array.isArray(res.data)) {
         setLocalServices(res.data.map(item => ({
-          id: item.id,
-          name: item.name,
-          apiName: item.apiName || 'SoniTechno',
-          url: item.url || '',
-          sectionType: item.sectionType || 'Utility',
-          price: item.price !== undefined && item.price !== null ? parseFloat(item.price).toFixed(2) : '0.00',
-          status: item.isActive,
-          onOff: item.onoff || item.isActive,
-          position: item.orderBy || item.position || 0,
-          image: item.image || '',
-          ...item
+          // Keep ALL raw fields
+          ...item,
+          // Computed/renamed fields for display
+          status:      item.isActive === true,
+          onOff:       item.onoff   === true,
+          price:       item.price   != null ? parseFloat(item.price).toFixed(2) : '0.00',
+          position:    item.orderBy || 0,
+          sectionType: item.sectionType || 0,
+          image:       item.image  || '',
+          icon:        item.icon   || '',
+          url:         item.url    || '',
+          apiName:     item.apiName || `API-${item.apiid || 1}`,
+          addDate:     item.createdDate
+                         ? new Date(item.createdDate).toLocaleDateString('en-GB')
+                         : 'N/A',
         })));
         setErrorMsg('');
       } else {
-        setErrorMsg('Failed to fetch services from API.');
+        setErrorMsg(res?.mess || 'Failed to fetch services from API.');
       }
     } catch (err) {
-      console.error("Error fetching services:", err);
+      console.error('Error fetching services:', err);
       setErrorMsg('Failed to connect to the service API.');
     } finally {
       setIsLoading(false);
@@ -185,7 +189,22 @@ const ServiceManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {localServices.map((service, idx) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>⏳ Loading services...</span>
+                  </td>
+                </tr>
+              ) : localServices.length === 0 ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No services found</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : localServices.map((service) => (
                 <tr key={service.id} className={styles.hoverRow}>
                   <td style={{ textAlign: 'center' }}>
                     <label className={styles.switch} style={{ transform: 'scale(0.8)', margin: 0 }}>
@@ -201,28 +220,36 @@ const ServiceManagement = () => {
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <button className={styles.editBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F8FAFC', color: '#3B82F6', border: '1px solid #E2E8F0', cursor: 'pointer' }} onClick={() => handleEdit(service)} title="Edit Service"><FiEdit /></button>
+                      <button
+                        className={styles.editBtn}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F8FAFC', color: '#3B82F6', border: '1px solid #E2E8F0', cursor: 'pointer' }}
+                        onClick={() => handleEdit(service)}
+                        title="Edit Service"
+                      ><FiEdit /></button>
                     </div>
                   </td>
-                  <td style={{ textAlign: 'left', fontWeight: 600, color: '#4E6080' }}>
-                    {service.name}
+                  <td style={{ textAlign: 'left', fontWeight: 600, color: '#334155' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span>{service.name}</span>
+                      {service.isNew && <span style={{ fontSize: '0.65rem', background: '#FEF3C7', color: '#D97706', padding: '1px 6px', borderRadius: '10px', fontWeight: 700, width: 'fit-content' }}>NEW</span>}
+                    </div>
                   </td>
                   <td style={{ textAlign: 'left', color: '#4E6080' }}>
                     {service.apiName}
                   </td>
-                  <td style={{ textAlign: 'left', color: '#4E6080', wordBreak: 'break-all' }}>
-                    {service.url}
+                  <td style={{ textAlign: 'left', color: '#4E6080', wordBreak: 'break-all', fontSize: '0.8rem' }}>
+                    {service.url || <span style={{ color: '#CBD5E1' }}>—</span>}
                   </td>
                   <td style={{ textAlign: 'left', color: '#4E6080' }}>
                     {service.sectionType}
                   </td>
-                  <td style={{ textAlign: 'left', color: '#4E6080' }}>
-                    {service.price}
+                  <td style={{ textAlign: 'left', color: '#4E6080', fontWeight: 600 }}>
+                    ₹{service.price}
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     <div
                       onClick={() => setShowImageModal({ isOpen: true, imageUrl: service.image })}
-                      style={{ width: '40px', height: '40px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', margin: '0 auto', cursor: 'pointer', transition: 'all 0.2s' }}
+                      style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', margin: '0 auto', cursor: 'pointer' }}
                       title="View Image"
                     >
                       <FiImage size={20} />
@@ -233,22 +260,7 @@ const ServiceManagement = () => {
                   </td>
                 </tr>
               ))}
-              {isLoading ? (
-                <tr>
-                  <td colSpan="10" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Loading data...</span>
-                  </td>
-                </tr>
-              ) : localServices.length === 0 ? (
-                <tr>
-                  <td colSpan="10" style={{ textAlign: 'center', padding: '30px 0', color: '#64748B' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                      <FiDatabase style={{ fontSize: '1.5rem', opacity: 0.3 }} />
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>No data available in table</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : null}
+
             </tbody>
           </table>
         </div>
