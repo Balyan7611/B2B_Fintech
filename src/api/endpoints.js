@@ -9,6 +9,7 @@ import { BankService } from '../services/bank.service';
 import { GenderService } from '../services/gender.service';
 import { WalletTypeService } from '../services/walletType.service';
 import { SectionTypeService } from '../services/sectionType.service';
+import { StateService } from '../services/state.service';
 
 // Re-exporting everything exactly as before to maintain backward compatibility
 export const API = {
@@ -28,6 +29,7 @@ export const API = {
     gender: GenderService,
     walletType: WalletTypeService,
     sectionType: SectionTypeService,
+    state: StateService,
 };
 
 export const fetchCompanyData = CompanyService.fetchCompanyData;
@@ -39,5 +41,6 @@ export {
     BankService,
     GenderService,
     WalletTypeService,
-    SectionTypeService
+    SectionTypeService,
+    StateService
 };

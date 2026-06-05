@@ -220,89 +220,97 @@ const ManageMember = () => {
               </tr>
             </thead>
             <tbody>
-              {list.map((m, i) => (
-                <tr key={m.id}>
-                  <td>{i + 1}</td>
-                  <td style={{ position: 'relative', zIndex: activeDropdown === m.id ? 1001 : 1 }}>
-                    <div style={{ position: 'relative' }}>
-                      <button 
-                        className={styles.actionBtnGreen}
-                        onClick={(e) => handleDropdownToggle(e, m.id)}
-                      >
-                        Action <FaEllipsisV />
-                      </button>
-                      {activeDropdown === m.id && (
-                        <div className={styles.actionMenu} style={{ top: dropdownPos.top, left: dropdownPos.left }}>
-                          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaVideo style={{ color: '#1756AA', fontSize: '1rem' }} /> Video KYC</div>
-                            <ToggleSwitch checked={m.videoKyc} onChange={() => handleToggle('videoKyc', m)} />
-                          </div>
-                          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaUserLock style={{ color: '#EAA21F', fontSize: '1rem' }} /> Acct Active</div>
-                            <ToggleSwitch checked={m.isActive !== false} onChange={() => handleToggle('isActive', m)} />
-                          </div>
-                          <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaHandHoldingUsd style={{ color: '#E53E3E', fontSize: '1rem' }} /> Hold Acct</div>
-                            <ToggleSwitch checked={m.isHold} onChange={() => handleToggle('isHold', m)} />
-                          </div>
-                          <button onClick={() => handleActionClick('Send Email', m)}><FaEnvelope style={{ color: '#27AE60' }} /> Send Gmail</button>
-                          <button onClick={() => handleActionClick('Send SMS', m)}><FaSms style={{ color: '#3182CE' }} /> Send SMS</button>
-                          <button onClick={() => handleActionClick('Edit', m)}><FaEdit style={{ color: '#1756AA' }} /> Edit Details</button>
-                          <button onClick={() => handleActionClick('Re-KYC', m)}><FaIdCard style={{ color: '#718096' }} /> Member Re-KYC</button>
-                        </div>
-                      )}
-                    </div>
+              {list.length === 0 ? (
+                <tr>
+                  <td colSpan="22" style={{ textAlign: 'center', padding: '40px', color: '#718096', fontSize: '0.9rem' }}>
+                    No data available in table
                   </td>
-                  <td className={styles.fwBold} style={{ color: '#27AE60' }}>₹ {m.mainBal}</td>
-                  <td className={styles.fwBold} style={{ color: '#1756AA' }}>₹ {m.aepsBal}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <input 
-                        type="number" 
-                        className={styles.inputControl} 
-                        style={{ 
-                          width: '85px', padding: '6px 10px', 
-                          borderColor: Number(m.holdAmt) > 0 ? '#FEB2B2' : '#E2E8F0',
-                          color: Number(m.holdAmt) > 0 ? '#E53E3E' : '#0D1B3E',
-                          background: Number(m.holdAmt) > 0 ? '#FFF5F5' : '#fff',
-                          fontWeight: Number(m.holdAmt) > 0 ? '700' : '500'
-                        }} 
-                        value={holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt} 
-                        onChange={(e) => setHoldInputs({ ...holdInputs, [m.id]: e.target.value })} 
-                      />
-                      <button 
-                        className={styles.pillRedSmall}
-                        onClick={() => setConfirmHold({ member: m, amount: holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt })}
-                        style={{ background: Number(m.holdAmt) > 0 ? '#C53030' : '#E53E3E', opacity: (holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt) === '' ? 0.5 : 1 }}
-                        disabled={(holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt) === ''}
-                      >
-                        {Number(m.holdAmt) > 0 ? 'Update' : 'Hold'}
-                      </button>
-                    </div>
-                  </td>
-                  <td className={styles.fwBold}>{m.memberId}</td>
-                  <td className={styles.fwBold}>{m.name}</td>
-                  <td>{m.city}</td>
-                  <td>{m.parent}</td>
-                  <td>{m.mobile}</td>
-                  <td>
-                    <span className={`${styles.badge} ${m.aepsStatus === 'Registered' ? styles.badge_green : styles.badge_red}`}>
-                      {m.aepsStatus === 'Registered' ? <FaCheck /> : <FaExclamationCircle />} {m.aepsStatus}
-                    </span>
-                  </td>
-                  <td>{m.email}</td>
-                  <td>{m.altMobile}</td>
-                  <td>{m.shop}</td>
-                  <td>{m.aadhar}</td>
-                  <td>{m.pan}</td>
-                  <td>{m.dob}</td>
-                  <td>{m.doj}</td>
-                  <td>{m.joinedBy}</td>
-                  <td style={{ color: '#A0AEC0', fontStyle: 'italic', fontSize: '0.75rem' }}>{m.password}</td>
-                  <td className={styles.fwBold}>{m.pin}</td>
-                  <td><span className={styles.badge} style={{ background: '#F1F5F9', color: '#4E6080' }}>{m.source}</span></td>
                 </tr>
-              ))}
+              ) : (
+                list.map((m, i) => (
+                  <tr key={m.id}>
+                    <td>{i + 1}</td>
+                    <td style={{ position: 'relative', zIndex: activeDropdown === m.id ? 1001 : 1 }}>
+                      <div style={{ position: 'relative' }}>
+                        <button 
+                          className={styles.actionBtnGreen}
+                          onClick={(e) => handleDropdownToggle(e, m.id)}
+                        >
+                          Action <FaEllipsisV />
+                        </button>
+                        {activeDropdown === m.id && (
+                          <div className={styles.actionMenu} style={{ top: dropdownPos.top, left: dropdownPos.left }}>
+                            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaVideo style={{ color: '#1756AA', fontSize: '1rem' }} /> Video KYC</div>
+                              <ToggleSwitch checked={m.videoKyc} onChange={() => handleToggle('videoKyc', m)} />
+                            </div>
+                            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaUserLock style={{ color: '#EAA21F', fontSize: '1rem' }} /> Acct Active</div>
+                              <ToggleSwitch checked={m.isActive !== false} onChange={() => handleToggle('isActive', m)} />
+                            </div>
+                            <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', fontSize: '0.8rem', color: '#4E6080', fontWeight: 600 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><FaHandHoldingUsd style={{ color: '#E53E3E', fontSize: '1rem' }} /> Hold Acct</div>
+                              <ToggleSwitch checked={m.isHold} onChange={() => handleToggle('isHold', m)} />
+                            </div>
+                            <button onClick={() => handleActionClick('Send Email', m)}><FaEnvelope style={{ color: '#27AE60' }} /> Send Gmail</button>
+                            <button onClick={() => handleActionClick('Send SMS', m)}><FaSms style={{ color: '#3182CE' }} /> Send SMS</button>
+                            <button onClick={() => handleActionClick('Edit', m)}><FaEdit style={{ color: '#1756AA' }} /> Edit Details</button>
+                            <button onClick={() => handleActionClick('Re-KYC', m)}><FaIdCard style={{ color: '#718096' }} /> Member Re-KYC</button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className={styles.fwBold} style={{ color: '#27AE60' }}>₹ {m.mainBal}</td>
+                    <td className={styles.fwBold} style={{ color: '#1756AA' }}>₹ {m.aepsBal}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <input 
+                          type="number" 
+                          className={styles.inputControl} 
+                          style={{ 
+                            width: '85px', padding: '6px 10px', 
+                            borderColor: Number(m.holdAmt) > 0 ? '#FEB2B2' : '#E2E8F0',
+                            color: Number(m.holdAmt) > 0 ? '#E53E3E' : '#0D1B3E',
+                            background: Number(m.holdAmt) > 0 ? '#FFF5F5' : '#fff',
+                            fontWeight: Number(m.holdAmt) > 0 ? '700' : '500'
+                          }} 
+                          value={holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt} 
+                          onChange={(e) => setHoldInputs({ ...holdInputs, [m.id]: e.target.value })} 
+                        />
+                        <button 
+                          className={styles.pillRedSmall}
+                          onClick={() => setConfirmHold({ member: m, amount: holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt })}
+                          style={{ background: Number(m.holdAmt) > 0 ? '#C53030' : '#E53E3E', opacity: (holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt) === '' ? 0.5 : 1 }}
+                          disabled={(holdInputs[m.id] !== undefined ? holdInputs[m.id] : m.holdAmt) === ''}
+                        >
+                          {Number(m.holdAmt) > 0 ? 'Update' : 'Hold'}
+                        </button>
+                      </div>
+                    </td>
+                    <td className={styles.fwBold}>{m.memberId}</td>
+                    <td className={styles.fwBold}>{m.name}</td>
+                    <td>{m.city}</td>
+                    <td>{m.parent}</td>
+                    <td>{m.mobile}</td>
+                    <td>
+                      <span className={`${styles.badge} ${m.aepsStatus === 'Registered' ? styles.badge_green : styles.badge_red}`}>
+                        {m.aepsStatus === 'Registered' ? <FaCheck /> : <FaExclamationCircle />} {m.aepsStatus}
+                      </span>
+                    </td>
+                    <td>{m.email}</td>
+                    <td>{m.altMobile}</td>
+                    <td>{m.shop}</td>
+                    <td>{m.aadhar}</td>
+                    <td>{m.pan}</td>
+                    <td>{m.dob}</td>
+                    <td>{m.doj}</td>
+                    <td>{m.joinedBy}</td>
+                    <td style={{ color: '#A0AEC0', fontStyle: 'italic', fontSize: '0.75rem' }}>{m.password}</td>
+                    <td className={styles.fwBold}>{m.pin}</td>
+                    <td><span className={styles.badge} style={{ background: '#F1F5F9', color: '#4E6080' }}>{m.source}</span></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -44,24 +44,7 @@ const initialState = {
   },
   manageMemberState: {
     filters: { fromDate: '', toDate: '', role: '', search: '', memberType: 'All', kycStatus: 'All' },
-    list: [
-      { 
-        id: 1, memberId: 'RT705 Neno [6377749427]', name: 'vishnu prajapat', city: 'jaipur', 
-        parent: 'VIVEK VARSHNEY 100000', mobile: '6377749427', aepsStatus: 'Not Registered',
-        email: 'vishnusiroya485@gmail.com', altMobile: '6377749427', shop: 'Neno',
-        aadhar: '121212121212', pan: '12342423', dob: '30/04/2026', doj: '30/04/2026 14:39:54',
-        joinedBy: '100000 Pay99 [9999999999]', password: 'System.Byte[]', pin: '9327', source: 'Web',
-        mainBal: '0.00', aepsBal: '0.00', holdAmt: '0'
-      },
-      { 
-        id: 2, memberId: 'RT992 Rahul [9876543210]', name: 'Rahul Sharma', city: 'Delhi', 
-        parent: 'ADMIN 100000', mobile: '9876543210', aepsStatus: 'Registered',
-        email: 'rahul.sharma@example.com', altMobile: '9876543210', shop: 'Rahul Traders',
-        aadhar: '987698769876', pan: 'ABCDE1234F', dob: '15/08/1995', doj: '02/05/2025 10:20:15',
-        joinedBy: 'Admin', password: '••••••••', pin: '4521', source: 'App',
-        mainBal: '5420.50', aepsBal: '1250.00', holdAmt: '500'
-      }
-    ]
+    list: []
   },
   registrationState: {
     currentStep: 1,

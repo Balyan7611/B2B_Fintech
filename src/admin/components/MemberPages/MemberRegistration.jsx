@@ -28,14 +28,16 @@ const MemberRegistration = () => {
   const [genderOptions, setGenderOptions] = useState(['Male', 'Female']);
   const [roleOptions, setRoleOptions] = useState([]);
   const [packageOptions, setPackageOptions] = useState([]);
+  const [stateOptions, setStateOptions] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [gendersRes, rolesRes, packagesRes] = await Promise.all([
+        const [gendersRes, rolesRes, packagesRes, statesRes] = await Promise.all([
           API.gender.getAll().catch(() => null),
           API.getRoles().catch(() => null),
-          API.package.getAll().catch(() => null)
+          API.package.getAll().catch(() => null),
+          API.state.getAll().catch(() => null)
         ]);
         
         if (gendersRes && Array.isArray(gendersRes)) {
@@ -54,6 +56,10 @@ const MemberRegistration = () => {
                 setPackageOptions(packagesRes);
             }
         }
+
+        if (statesRes && Array.isArray(statesRes)) {
+            setStateOptions(statesRes);
+        }
       } catch (err) {
         console.error("Error fetching dropdown data:", err);
       }
@@ -61,14 +67,10 @@ const MemberRegistration = () => {
     fetchDropdownData();
   }, []);
 
-  const indianStates = [
-    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
-    "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
-    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", 
-    "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", 
-    "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", 
-    "Lakshadweep", "Puducherry"
-  ];
+  const getStateName = (id) => {
+    const found = stateOptions.find(s => String(s.id) === String(id));
+    return found ? found.name : (id || '');
+  };
 
   const handleInputChange = (e) => {
     let { name, value } = e.target;
@@ -134,14 +136,13 @@ const MemberRegistration = () => {
         aadhar: form.aadhar || "",
         pan: form.pan || "",
         address: form.address1 || "",
-        pinCode: form.pincode || "",
-        stateId: 1, 
+        stateId: parseInt(form.state) || 1, 
         cityId: 2, 
         parentStr: "",
         shopName: form.businessName || "",
         shopAddress: form.bizAddress || "",
         shopPinCode: form.bizPincode || "",
-        shopStateId: 1,
+        shopStateId: parseInt(form.bizState) || 1,
         shopCityId: 2,
         postOffice: form.postOffice || form.city || "",
         businessPostOffice: form.bizPostOffice || form.bizCity || ""
@@ -273,7 +274,7 @@ const MemberRegistration = () => {
                   <td>
                     <div className={styles.contactCell}>
                       <span style={{ fontWeight: 600 }}>{m.shop || m.businessName || 'N/A'}</span>
-                      <small style={{ color: '#718096' }}>{m.city || 'N/A'}, {m.state || ''}</small>
+                      <small style={{ color: '#718096' }}>{m.city || 'N/A'}, {getStateName(m.state) || ''}</small>
                     </div>
                   </td>
                   <td>
@@ -392,8 +393,8 @@ const MemberRegistration = () => {
               )}
               {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} roleOptions={roleOptions} packageOptions={packageOptions} />}
               {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} />}
-              {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={indianStates} />}
-              {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={indianStates} />}
+              {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} />}
+              {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} />}
             </div>
 
             <div className={styles.modalFooter} style={{ padding: '15px 30px', borderTop: '1px solid #F1F5F9', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -562,7 +563,7 @@ const Step3 = ({ form, onChange, states }) => (
         <div className={styles.inputWrap}>
            <select name="state" className={styles.selectControl} style={{ height: '40px', paddingLeft: '15px', fontSize: '0.85rem' }} value={form.state} onChange={onChange}>
              <option value="">Select State</option>
-             {states.map(s => <option key={s} value={s}>{s}</option>)}
+             {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
            </select>
         </div>
       </div>
@@ -598,7 +599,7 @@ const Step4 = ({ form, onChange, states }) => (
         <div className={styles.inputWrap}>
            <select name="bizState" className={styles.selectControl} style={{ height: '40px', paddingLeft: '15px', fontSize: '0.85rem' }} value={form.bizState} onChange={onChange}>
              <option value="">Select State</option>
-             {states.map(s => <option key={s} value={s}>{s}</option>)}
+             {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
            </select>
         </div>
       </div>
