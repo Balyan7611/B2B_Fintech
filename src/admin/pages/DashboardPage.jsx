@@ -290,7 +290,7 @@ const SIDEBAR_LINKS = [
       { id: 'parent_change', label: 'Parent Change' },
       { id: 'manage_news', label: 'Manage News' },
       { id: 'assign_service', label: 'Assign Service' },
-      { id: 'assign_service_role', label: 'Assign Service On Role' },
+      // { id: 'assign_service_role', label: 'Assign Service On Role' },
       { id: 'on_off_services', label: 'On/Off Services' },
       { id: 'list_operator', label: 'List Operator' },
       { id: 'check_txn', label: 'Check TXN' },

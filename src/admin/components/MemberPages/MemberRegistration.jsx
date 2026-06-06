@@ -1,74 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { FiDatabase } from 'react-icons/fi';
-import ExportButtons from '../../../shared/components/common/ExportButtons';
+import RoleSelect from '../../../shared/components/common/RoleSelect';
+import PackageSelect from '../../../shared/components/common/PackageSelect';
+import MemberSearchSelect from '../../../shared/components/common/MemberSearchSelect';
+import PopupModal, { usePopup } from '../../../shared/components/common/PopupModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { API } from '../../../api/endpoints';
 import { 
   FaUser, FaMapMarkerAlt, FaBriefcase, FaIdCard, FaCheck, FaChevronRight, FaChevronLeft,
-  FaCalendarAlt, FaEnvelope, FaMobileAlt, FaBuilding, FaSearch, FaUserTag, FaUserPlus, FaTimes, FaGlobeAmericas,
-  FaFileExcel, FaFilePdf, FaPrint, FaCopy, FaFileCsv
+  FaCalendarAlt, FaEnvelope, FaMobileAlt, FaBuilding, FaSearch, FaUserTag, FaUserPlus, FaTimes, FaGlobeAmericas
 } from 'react-icons/fa';
-import { HiOutlinePencilAlt, HiOutlineTrash } from 'react-icons/hi';
-import { updateRegistrationForm, setRegStep, addMember, deleteMember, updateMemberDirect } from '../../../store/slices/memberSlice';
+import { updateRegistrationForm, setRegStep, updateMemberDirect } from '../../../store/slices/memberSlice';
 import { MemberService } from '../../../services/member.service';
 import styles from './MemberPages.module.css';
 
 const MemberRegistration = () => {
   const dispatch = useDispatch();
-  const { registrationState, manageMemberState } = useSelector((s) => s.member);
+  const { registrationState } = useSelector((s) => s.member);
   const { currentStep, form } = registrationState;
-  const memberList = manageMemberState.list;
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
-  const [genderOptions, setGenderOptions] = useState(['Male', 'Female', 'Other']);
-  const [roleOptions, setRoleOptions] = useState([]);
-  const [packageOptions, setPackageOptions] = useState([]);
-  const [stateOptions, setStateOptions] = useState([]);
+  const { popup, showPopup, closePopup } = usePopup();
 
+  // ── FORM STATE ──────────────────────────────────────────────
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [genderOptions, setGenderOptions] = useState(['Male', 'Female', 'Other']);
+  const [stateOptions, setStateOptions] = useState([]);
+  const [errors, setErrors] = useState({});
+
+  // ── DROPDOWN DATA FOR FORM ─────────────────────────────────────────────
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [gendersRes, rolesRes, packagesRes, statesRes] = await Promise.all([
+        const [gendersRes, statesRes] = await Promise.all([
           API.gender.getAll().catch(() => null),
-          API.getRoles().catch(() => null),
-          API.package.getAll().catch(() => null),
           API.state.getAll().catch(() => null)
         ]);
-        
         if (gendersRes && Array.isArray(gendersRes)) {
           const mapped = gendersRes.map(g => g.name).filter(Boolean);
           if (mapped.length > 0) setGenderOptions(mapped);
         }
-
-        if (rolesRes && Array.isArray(rolesRes)) {
-            setRoleOptions(rolesRes);
-        }
-        
-        if (packagesRes) {
-            if (packagesRes.data && Array.isArray(packagesRes.data)) {
-                setPackageOptions(packagesRes.data);
-            } else if (Array.isArray(packagesRes)) {
-                setPackageOptions(packagesRes);
-            }
-        }
-
-        if (statesRes && Array.isArray(statesRes)) {
-            setStateOptions(statesRes);
-        }
+        if (statesRes && Array.isArray(statesRes)) setStateOptions(statesRes);
       } catch (err) {
-        console.error("Error fetching dropdown data:", err);
+        console.error('Error fetching dropdown data:', err);
       }
     };
     fetchDropdownData();
   }, []);
 
-  const [errors, setErrors] = useState({});
-
+  // ── FORM VALIDATION ────────────────────────────────────────────────────
   const validateStep = (step) => {
     let stepErrors = {};
     if (step === 1) {
@@ -99,7 +78,6 @@ const MemberRegistration = () => {
       if (!form.bizPincode || !form.bizPincode.trim()) stepErrors.bizPincode = 'Field is required';
       else if (form.bizPincode.length !== 6) stepErrors.bizPincode = 'Pincode must be 6 digits';
     }
-
     setErrors(prev => ({ ...prev, ...stepErrors }));
     return Object.keys(stepErrors).length === 0;
   };
@@ -113,86 +91,39 @@ const MemberRegistration = () => {
     }
   };
 
-  const getStateName = (id) => {
-    const found = stateOptions.find(s => String(s.id) === String(id));
-    return found ? found.name : (id || '');
-  };
-
   const handleInputChange = (e) => {
     let { name, value } = e.target;
-    
-    // Apply strict formatting rules
-    if (name === 'mobile' || name === 'whatsapp') {
-      value = value.replace(/\D/g, '').slice(0, 10);
-    } else if (name === 'aadhar') {
-      value = value.replace(/\D/g, '').slice(0, 12);
-    } else if (name === 'pan') {
-      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
-    } else if (name === 'pincode' || name === 'bizPincode') {
-      value = value.replace(/\D/g, '').slice(0, 6);
-    }
-    
+    if (name === 'mobile' || name === 'whatsapp') value = value.replace(/\D/g, '').slice(0, 10);
+    else if (name === 'aadhar') value = value.replace(/\D/g, '').slice(0, 12);
+    else if (name === 'pan') value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    else if (name === 'pincode' || name === 'bizPincode') value = value.replace(/\D/g, '').slice(0, 6);
     if (errors[name]) {
-      setErrors(prev => {
-        const copy = { ...prev };
-        delete copy[name];
-        return copy;
-      });
+      setErrors(prev => { const copy = { ...prev }; delete copy[name]; return copy; });
     }
-    
     dispatch(updateRegistrationForm({ [name]: value }));
   };
 
   const handleSave = () => {
     setErrorMsg('');
-    if (!validateStep(4)) {
-      setErrorMsg('Please complete all required fields.');
-      return;
-    }
-
+    if (!validateStep(4)) { setErrorMsg('Please complete all required fields.'); return; }
     setIsLoading(true);
-
-    if (editingId) {
-        // Mock edit for now
-        dispatch(updateMemberDirect({ id: editingId, updates: form }));
+    MemberService.createMember(form)
+      .then(() => {
         setIsLoading(false);
-        setIsModalOpen(false);
-        setErrorMsg('');
-    } else {
-        MemberService.createMember(form)
-            .then((res) => {
-                setIsLoading(false);
-                setIsModalOpen(false);
-                setErrorMsg('');
-                dispatch(addMember(form));
-            })
-            .catch((err) => {
-                setIsLoading(false);
-                setErrorMsg(err?.response?.data?.mess || err?.message || "Failed to create member");
-            });
-    }
+        showPopup('success', 'Registration Successful', 'Member has been registered successfully!');
+        dispatch(updateRegistrationForm({ 
+          role: '', upline: '', packageId: '', title: 'Mr', gender: 'Male', name: '', 
+          aadhar: '', pan: '', dob: '', mobile: '', whatsapp: '', email: '', 
+          address1: '', pincode: '', postOffice: '', city: '', state: '', 
+          businessName: '', bizAddress: '', bizPincode: '', bizPostOffice: '', bizCity: '', bizState: '' 
+        }));
+        dispatch(setRegStep(1));
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        setErrorMsg(err?.response?.data?.mess || err?.message || 'Failed to create member');
+      });
   };
-
-  const handleEdit = (member) => {
-    setErrors({});
-    dispatch(updateRegistrationForm(member));
-    setEditingId(member.id);
-    dispatch(setRegStep(1));
-    setIsModalOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteModal.id) {
-      dispatch(deleteMember(deleteModal.id));
-    }
-    setDeleteModal({ open: false, id: null });
-  };
-
-  const filteredMembers = memberList.filter(m => 
-    (m.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.memberId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.mobile || '').includes(searchQuery)
-  );
 
   const steps = [
     { id: 1, label: 'ROLE' },
@@ -203,273 +134,132 @@ const MemberRegistration = () => {
 
   return (
     <div className={styles.container} style={{ padding: '15px 15px 0px 15px', maxWidth: '100%' }}>
-      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', padding: '12px 20px', borderBottom: '1px solid #F1F5F9' }}>
-          <div className={styles.directoryTitleGroup}>
-            <h2 className={styles.directoryTitle} style={{ fontSize: '1.25rem' }}>Member Directory</h2>
-            <p className={styles.directorySubtitle}>Manage and onboard new retail partners</p>
-          </div>
-          <button onClick={() => {
-              setEditingId(null);
-              setErrors({});
-              dispatch(updateRegistrationForm({ role: '', upline: '', packageId: '', title: 'Mr', gender: 'Male', name: '', aadhar: '', pan: '', dob: '', mobile: '', whatsapp: '', email: '', address1: '', pincode: '', postOffice: '', city: '', state: '', businessName: '', bizAddress: '', bizPincode: '', bizPostOffice: '', bizCity: '', bizState: '' }));
-              dispatch(setRegStep(1));
-              setIsModalOpen(true);
-            }} 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-            <FaUserPlus /> New Registration
-          </button>
+      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderRadius: '24px', overflow: 'visible' }}>
+        
+        {/* HEADER */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}>
+          <h2 className={styles.directoryTitle} style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FaUserPlus style={{ color: '#1756AA' }} /> Partner Onboarding Wizard
+          </h2>
+          <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#718096' }}>Register and onboard new retail partners to the network</p>
         </div>
 
-        <div className={styles.directoryHeader} style={{ background: '#F8FAFF', padding: '15px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-          <div className={styles.pillRow} style={{ alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>Show</span>
-            <select className={styles.selectEntries}>
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-            </select>
-            <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>entries</span>
-          </div>
-
-          <ExportButtons headers={[]} rows={[]} fileNamePrefix="memberregistration_report" sheetName="Report" />
-
-          <div className={styles.tableSearch} style={{ background: '#fff', minWidth: '240px' }}>
-            <FaSearch />
-            <input 
-              type="text" 
-              placeholder="Search members..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        {/* PREMIUM STEPPER */}
+        <div style={{ padding: '20px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
+           <div style={{ display: 'flex', alignItems: 'center', width: '80%', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '18px', left: '10%', right: '10%', height: '2px', background: '#E2E8F0', zIndex: 1 }}></div>
+              <div style={{ position: 'absolute', top: '18px', left: '10%', width: `${((currentStep-1)/3)*80}%`, height: '2px', background: '#1756AA', zIndex: 1, transition: '0.3s' }}></div>
+              
+              {steps.map((s) => (
+                <div key={s.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
+                   <div style={{ 
+                      width: '36px', height: '36px', borderRadius: '50%', 
+                      background: currentStep >= s.id ? '#1756AA' : '#fff', 
+                      color: currentStep >= s.id ? '#fff' : '#A0AEC0', 
+                      border: currentStep >= s.id ? 'none' : '2px solid #E2E8F0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem',
+                      boxShadow: currentStep >= s.id ? '0 4px 10px rgba(23, 86, 170, 0.2)' : 'none'
+                   }}>
+                      {currentStep > s.id ? <FaCheck /> : s.id}
+                   </div>
+                   <span style={{ fontSize: '0.65rem', fontWeight: 800, color: currentStep >= s.id ? '#1756AA' : '#A0AEC0', letterSpacing: '0.5px' }}>{s.label}</span>
+                </div>
+              ))}
+           </div>
         </div>
 
-        <div className={styles.tableWrapper}>
-          <table className={styles.table} style={{ minWidth: '1200px' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '50px' }}>SL</th>
-                <th style={{ width: '100px' }}>Action</th>
-                <th style={{ width: '150px' }}>Member ID</th>
-                <th style={{ width: '150px' }}>Member Name</th>
-                <th style={{ width: '180px' }}>Shop & City</th>
-                <th style={{ width: '150px' }}>Contact Details</th>
-                <th style={{ width: '150px' }}>KYC (PAN/Aadhar)</th>
-                <th style={{ width: '120px' }}>Role/Package</th>
-                <th style={{ width: '120px' }}>Date Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMembers.length > 0 ? filteredMembers.map((m, idx) => (
-                <tr key={m.id} className={idx % 2 === 0 ? styles.rowEven : styles.rowOdd}>
-                  <td>{idx + 1}</td>
-                  <td>
-                    <div className={styles.actionRow} style={{ display: 'flex', gap: '8px' }}>
-                      <button className={styles.editBtn} style={{ background: '#EEF3FC', color: '#1756AA', border: 'none', borderRadius: '6px', padding: '6px 8px', cursor: 'pointer' }} title="Edit Member" onClick={() => handleEdit(m)}><HiOutlinePencilAlt size={16} /></button>
-                      <button className={styles.deleteBtn} style={{ background: '#FFF5F5', color: '#E53E3E', border: 'none', borderRadius: '6px', padding: '6px 8px', cursor: 'pointer' }} title="Delete Member" onClick={() => setDeleteModal({ open: true, id: m.id })}><HiOutlineTrash size={16} /></button>
-                    </div>
-                  </td>
-                  <td className={styles.fwBold} style={{ color: '#1756AA' }}>{m.memberId || 'PENDING'}</td>
-                  <td>
-                    <div className={styles.contactCell}>
-                      <span className={styles.fwBold}>{m.name}</span>
-                      <small style={{ color: '#718096' }}>{m.email}</small>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.contactCell}>
-                      <span style={{ fontWeight: 600 }}>{m.shop || m.businessName || 'N/A'}</span>
-                      <small style={{ color: '#718096' }}>{m.city || 'N/A'}, {getStateName(m.state) || ''}</small>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.contactCell}>
-                      <span style={{ color: '#2D3748', fontWeight: 600 }}>M: {m.mobile}</span>
-                      <small style={{ color: '#27AE60', fontWeight: 700 }}>W: {m.whatsapp || m.mobile}</small>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.contactCell}>
-                      <span style={{ fontSize: '0.75rem' }}>PAN: {m.pan || 'N/A'}</span>
-                      <span style={{ fontSize: '0.75rem' }}>AAD: {m.aadhar || 'N/A'}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span className={styles.roleTag}>{m.role}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#718096', fontWeight: 700 }}>{m.packageId}</span>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: '0.8rem', color: '#4E6080' }}>{m.doj}</td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="8" style={{ padding: 0, background: '#fff' }}>
-                    <div style={{ position: 'sticky', left: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', color: '#A0AEC0' }}>
-                      No recent registrations found
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* WIZARD BODY */}
+        <div style={{ padding: '30px 24px', minHeight: '320px', background: '#fff', overflow: currentStep === 1 ? 'visible' : 'auto' }}>
+          {errorMsg && (
+            <div style={{ padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', marginBottom: '20px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+              <span>⚠️</span> {errorMsg}
+            </div>
+          )}
+          {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} errors={errors} />}
+          {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} errors={errors} />}
+          {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
+          {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
         </div>
 
-        {/* ── PAGINATION ── */}
-        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-          <span style={{ fontSize: '0.85rem', color: '#718096', fontWeight: 500 }}>
-            Showing 1 to {filteredMembers.length} of {filteredMembers.length} entries
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className={styles.pageBtn} style={{ width: '36px', height: '36px' }}>
-              <FaChevronLeft />
-            </button>
-            <span className={styles.pageActive} style={{ 
-              width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '8px', background: '#1756AA', color: '#fff', fontSize: '0.9rem', fontWeight: 600
-            }}>1</span>
-            <button className={styles.pageBtn} style={{ width: '36px', height: '36px' }}>
-              <FaChevronRight />
-            </button>
+        {/* FOOTER */}
+        <div style={{ padding: '20px 24px', borderTop: '1px solid #F1F5F9', background: '#F8FAFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px' }}>
+          <div>
+            {currentStep > 1 && (
+              <button type="button" className={styles.prevBtn} style={{ height: '40px', padding: '0 25px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep - 1)); }}>
+                <FaChevronLeft /> Previous Step
+              </button>
+            )}
+          </div>
+          
+          <div>
+            {currentStep < 4 ? (
+              <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={handleNextStep}>
+                Next Step <FaChevronRight />
+              </button>
+            ) : (
+              <button type="button" className={styles.publishBtn} style={{ height: '40px', padding: '0 35px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={handleSave} disabled={isLoading}>
+                {isLoading ? <div className={styles.spinner}></div> : <><FaCheck /> Complete Registration</>}
+              </button>
+            )}
           </div>
         </div>
+
       </div>
 
-      {/* ── DELETE MODAL ── */}
-      {deleteModal.open && (
-        <div className={styles.modalOverlay} onClick={() => setDeleteModal({ open: false, id: null })} style={{ zIndex: 5000 }}>
-          <div className={styles.modalContainer} style={{ maxWidth: '350px', padding: '24px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FFF5F5', color: '#E53E3E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 16px' }}>
-              <HiOutlineTrash />
-            </div>
-            <h3 style={{ margin: '0 0 10px', fontSize: '1.15rem', color: '#0D1B3E' }}>Delete Member?</h3>
-            <p style={{ margin: '0 0 20px', fontSize: '0.85rem', color: '#4E6080' }}>Are you sure you want to permanently delete this member?</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => setDeleteModal({ open: false, id: null })} style={{ background: '#EDF2F7', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', color: '#4E6080', fontWeight: 600 }}>Cancel</button>
-              <button onClick={confirmDelete} style={{ background: '#E53E3E', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── REGISTRATION MODAL ── */}
-      {isModalOpen && (
-        <div className={styles.modalOverlay} style={{ zIndex: 4000 }}>
-          <div className={styles.modalContainer} style={{ width: '900px', borderRadius: '24px', maxHeight: '95vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div className={styles.modalHeader} style={{ padding: '10px 24px', borderBottom: '1px solid #F1F5F9' }}>
-               <div>
-                  <h3 className={styles.modalTitle} style={{ fontSize: '1.25rem', margin: 0 }}>Member Onboarding</h3>
-                  <p className={styles.modalSubtitle} style={{ fontSize: '0.8rem', margin: 0, color: '#718096' }}>Complete the steps to register a new partner</p>
-               </div>
-               <button className={styles.closeBtn} onClick={() => setIsModalOpen(false)}>
-                  <FaTimes />
-               </button>
-            </div>
-
-            {/* PREMIUM STEPPER */}
-            <div style={{ padding: '10px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
-               <div style={{ display: 'flex', alignItems: 'center', width: '80%', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '18px', left: '10%', right: '10%', height: '2px', background: '#E2E8F0', zIndex: 1 }}></div>
-                  <div style={{ position: 'absolute', top: '18px', left: '10%', width: `${((currentStep-1)/3)*80}%`, height: '2px', background: '#1756AA', zIndex: 1, transition: '0.3s' }}></div>
-                  
-                  {steps.map((s) => (
-                    <div key={s.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
-                       <div style={{ 
-                          width: '36px', height: '36px', borderRadius: '50%', 
-                          background: currentStep >= s.id ? '#1756AA' : '#fff', 
-                          color: currentStep >= s.id ? '#fff' : '#A0AEC0', 
-                          border: currentStep >= s.id ? 'none' : '2px solid #E2E8F0',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem',
-                          boxShadow: currentStep >= s.id ? '0 4px 10px rgba(23, 86, 170, 0.2)' : 'none'
-                       }}>
-                          {currentStep > s.id ? <FaCheck /> : s.id}
-                       </div>
-                       <span style={{ fontSize: '0.65rem', fontWeight: 800, color: currentStep >= s.id ? '#1756AA' : '#A0AEC0', letterSpacing: '0.5px' }}>{s.label}</span>
-                    </div>
-                  ))}
-               </div>
-            </div>
-
-            <div className={styles.modalBody} style={{ padding: '15px 24px', flex: 1, overflowY: 'auto' }}>
-              {errorMsg && (
-                <div style={{ padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', marginBottom: '16px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, animation: 'fadeIn 0.3s ease' }}>
-                  <span>⚠️</span> {errorMsg}
-                </div>
-              )}
-              {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} roleOptions={roleOptions} packageOptions={packageOptions} errors={errors} />}
-              {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} errors={errors} />}
-              {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
-              {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
-            </div>
-
-            <div className={styles.modalFooter} style={{ padding: '10px 24px', borderTop: '1px solid #F1F5F9', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                {currentStep > 1 && (
-                  <button type="button" className={styles.prevBtn} style={{ height: '40px', padding: '0 25px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep - 1)); }}>
-                    <FaChevronLeft /> Previous Step
-                  </button>
-                )}
-              </div>
-              
-              <div>
-                {currentStep < 4 ? (
-                  <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={handleNextStep}>
-                    Next Step <FaChevronRight />
-                  </button>
-                ) : (
-                  <button type="button" className={styles.publishBtn} style={{ height: '40px', padding: '0 35px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={handleSave} disabled={isLoading}>
-                    {isLoading ? <div className={styles.spinner}></div> : <><FaCheck /> Complete Registration</>}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── SUCCESS POPUP MODAL ── */}
+      <PopupModal 
+        show={popup.show} 
+        type={popup.type} 
+        title={popup.title} 
+        message={popup.message} 
+        onClose={closePopup} 
+      />
     </div>
   );
 };
 
-const Step1 = ({ form, onChange, roleOptions = [], packageOptions = [], errors = {} }) => {
-  const selectedRoleObj = roleOptions.find(r => String(r.id) === String(form.role));
-  const dynamicPackageOptions = (selectedRoleObj && selectedRoleObj.packageList && selectedRoleObj.packageList.length > 0)
-    ? selectedRoleObj.packageList
-    : packageOptions;
-
+const Step1 = ({ form, onChange, errors = {} }) => {
   return (
-    <div className={styles.gridTwo} style={{ gap: '20px' }}>
+    <div className={styles.gridTwo} style={{ gap: '20px', minHeight: '200px' }}>
+      {/* SELECT ROLE — uses shared RoleSelect (API-bound) */}
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FaUserTag style={{ color: '#1756AA' }} /> SELECT ROLE
         </label>
-        <select name="role" className={styles.selectControl} style={{ height: '40px' }} value={form.role} onChange={onChange}>
-          <option value="">Select Role</option>
-          {roleOptions.map(r => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </select>
+        <RoleSelect
+          value={form.role}
+          onChange={(val) => onChange({ target: { name: 'role', value: val } })}
+          placeholder="Select Role"
+          style={{ height: '40px', fontSize: '0.9rem' }}
+        />
         {errors.role && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.role}</span>}
       </div>
+
+      {/* SELECT UPLINE — uses shared MemberSearchSelect (API-bound) */}
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FaUserPlus style={{ color: '#1756AA' }} /> SELECT UPLINE
         </label>
-        <select name="upline" className={styles.selectControl} style={{ height: '40px' }} value={form.upline} onChange={onChange}>
-          <option value="">Select Upline</option>
-          <option value="Admin">Admin</option>
-        </select>
+        <div style={{ position: 'relative', zIndex: 9999 }}>
+          <MemberSearchSelect
+            value={form.upline || ''}
+            onChange={(member) => onChange({ target: { name: 'upline', value: member ? (member.memberId || member.id) : '' } })}
+            placeholder="Search or Select Upline Member..."
+          />
+        </div>
       </div>
+
+      {/* SELECT PACKAGE — uses shared PackageSelect (API-bound) */}
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FaBriefcase style={{ color: '#1756AA' }} /> PACKAGE ID
         </label>
-        <select name="packageId" className={styles.selectControl} style={{ height: '40px' }} value={form.packageId} onChange={onChange}>
-          <option value="">Select Package</option>
-          {dynamicPackageOptions.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+        <PackageSelect
+          value={form.packageId}
+          onChange={(val) => onChange({ target: { name: 'packageId', value: val } })}
+          placeholder="Select Package"
+          style={{ height: '40px', fontSize: '0.9rem' }}
+        />
         {errors.packageId && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.packageId}</span>}
       </div>
     </div>

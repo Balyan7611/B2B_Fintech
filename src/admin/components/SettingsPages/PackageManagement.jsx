@@ -5,6 +5,7 @@ import {
 } from 'react-icons/fi';
 import { FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint, FaRupeeSign } from 'react-icons/fa';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
+import RoleSelect from '../../../shared/components/common/RoleSelect';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const PackageManagement = () => {
@@ -20,16 +21,7 @@ const PackageManagement = () => {
   const [showConfirmModal, setShowConfirmModal] = useState({ isOpen: false, id: null });
 
   const [localPackages, setLocalPackages] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
-
-  const fetchRoles = async () => {
-    try {
-      const res = await API.getRoles();
-      if (res && Array.isArray(res)) setRoles(res);
-      else if (res && res.data) setRoles(res.data);
-    } catch (err) { console.error("Error fetching roles", err); }
-  };
 
   const fetchPackages = async () => {
     setIsLoading(true);
@@ -61,7 +53,6 @@ const PackageManagement = () => {
 
   useEffect(() => {
     fetchPackages();
-    fetchRoles();
   }, []);
 
   const handleDelete = () => {
@@ -286,12 +277,12 @@ const PackageManagement = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div className={styles.formGroup}>
                     <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}><FiUserCheck size={14}/> Select Role</label>
-                    <select name="role" className={styles.inputControl} value={formData.role} onChange={handleInputChange} style={{ borderRadius: '10px', padding: '12px 16px', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#1E293B', fontSize: '0.9rem' }} required>
-                      <option value="">-- Select Role --</option>
-                      {roles.map(r => (
-                        <option key={r.id} value={r.id}>{r.name}</option>
-                      ))}
-                    </select>
+                    <RoleSelect
+                      value={formData.role || ''}
+                      onChange={(val) => setFormData(prev => ({ ...prev, role: val }))}
+                      placeholder="-- Select Role --"
+                      style={{ height: '46px', borderRadius: '10px', border: '1px solid #E2E8F0', background: '#F8FAFC', fontSize: '0.9rem' }}
+                    />
                   </div>
                   
                   <div className={styles.formGroup}>
