@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,7 @@ const PayoutReport = () => {
     currentPage 
   } = useSelector(state => state.report.payoutReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, date: '2026-05-01 10:20', type: 'Payout', orderId: 'ORD12345', bank: 'SBI - 1234567890', rrn: 'RRN98765', memberId: 'RT1236', name: 'Sachin Balyan', amount: '5000.00', charge: '10.00', mode: 'IMPS', appAmount: '5000.00', reqId: 'REQ111', transId: 'TXN222', appDate: '2026-05-01', status: 'SUCCESS' },
-      { id: 2, date: '2026-05-02 14:15', type: 'Payout', orderId: 'ORD12346', bank: 'HDFC - 0987654321', rrn: 'RRN98766', memberId: 'RT1236', name: 'Sachin Balyan', amount: '2000.00', charge: '5.00', mode: 'NEFT', appAmount: '2000.00', reqId: 'REQ112', transId: 'TXN223', appDate: '2026-05-02', status: 'PENDING' },
-    ];
-    dispatch(setPayoutList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);
@@ -106,7 +99,6 @@ const PayoutReport = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">Select Member</option>
-                <option value="RT1236">Sachin Balyan (RT1236)</option>
               </select>
             </div>
             <button className={styles.submitBtn}>Submit</button>

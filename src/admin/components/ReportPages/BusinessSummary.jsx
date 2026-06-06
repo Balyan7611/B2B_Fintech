@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -29,16 +29,7 @@ const BusinessSummary = () => {
     setTimeout(() => setLoadingDate(false), 1500);
   };
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, service: 'AEPS', amount: 50000.00, surcharge: 0.00, gst: 0.00, tds: 10.00, commission: 500.00 },
-      { id: 2, service: 'DMT', amount: 25000.00, surcharge: 250.00, gst: 45.00, tds: 5.00, commission: 100.00 },
-      { id: 3, service: 'RECHARGE', amount: 10000.00, surcharge: 0.00, gst: 0.00, tds: 0.00, commission: 300.00 },
-      { id: 4, service: 'BBPS', amount: 5000.00, surcharge: 0.00, gst: 0.00, tds: 0.00, commission: 50.00 },
-    ];
-    dispatch(setBusinessList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

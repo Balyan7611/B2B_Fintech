@@ -6,7 +6,9 @@ import { API } from '../../../api/endpoints';
 import {
   FaArrowLeft, FaEdit, FaHandHoldingUsd, FaMoneyBillWave,
   FaCreditCard, FaExchangeAlt, FaUserLock, FaRupeeSign,
-  FaTimesCircle, FaExclamationTriangle
+  FaTimesCircle, FaExclamationTriangle, FaUser, FaMobileAlt,
+  FaIdCard, FaWallet, FaFingerprint, FaCog, FaCheckCircle,
+  FaUserCheck, FaLock
 } from 'react-icons/fa';
 import { updateMemberDirect } from '../../../store/slices/memberSlice';
 import styles from './MemberControlPage.module.css';
@@ -745,12 +747,26 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
                 <span className={`${styles.statusTag} ${activeMemberData.aepsStatus === 'Registered' ? styles.statusTagActive : styles.statusTagWarning}`}>
                   KYC {activeMemberData.aepsStatus === 'Registered' ? 'Verified' : 'Pending'}
                 </span>
+                <span className={`${styles.statusTag} ${activeMemberData.aepsStatus === 'Registered' ? styles.statusTagActive : styles.statusTagDeactive}`}>
+                  AEPS {activeMemberData.aepsStatus === 'Registered' ? 'Registered' : 'Not Registered'}
+                </span>
+                <span className={`${styles.statusTag} ${parseFloat(activeMemberData.holdAmt || activeMemberData.holdAmount || 0) > 0 ? styles.statusTagDeactive : styles.statusTagActive}`}>
+                  {parseFloat(activeMemberData.holdAmt || activeMemberData.holdAmount || 0) > 0 ? 'On Hold' : 'No Hold'}
+                </span>
               </div>
               <div className={styles.memberHeaderSubtext}>
                 <span><strong>ID:</strong> {activeMemberData.memberId || 'N/A'}</span>
                 <span><strong>Mobile:</strong> {activeMemberData.mobile}</span>
                 <span><strong>Shop:</strong> {activeMemberData.shop || 'N/A'}</span>
                 <span><strong>City:</strong> {activeMemberData.city || 'N/A'}</span>
+              </div>
+              <div className={styles.memberHeaderStatusDesc}>
+                <span>
+                  💡 <strong>Status Summary:</strong> Account is <strong>{activeMemberData.memberType === 'DeActive' ? 'blocked' : 'active'}</strong>, 
+                  KYC is <strong>{activeMemberData.aepsStatus === 'Registered' ? 'verified' : 'pending'}</strong>, 
+                  AEPS is <strong>{activeMemberData.aepsStatus === 'Registered' ? 'active' : 'not registered (requires KYC)'}</strong>, and 
+                  wallet has <strong>{parseFloat(activeMemberData.holdAmt || activeMemberData.holdAmount || 0) > 0 ? `hold restriction of ₹${parseFloat(activeMemberData.holdAmt || activeMemberData.holdAmount || 0).toFixed(2)}` : 'no hold restriction'}</strong>.
+                </span>
               </div>
             </div>
           </div>
@@ -762,85 +778,35 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
               {/* Balances Grid */}
               <div className={styles.memberModalBalancesRow}>
                 <div className={`${styles.memberBalCard} ${styles.balCardMain}`}>
-                  <span className={styles.balCardLabel}>Main Wallet</span>
+                  <div className={styles.balCardHeader}>
+                    <span className={styles.balCardLabel}>Main Wallet</span>
+                    <FaWallet className={styles.balCardIcon} />
+                  </div>
                   <span className={styles.balCardVal}>
                     ₹ {parseFloat(activeMemberData.mainBal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className={`${styles.memberBalCard} ${styles.balCardAeps}`}>
-                  <span className={styles.balCardLabel}>AEPS Wallet</span>
+                  <div className={styles.balCardHeader}>
+                    <span className={styles.balCardLabel}>AEPS Wallet</span>
+                    <FaFingerprint className={styles.balCardIcon} />
+                  </div>
                   <span className={styles.balCardVal}>
                     ₹ {parseFloat(activeMemberData.aepsBal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className={`${styles.memberBalCard} ${styles.balCardHold}`}>
-                  <span className={styles.balCardLabel}>Hold Amount</span>
+                  <div className={styles.balCardHeader}>
+                    <span className={styles.balCardLabel}>Hold Amount</span>
+                    <FaLock className={styles.balCardIcon} />
+                  </div>
                   <span className={styles.balCardVal}>
                     ₹ {parseFloat(activeMemberData.holdAmt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
 
-              {/* Account Specifications */}
-              <div className={styles.memberSpecsSection}>
-                <h3 className={styles.modalSectionTitle}>Account Specifications</h3>
-                <div className={styles.specsGrid}>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Member Name</span>
-                    <span className={styles.specVal}>{activeMemberData.name || 'N/A'}</span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Mobile Number</span>
-                    <span className={styles.specVal}>{activeMemberData.mobile || 'N/A'}</span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Login ID / Member ID</span>
-                    <span className={styles.specVal}>{activeMemberData.memberId || 'N/A'}</span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Main Balance</span>
-                    <span className={styles.specVal} style={{ color: '#27AE60', fontWeight: '700' }}>
-                      ₹ {parseFloat(activeMemberData.mainBal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>AEPS Balance</span>
-                    <span className={styles.specVal} style={{ color: '#1756AA', fontWeight: '700' }}>
-                      ₹ {parseFloat(activeMemberData.aepsBal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>AEPS Status</span>
-                    <span className={`${styles.badgeSpec} ${activeMemberData.aepsStatus === 'Registered' ? styles.badgeSpecGreen : styles.badgeSpecRed}`}>
-                      {activeMemberData.aepsStatus || 'Not Registered'}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>KYC Status</span>
-                    <span className={`${styles.badgeSpec} ${activeMemberData.aepsStatus === 'Registered' ? styles.badgeSpecGreen : styles.badgeSpecOrange}`}>
-                      {activeMemberData.aepsStatus === 'Registered' ? 'Verified' : 'Pending'}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Account Status</span>
-                    <span className={`${styles.badgeSpec} ${activeMemberData.memberType === 'DeActive' ? styles.badgeSpecRed : styles.badgeSpecGreen}`}>
-                      {activeMemberData.memberType === 'DeActive' ? 'Inactive' : 'Active'}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Hold Amount</span>
-                    <span className={styles.specVal} style={{ color: '#E53E3E', fontWeight: '700' }}>
-                      ₹ {parseFloat(activeMemberData.holdAmt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>On Hold Status</span>
-                    <span className={`${styles.badgeSpec} ${parseFloat(activeMemberData.holdAmt || 0) > 0 ? styles.badgeSpecRed : styles.badgeSpecGreen}`}>
-                      {parseFloat(activeMemberData.holdAmt || 0) > 0 ? 'On Hold' : 'No Hold'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+
             </div>
 
             {/* RIGHT COLUMN: Quick Account Actions Panel */}

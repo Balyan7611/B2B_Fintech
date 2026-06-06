@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,7 @@ const BBPSReport = () => {
     currentPage 
   } = useSelector(state => state.report.bbpsReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, date: '2026-05-01 10:20', status: 'SUCCESS', rechargeBy: 'Sachin Balyan', txid: 'TXN2001', operator: 'Electricity', number: '1234567890', amount: 1500.00, commission: 5.00, operatorId: 'OP999', receipt: 'REC101' },
-      { id: 2, date: '2026-05-02 14:15', status: 'PENDING', rechargeBy: 'Sachin Balyan', txid: 'TXN2002', operator: 'Water Bill', number: '0987654321', amount: 450.00, commission: 2.00, operatorId: 'OP998', receipt: 'REC102' },
-    ];
-    dispatch(setBBPSList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);
@@ -120,7 +113,6 @@ const BBPSReport = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">Select Member</option>
-                <option value="RT1236">Sachin Balyan (RT1236)</option>
               </select>
             </div>
             <button className={styles.submitBtn}>Submit</button>

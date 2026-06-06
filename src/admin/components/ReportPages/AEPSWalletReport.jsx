@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,8 @@ const AEPSWalletReport = () => {
     currentPage 
   } = useSelector(state => state.report.aepsWalletReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, member: 'RT1236', name: 'Sachin Balyan', opening: '5000.00', amount: '1000.00', factor: 'Credit', commission: '10.00', tds: '0.50', charge: '0.00', closing: '6009.50', date: '2026-05-05 10:20', desc: 'AEPS Commission', status: 'SUCCESS' },
-      { id: 2, member: 'RT1236', name: 'Sachin Balyan', opening: '6009.50', amount: '2000.00', factor: 'Debit', commission: '0.00', tds: '0.00', charge: '5.00', closing: '4004.50', date: '2026-05-05 14:15', desc: 'Wallet Withdrawal', status: 'SUCCESS' },
-    ];
-    dispatch(setAEPSWalletList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
+  // useEffect(() => { ... fetch AEPS wallet data ... }, [filters]);
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);

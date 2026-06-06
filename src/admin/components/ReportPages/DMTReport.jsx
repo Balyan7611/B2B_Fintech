@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,8 @@ const DMTReport = () => {
     currentPage 
   } = useSelector(state => state.report.dmtReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, date: '2026-05-01 10:20', status: 'SUCCESS', receipt: 'R123', sender: '9876543210', beni: 'John Doe', bank: 'SBI', account: '1234567890', ifsc: 'SBIN0001234', amount: '1000.00', charge: '10.00', transid: 'T987654321', vendor: 'V123', source: 'Web' },
-      { id: 2, date: '2026-05-02 14:15', status: 'PENDING', receipt: 'R124', sender: '9876543211', beni: 'Jane Doe', bank: 'HDFC', account: '0987654321', ifsc: 'HDFC0001234', amount: '500.00', charge: '5.00', transid: 'T987654322', vendor: 'V124', source: 'App' },
-    ];
-    dispatch(setDMTList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
+  // useEffect(() => { ... fetch DMT data ... }, [filters]);
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);
@@ -93,7 +87,6 @@ const DMTReport = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">Select Member</option>
-                <option value="RT1236">Sachin Balyan (RT1236)</option>
               </select>
             </div>
             <button className={styles.submitBtn}>Submit</button>

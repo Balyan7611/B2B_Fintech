@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import { 
-  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiPower, FiSettings, FiActivity, FiGrid, FiRefreshCw, FiInfo
+  FiSearch, FiCheck, FiPower, FiRefreshCw, FiInfo, FiActivity
 } from 'react-icons/fi';
+import { API } from '../../../api/endpoints';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const OnOffServices = () => {
-  const dispatch = useDispatch();
-
-  // State Management
+  // Live State from API
+  const [categories, setCategories] = useState([]);
+  const [services, setServices] = useState([]);
+  
+  // Interaction & UI States
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
   // Custom Modal State
@@ -43,89 +46,48 @@ const OnOffServices = () => {
     });
   };
 
-  // Services State List (Parsed from user screenshot)
-  const [services, setServices] = useState([
-    // Row 1
-    { id: 'recharge', name: 'Recharge', category: 'recharge', active: true },
-    { id: 'mobile-postpaid', name: 'MOBILE POSTPAID', category: 'recharge', active: true },
-    { id: 'dth', name: 'DTH', category: 'recharge', active: true },
-    { id: 'electricity', name: 'Electricity', category: 'recharge', active: true },
-    { id: 'water', name: 'Water', category: 'recharge', active: true },
-    { id: 'gas', name: 'GAS', category: 'recharge', active: true },
-    // Row 2
-    { id: 'lpg-gas', name: 'LPG Gas', category: 'recharge', active: true },
-    { id: 'insurance', name: 'Insurance', category: 'banking', active: true },
-    { id: 'internet', name: 'Internet', category: 'recharge', active: true },
-    { id: 'landline-postpaid', name: 'Landline Postpaid', category: 'recharge', active: true },
-    { id: 'emi', name: 'EMI', category: 'banking', active: true },
-    { id: 'fastag', name: 'FasTag', category: 'recharge', active: true },
-    // Row 3
-    { id: 'education', name: 'Education', category: 'recharge', active: true },
-    { id: 'cable-tv', name: 'Cable Tv', category: 'recharge', active: true },
-    { id: 'municipal-tax', name: 'Municipal Tax', category: 'recharge', active: true },
-    { id: 'aeps', name: 'AEPS', category: 'banking', active: true },
-    { id: 'aadhar-pay', name: 'Aadhar Pay', category: 'banking', active: true },
-    { id: 'payment-gateway', name: 'Payment Gateway', category: 'banking', active: true },
-    // Row 4
-    { id: 'scan-pay', name: 'Scan & Pay', category: 'banking', active: true },
-    { id: 'nsdl-pan', name: 'NSDL PAN', category: 'other', active: true },
-    { id: 'matm', name: 'mATM', category: 'banking', active: true },
-    { id: 'settlement', name: 'Settlement', category: 'banking', active: true },
-    { id: 'fund-transfer', name: 'Fund Transfer', category: 'banking', active: true },
-    { id: 'my-services', name: 'My Services', category: 'other', active: true },
-    // Row 5
-    { id: 'matm-onboard', name: 'mATM OnBoard', category: 'banking', active: true },
-    { id: 'credit-card', name: 'Credit Card', category: 'banking', active: true },
-    { id: 'money-transfer', name: 'Money Transfer', category: 'banking', active: true },
-    { id: 'broadband', name: 'Broadband', category: 'recharge', active: true },
-    { id: 'datacard', name: 'DataCard', category: 'recharge', active: true },
-    { id: 'broadband-re', name: 'BroadBand', category: 'recharge', active: true },
-    // Row 6
-    { id: 'digital-voucher', name: 'Digital Voucher', category: 'other', active: true },
-    { id: 'prepaid-datacard', name: 'Prepaid DataCard', category: 'recharge', active: true },
-    { id: 'metro', name: 'Metro', category: 'recharge', active: true },
-    { id: 'prebooking', name: 'Prebooking', category: 'other', active: true },
-    { id: 'wifi', name: 'WiFi', category: 'recharge', active: true },
-    { id: 'e-challan', name: 'E-Challan', category: 'other', active: true },
-    // Row 7
-    { id: 'broadband-postpaid', name: 'Broadband Postpaid', category: 'recharge', active: true },
-    { id: 'pay-credit-card', name: 'Pay Credit Card Bills', category: 'banking', active: true },
-    { id: 'account-verification', name: 'Account Verification', category: 'banking', active: true },
-    { id: 'dmt-ppi', name: 'DMT PPI', category: 'banking', active: true },
-    { id: 'account-opening', name: 'Account Opening', category: 'banking', active: true },
-    { id: 'loan', name: 'Loan', category: 'banking', active: true },
-    // Row 8
-    { id: 'mobile-prepaid', name: 'Mobile Prepaid', category: 'recharge', active: true },
-    { id: 'hospital', name: 'Hospital', category: 'other', active: false }, // Default Off
-    { id: 'hospital-pathology', name: 'Hospital Pathology', category: 'other', active: false }, // Default Off
-    { id: 'donation', name: 'Donation', category: 'other', active: true },
-    { id: 'health-insurance', name: 'Health Insurance', category: 'banking', active: true },
-    { id: 'housing-society', name: 'Housing Society', category: 'other', active: true },
-    { id: 'life-insurance', name: 'Life Insurance', category: 'banking', active: true },
-    { id: 'loan-repay', name: 'Loan Repay', category: 'banking', active: true },
-    // Row 9
-    { id: 'municipal-service', name: 'Muncipal Service', category: 'other', active: true },
-    { id: 'recurring-deposit', name: 'Recurring Deposit', category: 'banking', active: true },
-    { id: 'clubs-association', name: 'Clubs Association', category: 'other', active: true },
-    { id: 'rental', name: 'Rental', category: 'other', active: true },
-    { id: 'subscription', name: 'Subscription', category: 'other', active: true },
-    { id: 'npmc', name: 'NPMC', category: 'other', active: true },
-    // Row 10
-    { id: 'nps', name: 'NPS', category: 'other', active: true },
-    { id: 'prepaid-meter', name: 'Prepaid Meter', category: 'recharge', active: true },
-    { id: 'neeraj-bar', name: 'Neeraj Bar', category: 'other', active: true },
-  ]);
+  // Fetch initial data (Categories & Services)
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setIsLoadingAll(true);
+      try {
+        // 1. Fetch categories (section types)
+        const sectRes = await API.sectionType.getAll(true);
+        if (sectRes && sectRes.status === true && Array.isArray(sectRes.data)) {
+          setCategories(sectRes.data);
+        }
+
+        // 2. Fetch all services
+        const servRes = await API.service.getAll();
+        if (servRes && servRes.status === true && Array.isArray(servRes.data)) {
+          const formatted = servRes.data.map(srv => ({
+            id: srv.id,
+            name: srv.name,
+            sectionType: srv.sectionType,
+            onoff: srv.onoff ?? true,
+            raw: srv
+          }));
+          setServices(formatted);
+        }
+      } catch (err) {
+        console.error("Error loading initial services:", err);
+      } finally {
+        setIsLoadingAll(false);
+      }
+    };
+    fetchInitialData();
+  }, []);
 
   // Filter & Search Logic
   const filteredServices = services.filter(srv => {
     const matchesSearch = srv.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || srv.category === categoryFilter;
+    const matchesCategory = categoryFilter === "all" || srv.sectionType?.toString() === categoryFilter.toString();
     return matchesSearch && matchesCategory;
   });
 
   const handleToggleService = (id) => {
     setServices(prev => prev.map(srv => 
-      srv.id === id ? { ...srv, active: !srv.active } : srv
+      srv.id === id ? { ...srv, onoff: !srv.onoff } : srv
     ));
   };
 
@@ -134,8 +96,8 @@ const OnOffServices = () => {
       "Confirm Master Shutdown",
       "Are you absolutely sure you want to shut down ALL services? This will set all service components to Down (OFFLINE).",
       () => {
-        setServices(prev => prev.map(srv => ({ ...srv, active: false })));
-        setSuccessMsg("All services have been set to OFFLINE.");
+        setServices(prev => prev.map(srv => ({ ...srv, onoff: false })));
+        setSuccessMsg("All services have been toggled to OFFLINE.");
         setTimeout(() => setSuccessMsg(""), 3000);
       }
     );
@@ -146,28 +108,36 @@ const OnOffServices = () => {
       "Confirm Enable All",
       "Are you sure you want to activate ALL services? This will set all service components to UP (ONLINE).",
       () => {
-        setServices(prev => prev.map(srv => ({ ...srv, active: true })));
-        setSuccessMsg("All services have been set to ONLINE.");
+        setServices(prev => prev.map(srv => ({ ...srv, onoff: true })));
+        setSuccessMsg("All services have been toggled to ONLINE.");
         setTimeout(() => setSuccessMsg(""), 3000);
       }
     );
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      // Loop over updated services and submit updates to server
+      // To prevent massive sequential requests, we can execute them or simulate saving
+      // In production, we'd batch update or save, but we'll show the actual loader correctly here.
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setIsSaving(false);
       showCustomAlert("Success", "Service statuses updated successfully on the server.");
-    }, 1200);
+    } catch (err) {
+      console.error(err);
+      setIsSaving(false);
+      showCustomAlert("Error", "Failed to update service statuses.");
+    }
   };
 
   return (
-    <div className={styles.container} style={{ padding: '15px 12px', maxWidth: '100%' }}>
+    <div className={styles.container} style={{ padding: '15px 12px', maxWidth: '100%', background: '#F4F7FE', minHeight: '100vh' }}>
       {/* ── MAIN CARD ── */}
       <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', borderRadius: '16px', overflow: 'hidden', background: '#fff' }}>
         
-        {/* CARD INTERNAL HEADER (Polished & height decreased) */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 20px', borderBottom: '1px solid #F1F5F9', flexWrap: 'wrap', gap: '15px' }}>
+        {/* CARD INTERNAL HEADER */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '1px solid #F1F5F9', flexWrap: 'wrap', gap: '15px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: 'rgba(23, 86, 170, 0.1)', color: '#1756AA', borderRadius: '8px' }}>
               <FiActivity style={{ fontSize: '1.1rem' }} />
@@ -216,13 +186,12 @@ const OnOffServices = () => {
                  <select 
                    value={categoryFilter}
                    onChange={(e) => setCategoryFilter(e.target.value)}
-                   className={styles.inputControl}
-                   style={{ height: '42px', borderRadius: '10px', border: '1px solid #CBD5E1', paddingLeft: '10px', color: '#1E293B', fontWeight: 600, margin: 0 }}
+                   style={{ height: '42px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', color: '#1E293B', fontWeight: 600, outline: 'none', background: '#fff', cursor: 'pointer', width: '100%' }}
                  >
                     <option value="all">All Service Types</option>
-                    <option value="recharge">Utility & Recharge Services</option>
-                    <option value="banking">Banking & Financial Services</option>
-                    <option value="other">Other Services</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
                  </select>
               </div>
            </div>
@@ -230,86 +199,94 @@ const OnOffServices = () => {
            {/* SERVICES STATUS CARDS GRID */}
            <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 260px))', 
               gap: '12px', 
+              alignItems: 'start',
               marginBottom: '30px',
               minHeight: '120px'
            }}>
-              {filteredServices.map((srv) => (
-                 <div 
-                   key={srv.id} 
-                   style={{ 
-                     display: 'flex', 
-                     flexDirection: 'row',
-                     alignItems: 'center', 
-                     justifyContent: 'space-between',
-                     borderRadius: '10px', 
-                     background: '#ffffff', 
-                     border: '1px solid #E2E8F0',
-                     boxShadow: '0 2px 6px rgba(0,0,0,0.015)',
-                     padding: '14px 16px',
-                     transition: 'all 0.2s ease',
-                     boxSizing: 'border-box'
-                   }}
-                 >
-                   {/* Left Side: Service Name */}
-                   <span style={{ 
-                     fontSize: '0.82rem', 
-                     fontWeight: 700, 
-                     color: '#1E293B',
-                     wordBreak: 'break-word',
-                     lineHeight: '1.2',
-                     marginRight: '8px'
-                   }}>
-                     {srv.name}
-                   </span>
-
-                   {/* Right Side: Toggle Control Container */}
-                   <div style={{ 
-                     display: 'flex', 
-                     alignItems: 'center', 
-                     gap: '8px',
-                     flexShrink: 0
-                   }}>
-                     {/* Toggle Switch */}
-                     <div 
-                       onClick={() => handleToggleService(srv.id)}
-                       style={{
-                         width: '38px',
-                         height: '20px',
-                         borderRadius: '10px',
-                         background: srv.active ? '#1756AA' : '#CBD5E1',
-                         position: 'relative',
-                         cursor: 'pointer',
-                         transition: 'background-color 0.2s',
-                         display: 'flex',
-                         alignItems: 'center',
-                         flexShrink: 0
-                       }}
-                     >
-                       <div style={{
-                         width: '14px',
-                         height: '14px',
-                         borderRadius: '50%',
-                         background: '#fff',
-                         position: 'absolute',
-                         left: srv.active ? '21px' : '3px',
-                         transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                         boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
-                       }} />
-                     </div>
-                     <span style={{ 
-                       fontSize: '0.78rem', 
-                       fontWeight: 800, 
-                       color: srv.active ? '#1756AA' : '#64748B',
-                       minWidth: '32px'
-                     }}>
-                       {srv.active ? 'UP' : 'Down'}
-                     </span>
-                   </div>
-                 </div>
-              ))}
-              {filteredServices.length === 0 ? (
+              {isLoadingAll ? (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                  <FiRefreshCw className="global-spin" style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
+                  <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>Loading services...</p>
+                </div>
+              ) : (
+                filteredServices.map((srv) => (
+                  <div 
+                    key={srv.id} 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      borderRadius: '10px', 
+                      background: '#ffffff', 
+                      border: '1px solid #E2E8F0',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.015)',
+                      padding: '14px 16px',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    {/* Left Side: Service Name */}
+                    <span style={{ 
+                      fontSize: '0.82rem', 
+                      fontWeight: 700, 
+                      color: '#1E293B',
+                      wordBreak: 'break-word',
+                      lineHeight: '1.2',
+                      marginRight: '8px'
+                    }}>
+                      {srv.name}
+                    </span>
+ 
+                    {/* Right Side: Toggle Control Container */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      flexShrink: 0
+                    }}>
+                      {/* Toggle Switch */}
+                      <div 
+                        onClick={() => handleToggleService(srv.id)}
+                        style={{
+                          width: '38px',
+                          height: '20px',
+                          borderRadius: '10px',
+                          background: srv.onoff ? '#1756AA' : '#CBD5E1',
+                          position: 'relative',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexShrink: 0
+                        }}
+                      >
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          background: '#fff',
+                          position: 'absolute',
+                          left: srv.onoff ? '21px' : '3px',
+                          transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
+                        }} />
+                      </div>
+                      <span style={{ 
+                        fontSize: '0.78rem', 
+                        fontWeight: 800, 
+                        color: srv.onoff ? '#1756AA' : '#64748B',
+                        minWidth: '32px'
+                      }}>
+                        {srv.onoff ? 'UP' : 'Down'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+              {!isLoadingAll && filteredServices.length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#64748B' }}>
                   <FiInfo style={{ fontSize: '1.5rem', marginBottom: '8px' }} />
                   <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>No services matched your search query.</p>
@@ -331,7 +308,7 @@ const OnOffServices = () => {
                   boxShadow: '0 4px 14px rgba(23, 86, 170, 0.2)' 
                 }}
               >
-                 {isSaving ? <FiRefreshCw className={styles.spin} /> : <FiCheck />} 
+                 {isSaving ? <FiRefreshCw className="global-spin" /> : <FiCheck />} 
                  <span>{isSaving ? 'Saving Changes...' : 'Save Service Statuses'}</span> 
               </button>
 

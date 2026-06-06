@@ -23,18 +23,39 @@ export const MemberSearchResponseModel = (res) => {
         mobile: item.mobile || '',
         email: item.email || '',
         memberId: item.loginID || '',
+        
+        // Mapped values for UI & Redux compat
         shopName: item.shopName || '',
+        shop: item.shopName || '',
         cityName: item.cityName || '',
+        city: item.cityName || '',
         pan: item.pan || '',
         aadhar: item.aadhar || '',
+        
+        // Wallet balances
         mainWallet: parseFloat(item.mainWallet) || 0,
+        mainBal: parseFloat(item.mainWallet) || 0,
         aepsWallet: parseFloat(item.aepsWallet) || 0,
+        aepsBal: parseFloat(item.aepsWallet) || 0,
         holdAmount: parseFloat(item.holdAmount) || 0,
+        holdAmt: parseFloat(item.holdAmount) || 0,
+        
+        // Status keys
         isKycApproved: item.isKycApproved === true,
+        aepsStatus: item.isKycApproved === true ? 'Registered' : 'Not Registered',
+        
         isEmailVerify: item.isEmailVerify === true,
         isMobileVerify: item.isMobileVerify === true,
+        
         isActive: item.isActive === true,
+        memberType: item.isActive === true ? 'Active' : 'DeActive',
+        
         isOnHold: item.isOnHold === true,
+        role: item.roleName || '',
+        roleId: item.roleId || '',
+        packageName: item.packageName || '',
+        packageId: item.packageId || '',
+        parent: item.parentStr || (item.parentDetails ? `${item.parentDetails.name} ${item.parentDetails.id || item.parentDetails.uniqueID || ''}` : ''),
         parentDetails: item.parentDetails ? {
             id: item.parentDetails.uniqueID || '',
             name: item.parentDetails.name || '',

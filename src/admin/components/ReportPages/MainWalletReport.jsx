@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,7 @@ const MainWalletReport = () => {
     currentPage 
   } = useSelector(state => state.report.mainWalletReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, member: 'RT1236 (Sachin Balyan)', opening: '1000.00', amount: '500.00', factor: 'Credit', surcharge: '0.00', gst: '0.00', tds: '0.00', commission: '10.00', closing: '1510.00', narration: 'Fund Transferred', date: '2026-05-05 10:20' },
-      { id: 2, member: 'RT1236 (Sachin Balyan)', opening: '1510.00', amount: '200.00', factor: 'Debit', surcharge: '0.00', gst: '0.00', tds: '0.00', commission: '0.00', closing: '1310.00', narration: 'Recharge Deduction', date: '2026-05-05 14:15' },
-    ];
-    dispatch(setMainWalletList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);
@@ -81,7 +74,6 @@ const MainWalletReport = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">Select Member</option>
-                <option value="RT1236">Sachin Balyan (RT1236)</option>
               </select>
             </div>
             <button className={styles.submitBtn} style={{marginTop: '22px'}}>Search</button>

@@ -1,158 +1,159 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import { 
-  FiSearch, FiChevronDown, FiChevronLeft, FiChevronRight, FiRefreshCw, FiCheck
+  FiChevronLeft, FiChevronRight, FiRefreshCw, FiCheck, FiUser, FiSearch
 } from 'react-icons/fi';
 import { 
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
 } from 'react-icons/fa';
+import { API } from '../../../api/endpoints';
+import MemberSearchSelect from '../../../shared/components/common/MemberSearchSelect';
+import RoleSelect from '../../../shared/components/common/RoleSelect';
 import styles from '../MemberPages/MemberPages.module.css';
 
-// ── CUSTOM SEARCHABLE DROPDOWN ──
-const CustomSearchSelect = ({ options, placeholder, value, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const dropdownRef = useRef(null);
-
-  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
-
-  // Close when clicked outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        style={{ 
-          padding: '12px 16px', border: '1px solid #E2E8F0', borderRadius: '10px', 
-          cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-          background: '#fff', height: '48px'
-        }}>
-        <span style={{ color: value ? '#1E293B' : '#94A3B8', fontSize: '0.95rem', fontWeight: 600 }}>{value || placeholder}</span>
-        <FiChevronDown style={{ color: '#94A3B8', transform: isOpen ? 'rotate(180deg)' : 'none', transition: '0.3s' }} />
-      </div>
-      {isOpen && (
-        <div style={{ 
-          position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, background: '#fff', 
-          border: '1px solid #E2E8F0', borderRadius: '10px', zIndex: 50, 
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' 
-        }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFC' }}>
-            <input 
-              autoFocus
-              type="text" 
-              placeholder="Search..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', outline: 'none', fontSize: '0.9rem' }}
-            />
-          </div>
-          <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
-             {filtered.map((opt, i) => (
-               <div 
-                 key={i} 
-                 onClick={() => { onChange(opt); setIsOpen(false); setSearch(""); }}
-                 style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #F1F5F9', fontSize: '0.95rem', color: '#1E293B', fontWeight: 500 }}
-                 onMouseEnter={(e) => e.target.style.background = '#F8FAFC'}
-                 onMouseLeave={(e) => e.target.style.background = 'transparent'}
-               >
-                 {opt}
-               </div>
-             ))}
-             {filtered.length === 0 && <div style={{ padding: '15px', color: '#94A3B8', fontSize: '0.95rem', textAlign: 'center' }}>No results found</div>}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const ParentChange = () => {
-  const dispatch = useDispatch();
+  const [fetchedMember, setFetchedMember] = useState(null);
+  const [fetchedParent, setFetchedParent] = useState(null);
+  const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [roles, setRoles] = useState([]);
 
-  const [member, setMember] = useState("");
-  const [role, setRole] = useState("");
-  const [parent, setParent] = useState("");
+  // Saving & Status
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
-  const memberOptions = ["MDT8597 (vivek varshney)", "Pay99RT4011 (Gaurav Kumar)", "Pay99RT4014 (Pooja Tomar)", "Pay99RT4015 (Vikram)"];
-  const roleOptions = ["Master Distributor", "Distributor", "Retailer", "API User"];
-  const parentOptions = ["100000 (VIVEK VARSHNEY)", "TSM1002 (pawan)", "Pay99DT5001 (vivek varshney)"];
+  // List of Parent Changes
+  const [changesList, setChangesList] = useState([]);
 
-  const sampleList = [
-    { id: 1, member: 'MDT8597 (vivek varshney)', role: 'Master Distributor', roleAfter: 'Master Distributor', parent: '100000 (VIVEK VARSHNEY)', parentAfter: 'TSM1002 (pawan)', addDate: '18/03/2025 10:30:15' },
-    { id: 2, member: 'Pay99RT4011 (Gaurav Kumar)', role: 'Retailer', roleAfter: 'Retailer', parent: 'Pay99DT5001 (vivek varshney)', parentAfter: '100000 (VIVEK VARSHNEY)', addDate: '15/04/2025 11:20:00' },
-    { id: 3, member: 'Pay99RT4014 (Pooja Tomar)', role: 'Retailer', roleAfter: 'Retailer', parent: 'TSM1002 (pawan)', parentAfter: 'Pay99DT5009 (Pooja Tomar)', addDate: '26/03/2025 14:15:30' },
-  ];
+  // Load Roles on Mount (for name mapping in handleSave)
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const rolesRes = await API.getRoles();
+        if (rolesRes && Array.isArray(rolesRes)) setRoles(rolesRes);
+        else if (rolesRes && rolesRes.data) setRoles(rolesRes.data);
+      } catch (err) {
+        console.error("Error fetching roles in ParentChange", err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  const handleSelectMember = (m) => {
+    if (!m) {
+      setFetchedMember(null);
+      setSelectedRoleId("");
+      return;
+    }
+    setFetchedMember(m);
+    
+    // Auto-detect role
+    if (m.roleId) {
+      setSelectedRoleId(m.roleId.toString());
+    } else {
+      const matchedRole = roles.find(r => r.name.toLowerCase() === (m.role || "").toLowerCase());
+      if (matchedRole) {
+        setSelectedRoleId(matchedRole.id.toString());
+      } else {
+        setSelectedRoleId("");
+      }
+    }
+  };
+
+  const handleSelectParent = (p) => {
+    setFetchedParent(p);
+  };
 
   const handleSave = () => {
+    if (!fetchedMember) return;
     setIsSaving(true);
+    
     setTimeout(() => {
+      const selectedRoleName = roles.find(r => r.id.toString() === selectedRoleId)?.name || fetchedMember.role || "Retailer";
+      const currentParent = fetchedMember.parent || "N/A";
+      const newParentVal = fetchedParent ? `${fetchedParent.memberId} (${fetchedParent.name})` : "N/A";
+      
+      const newChange = {
+        id: Date.now(),
+        member: `${fetchedMember.memberId || fetchedMember.id} (${fetchedMember.name})`,
+        role: fetchedMember.role || "Retailer",
+        roleAfter: selectedRoleName,
+        parent: currentParent,
+        parentAfter: newParentVal,
+        addDate: new Date().toLocaleString()
+      };
+
+      setChangesList(prev => [newChange, ...prev]);
       setIsSaving(false);
       setSuccessMsg("Parent change updated successfully!");
+      
       setTimeout(() => setSuccessMsg(""), 3000);
-      setMember("");
-      setRole("");
-      setParent("");
-    }, 1500);
+      
+      // Reset form
+      setFetchedMember(null);
+      setFetchedParent(null);
+      setSelectedRoleId("");
+    }, 1200);
   };
 
   return (
-    <div className={styles.container} style={{ padding: '15px 10px', maxWidth: '100%' }}>
+    <div className={styles.container} style={{ padding: '15px 10px', maxWidth: '100%', background: '#F4F7FE', minHeight: '100vh' }}>
       
       {/* ── FORM CARD ── */}
-      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 25px rgba(0,0,0,0.03)', borderRadius: '16px', marginBottom: '20px' }}>
+      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 25px rgba(0,0,0,0.03)', borderRadius: '16px', marginBottom: '20px', background: '#fff' }}>
         <div style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9' }}>
           <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1E293B' }}>Parent Change</h3>
         </div>
 
         <div style={{ padding: '25px 20px' }}>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '25px' }}>
+           {/* 4 Fields Grid - Single Row on Large Screen */}
+           <div className={styles.formGrid4} style={{ gap: '20px', marginBottom: '25px' }}>
               
-              {/* Member ID */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Member ID searchable dropdown */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                  <label style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>MemberID :</label>
-                 <CustomSearchSelect options={memberOptions} placeholder="Select Member" value={member} onChange={setMember} />
+                 <MemberSearchSelect 
+                   value={fetchedMember ? (fetchedMember.memberId || fetchedMember.id) : ""}
+                   onChange={handleSelectMember}
+                   placeholder="Search or Select Member ID..."
+                 />
               </div>
 
               {/* Current Parent ID */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                  <label style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>Current ParentID :</label>
-                 <div style={{ padding: '12px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '10px', color: '#64748B', fontSize: '0.95rem', fontWeight: 600, height: '48px', display: 'flex', alignItems: 'center' }}>
-                   {member ? 'TSM1002 (pawan)' : 'No member selected'}
+                 <div style={{ padding: '12px 16px', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '10px', color: '#64748B', fontSize: '0.95rem', fontWeight: 600, height: '48px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+                   {fetchedMember ? (fetchedMember.parent || 'No Parent') : 'No member selected'}
                  </div>
               </div>
 
               {/* Role */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                  <label style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>Role :</label>
-                 <CustomSearchSelect options={roleOptions} placeholder="Select Role" value={role} onChange={setRole} />
+                 <RoleSelect 
+                   value={selectedRoleId}
+                   onChange={setSelectedRoleId}
+                   placeholder="Select Role"
+                 />
               </div>
 
-              {/* Parent ID */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Parent ID searchable dropdown */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                  <label style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1E293B' }}>ParentID :</label>
-                 <CustomSearchSelect options={parentOptions} placeholder="Select Parent" value={parent} onChange={setParent} />
+                 <MemberSearchSelect 
+                   value={fetchedParent ? (fetchedParent.memberId || fetchedParent.id) : ""}
+                   onChange={handleSelectParent}
+                   placeholder="Search or Select Parent ID..."
+                 />
               </div>
            </div>
 
            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <button 
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || !fetchedMember}
                 style={{ 
-                  background: isSaving ? '#60A5FA' : '#1756AA', color: '#fff', border: 'none', 
+                  background: (isSaving || !fetchedMember) ? '#60A5FA' : '#1756AA', color: '#fff', border: 'none', 
                   padding: '12px 40px', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 800, 
-                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  cursor: (isSaving || !fetchedMember) ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', gap: '8px'
                 }}>
                 {isSaving && <FiRefreshCw className={styles.spin} />}
@@ -169,7 +170,7 @@ const ParentChange = () => {
       </div>
 
       {/* ── LIST CARD ── */}
-      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 25px rgba(0,0,0,0.03)', borderRadius: '16px' }}>
+      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 4px 25px rgba(0,0,0,0.03)', borderRadius: '16px', background: '#fff' }}>
         <div style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9' }}>
           <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1E293B' }}>Parent Change List</h3>
         </div>
@@ -203,28 +204,38 @@ const ParentChange = () => {
         <div className={styles.tableWrapper}>
           <table className={styles.table} style={{ width: '100%', minWidth: '1100px', tableLayout: 'auto' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
-                <th style={{ width: '60px', padding: '15px', textAlign: 'center', color: '#475569' }}>S. No.</th>
-                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#475569' }}>Member</th>
-                <th style={{ width: '150px', padding: '15px', textAlign: 'left', color: '#475569' }}>Role</th>
-                <th style={{ width: '150px', padding: '15px', textAlign: 'left', color: '#475569' }}>Role After Change</th>
-                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#475569' }}>Parent</th>
-                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#475569' }}>Parent After Change</th>
-                <th style={{ width: '150px', padding: '15px', textAlign: 'left', color: '#475569' }}>AddDate</th>
+              <tr style={{ background: 'linear-gradient(90deg, #0D1B5E 0%, #1a2f8a 100%)' }}>
+                <th style={{ width: '80px', padding: '15px', textAlign: 'center', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>S. No.</th>
+                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>Member</th>
+                <th style={{ width: '150px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>Role</th>
+                <th style={{ width: '180px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>Role After Change</th>
+                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>Parent</th>
+                <th style={{ width: '220px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>Parent After Change</th>
+                <th style={{ width: '150px', padding: '15px', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem' }}>AddDate</th>
               </tr>
             </thead>
             <tbody>
-              {sampleList.map((item, idx) => (
-                <tr key={item.id} className={styles.hoverRow}>
-                  <td style={{ fontWeight: 700, color: '#64748B', padding: '15px', textAlign: 'center' }}>{idx + 1}</td>
-                  <td style={{ padding: '15px', color: '#1E293B', fontWeight: 700 }}>{item.member}</td>
-                  <td style={{ padding: '15px', color: '#64748B', fontWeight: 600 }}>{item.role}</td>
-                  <td style={{ padding: '15px', color: '#1E293B', fontWeight: 600 }}>{item.roleAfter}</td>
-                  <td style={{ padding: '15px', color: '#64748B', fontWeight: 600 }}>{item.parent}</td>
-                  <td style={{ padding: '15px', color: '#1E293B', fontWeight: 600 }}>{item.parentAfter}</td>
-                  <td style={{ padding: '15px', color: '#64748B', fontWeight: 600, fontSize: '0.85rem' }}>{item.addDate}</td>
+              {changesList.length > 0 ? (
+                changesList.map((item, idx) => (
+                  <tr key={item.id} className={styles.hoverRow}>
+                    <td style={{ fontWeight: 700, color: '#64748B', padding: '15px', textAlign: 'center' }}>{idx + 1}</td>
+                    <td style={{ padding: '15px', color: '#1E293B', fontWeight: 700 }}>{item.member}</td>
+                    <td style={{ padding: '15px', color: '#64748B', fontWeight: 600 }}>{item.role}</td>
+                    <td style={{ padding: '15px', color: '#1756AA', fontWeight: 700 }}>{item.roleAfter}</td>
+                    <td style={{ padding: '15px', color: '#64748B', fontWeight: 600 }}>{item.parent}</td>
+                    <td style={{ padding: '15px', color: '#1E293B', fontWeight: 700 }}>{item.parentAfter}</td>
+                    <td style={{ padding: '15px', color: '#64748B', fontWeight: 600, fontSize: '0.85rem' }}>{item.addDate}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: '#94A3B8', fontSize: '0.95rem', fontWeight: 600 }}>
+                    <FiUser size={24} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                    <br />
+                    No parent changes found.
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -232,11 +243,13 @@ const ParentChange = () => {
         {/* PAGINATION */}
         <div className="global-pagination" style={{ padding: '12px 20px', borderTop: '1px solid #F1F5F9' }}>
           <div style={{ fontSize: '0.85rem', color: '#718096', fontWeight: 600 }}>
-            Showing 1 to 3 of 3 entries
+            Showing {changesList.length > 0 ? `1 to ${changesList.length}` : '0 to 0'} of {changesList.length} entries
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button className="global-page-btn" disabled style={{ borderRadius: '8px' }}><FiChevronLeft /></button>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '35px', height: '35px', background: '#1756AA', color: '#fff', borderRadius: '8px', fontWeight: 800, fontSize: '0.9rem' }}>1</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '35px', height: '35px', background: '#0D1B5E', color: '#fff', borderRadius: '8px', fontWeight: 800, fontSize: '0.9rem' }}>
+              {changesList.length > 0 ? '1' : '0'}
+            </div>
             <button className="global-page-btn" disabled style={{ borderRadius: '8px' }}><FiChevronRight /></button>
           </div>
         </div>

@@ -306,10 +306,8 @@ const ServiceManagement = () => {
           <table className={styles.table} style={{ width: '100%', minWidth: '1100px' }}>
             <thead>
               <tr style={{ background: 'linear-gradient(90deg,#0D1B5E,#1a2f8a)' }}>
-                <th style={{ width: '90px', textAlign: 'center' }}>Active</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>On/Off</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>Edit</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>Delete</th>
+                <th style={{ width: '60px', textAlign: 'center' }}>S.NO</th>
+                <th style={{ width: '260px', textAlign: 'center' }}>Actions</th>
                 <th style={{ textAlign: 'left' }}>Service Name</th>
                 <th style={{ textAlign: 'left' }}>Section Type</th>
                 <th style={{ textAlign: 'left' }}>Service URL</th>
@@ -321,52 +319,59 @@ const ServiceManagement = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="10" style={{ textAlign: 'center', padding: '40px', color: '#64748B', fontWeight: 600 }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: '#64748B', fontWeight: 600 }}>
                     ⏳ Loading services...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan="10" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                       <FiDatabase size={28} style={{ opacity: 0.3 }} />
                       <span style={{ fontWeight: 600 }}>No services found</span>
                     </div>
                   </td>
                 </tr>
-              ) : filtered.map(service => (
+              ) : filtered.map((service, idx) => (
                 <tr key={service.id} className={styles.hoverRow}>
-                  {/* Active Toggle */}
-                  <td style={{ textAlign: 'center' }}>
-                    <label className={styles.switch} style={{ transform: 'scale(0.8)', margin: 0 }}
-                      onClick={() => handleToggleActive(service)}>
-                      <input type="checkbox" checked={service.isActive === true} readOnly />
-                      <span className={styles.slider}></span>
-                    </label>
+                  {/* S.NO */}
+                  <td style={{ textAlign: 'center', fontWeight: 700, color: '#A0AEC0' }}>
+                    {idx + 1}
                   </td>
-                  {/* OnOff Toggle */}
+                  {/* Actions Column */}
                   <td style={{ textAlign: 'center' }}>
-                    <label className={styles.switch} style={{ transform: 'scale(0.8)', margin: 0 }}
-                      onClick={() => handleToggleOnOff(service)}>
-                      <input type="checkbox" checked={service.onoff === true} readOnly />
-                      <span className={styles.slider}></span>
-                    </label>
-                  </td>
-                  {/* Edit */}
-                  <td style={{ textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleEdit(service)}
-                      style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#EBF3FC', color: '#1756AA', border: '1px solid #BFDBFE', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Edit"
-                    ><FiEdit size={14} /></button>
-                  </td>
-                  {/* Delete */}
-                  <td style={{ textAlign: 'center' }}>
-                    <button
-                      onClick={() => setShowConfirmModal({ isOpen: true, id: service.id, name: service.name })}
-                      style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Delete"
-                    ><FiTrash2 size={14} /></button>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', flexWrap: 'nowrap' }}>
+                      {/* Active Status Toggle */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                        <label className={styles.switch} style={{ transform: 'scale(0.75)', margin: 0 }}
+                          onClick={() => handleToggleActive(service)}>
+                          <input type="checkbox" checked={service.isActive === true} readOnly />
+                          <span className={styles.slider}></span>
+                        </label>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.2px' }}>Active</span>
+                      </div>
+                      {/* On/Off Status Toggle */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                        <label className={styles.switch} style={{ transform: 'scale(0.75)', margin: 0 }}
+                          onClick={() => handleToggleOnOff(service)}>
+                          <input type="checkbox" checked={service.onoff === true} readOnly />
+                          <span className={styles.slider}></span>
+                        </label>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.2px' }}>On/Off</span>
+                      </div>
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => handleEdit(service)}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#EBF3FC', color: '#1756AA', border: '1px solid #BFDBFE', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Edit"
+                      ><FiEdit size={14} /></button>
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => setShowConfirmModal({ isOpen: true, id: service.id, name: service.name })}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Delete"
+                      ><FiTrash2 size={14} /></button>
+                    </div>
                   </td>
                   {/* Name */}
                   <td style={{ fontWeight: 600, color: '#334155' }}>

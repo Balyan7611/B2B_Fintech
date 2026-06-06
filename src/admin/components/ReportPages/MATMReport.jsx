@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,14 +22,7 @@ const MATMReport = () => {
     currentPage 
   } = useSelector(state => state.report.matmReport);
 
-  // Load dummy data
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, member: 'Sachin Balyan (RT1236)', date: '2026-05-01 10:20', amount: '1000.00', transId: 'MT12345', rrn: 'RRN001', card: 'XXXX XXXX 1234', status: 'SUCCESS' },
-      { id: 2, member: 'Sachin Balyan (RT1236)', date: '2026-05-02 14:15', amount: '500.00', transId: 'MT12346', rrn: 'RRN002', card: 'XXXX XXXX 5678', status: 'PENDING' },
-    ];
-    dispatch(setMATMList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
 
   const totalEntries = list.length;
   const totalPages = Math.ceil(totalEntries / rowsPerPage);
@@ -102,7 +95,6 @@ const MATMReport = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">Select Member</option>
-                <option value="RT1236">Sachin Balyan (RT1236)</option>
               </select>
             </div>
             <button className={styles.submitBtn}>Submit</button>

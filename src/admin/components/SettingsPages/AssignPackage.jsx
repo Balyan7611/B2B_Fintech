@@ -9,6 +9,7 @@ const AssignPackage = () => {
   const [selectedRoleId, setSelectedRoleId] = useState('');
   
   const [selectedPackages, setSelectedPackages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,7 +19,13 @@ const AssignPackage = () => {
         else if (rolesRes && rolesRes.data) setRoles(rolesRes.data);
 
         const pkgRes = await API.package.getAll();
-        if (pkgRes && pkgRes.status === true && Array.isArray(pkgRes.data)) setPackages(pkgRes.data);
+        if (pkgRes && Array.isArray(pkgRes)) {
+          setPackages(pkgRes);
+        } else if (pkgRes && pkgRes.status === true && Array.isArray(pkgRes.data)) {
+          setPackages(pkgRes.data);
+        } else if (pkgRes && Array.isArray(pkgRes.data)) {
+          setPackages(pkgRes.data);
+        }
       } catch (err) {
         console.error("Error fetching data", err);
       }
@@ -26,9 +33,21 @@ const AssignPackage = () => {
     fetchData();
   }, []);
 
+  // Sync selected packages whenever selectedRoleId or packages change
+  useEffect(() => {
+    if (selectedRoleId) {
+      const matchingIds = packages
+        .filter(p => String(p.roleId) === String(selectedRoleId))
+        .map(p => p.id);
+      setSelectedPackages(matchingIds);
+    } else {
+      setSelectedPackages([]);
+    }
+  }, [selectedRoleId, packages]);
+
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedPackages(packages);
+      setSelectedPackages(packages.map(p => p.id));
     } else {
       setSelectedPackages([]);
     }
@@ -36,9 +55,61 @@ const AssignPackage = () => {
 
   const handleSelectPackage = (pkgId) => {
     if (selectedPackages.includes(pkgId)) {
-      setSelectedPackages(selectedPackages.filter(p => p !== pkgId));
+      setSelectedPackages(selectedPackages.filter(id => id !== pkgId));
     } else {
       setSelectedPackages([...selectedPackages, pkgId]);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!selectedRoleId) {
+      alert("Please select a role first!");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const promises = [];
+      
+      packages.forEach(pkg => {
+        const isCurrentlySelected = selectedPackages.includes(pkg.id);
+        const isPreviouslyAssigned = String(pkg.roleId) === String(selectedRoleId);
+        
+        if (isCurrentlySelected && !isPreviouslyAssigned) {
+          // Add/Assign this package to the selected role
+          const payload = {
+            ...pkg,
+            roleId: parseInt(selectedRoleId)
+          };
+          promises.push(API.package.update(payload));
+        } else if (!isCurrentlySelected && isPreviouslyAssigned) {
+          // Remove this package from the role (reset roleId to 0 or null)
+          const payload = {
+            ...pkg,
+            roleId: 0
+          };
+          promises.push(API.package.update(payload));
+        }
+      });
+      
+      if (promises.length > 0) {
+        await Promise.all(promises);
+        
+        // Refresh packages list
+        const pkgRes = await API.package.getAll();
+        if (pkgRes && Array.isArray(pkgRes)) {
+          setPackages(pkgRes);
+        } else if (pkgRes && pkgRes.status === true && Array.isArray(pkgRes.data)) {
+          setPackages(pkgRes.data);
+        }
+      }
+      
+      alert("Package assignments applied successfully!");
+    } catch (err) {
+      console.error("Error applying package assignment", err);
+      alert("Failed to apply package assignment.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -73,6 +144,7 @@ const AssignPackage = () => {
                 style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 checked={selectedPackages.length === packages.length && packages.length > 0}
                 onChange={handleSelectAll}
+                disabled={packages.length === 0}
               />
               <label htmlFor="select-all" style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 700, cursor: 'pointer', margin: 0 }}>Select All</label>
             </div>
@@ -89,7 +161,7 @@ const AssignPackage = () => {
             borderRadius: '15px',
             border: '1.5px dashed rgba(23, 86, 170, 0.2)'
           }}>
-            {packages.map((pkg, idx) => (
+            {packages.map((pkg) => (
               <div key={pkg.id} style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -101,31 +173,53 @@ const AssignPackage = () => {
                 transition: 'all 0.2s ease',
                 cursor: 'pointer',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-              }}>
+              }} onClick={() => handleSelectPackage(pkg.id)}>
                 <input
                   type="checkbox"
                   id={`pkg-${pkg.id}`}
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                   checked={selectedPackages.includes(pkg.id)}
-                  onChange={() => handleSelectPackage(pkg.id)}
+                  onChange={() => {}} // click handler is on parent div for easier mobile tap
                 />
-                <label htmlFor={`pkg-${pkg.id}`} style={{ fontSize: '0.85rem', fontWeight: 700, color: '#4E6080', cursor: 'pointer', margin: 0, flex: 1 }}>
+                <label htmlFor={`pkg-${pkg.id}`} style={{ fontSize: '0.85rem', fontWeight: 700, color: '#4E6080', cursor: 'pointer', margin: 0, flex: 1 }} onClick={(e) => e.stopPropagation()}>
                   {pkg.name}
                 </label>
               </div>
             ))}
+            {packages.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '10px', color: '#64748B', fontSize: '0.85rem', fontWeight: 600 }}>
+                No packages available.
+              </div>
+            )}
           </div>
 
           {/* ACTION BUTTON */}
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <button style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-              color: '#fff', border: 'none', borderRadius: '10px',
-              padding: '12px 24px', fontSize: '0.9rem', fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', transition: 'all 0.2s'
-            }}>
-              <FiCheckSquare size={16} /> <span>Apply Assignment</span> <FiChevronRight />
+            <button 
+              onClick={handleApply}
+              disabled={isSubmitting || !selectedRoleId}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: isSubmitting || !selectedRoleId 
+                  ? '#CBD5E1' 
+                  : 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                color: '#fff', border: 'none', borderRadius: '10px',
+                padding: '12px 24px', fontSize: '0.9rem', fontWeight: 700,
+                cursor: isSubmitting || !selectedRoleId ? 'not-allowed' : 'pointer', 
+                boxShadow: isSubmitting || !selectedRoleId ? 'none' : '0 4px 12px rgba(59, 130, 246, 0.3)', 
+                transition: 'all 0.2s'
+              }}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className={styles.spinner} style={{ width: '18px', height: '18px', borderTopColor: '#fff', borderLeftColor: 'transparent', margin: '0px 6px 0px 0px' }}></div>
+                  <span>Applying...</span>
+                </>
+              ) : (
+                <>
+                  <FiCheckSquare size={16} /> <span>Apply Assignment</span> <FiChevronRight />
+                </>
+              )}
             </button>
           </div>
         </div>

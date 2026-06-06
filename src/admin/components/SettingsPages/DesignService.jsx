@@ -1,50 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../../api/endpoints';
 import { 
-  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiCheckCircle, FiLayout, FiMaximize, FiLayers
+  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiCheckCircle, FiLayout
 } from 'react-icons/fi';
 import { 
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
 } from 'react-icons/fa';
 import styles from '../MemberPages/MemberPages.module.css';
 
-const allServicesList = [
-  "Recharge", "MOBILE POSTPAID", "DTH", "Electricity", "Water", "GAS", 
-  "LPG Gas", "Insurance", "Internet", "Landline Postpaid", "EMI", "FasTag",
-  "Education", "Cable Tv", "Municipal Tax", "AEPS", "Aadhar Pay", "Payment Gateway",
-  "Scan & Pay", "NSDL PAN", "mATM", "Settlement", "Fund Transfer", "My Services",
-  "MATM OnBoard", "Credit Card", "Money Transfer", "Broadband", "DataCard", "BroadBand",
-  "Digital Voucher", "Prepaid DataCard", "Metro", "Prebooking", "WiFi", "E-Challan",
-  "Broadband Postpaid", "Pay Credit Card Bills", "Account Verification", "DMT PPI", "Account Opening", "Loan",
-  "Mobile Prepaid", "Donation", "Health Insurance", "Housing Society", "Life Insurance", "Loan Repay",
-  "Muncipal Service", "Recurring Deposit", "Clubs Association", "Rental", "Subscription", "NPMC",
-  "NPS", "Prepaid Meter", "Neeraj Bar"
-];
-
 const DesignService = () => {
   const dispatch = useDispatch();
-  const { designs = [] } = useSelector(state => state.settings || {});
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sectionTypes, setSectionTypes] = useState([]);
+  const [services, setServices] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
-    name: '', boxColor: '#ffffff', textColor: '#333333', serviceType: 'Service', bannerImage: null
+    name: '', boxColor: '#ffffff', textColor: '#333333', serviceType: '', bannerImage: null
   });
   
   const [selectedServices, setSelectedServices] = useState({});
-
-  const [designsList, setDesignsList] = useState([
-    { id: 1, name: '!! Bharat Connect !!', service: ',1,2,3,4,5,6,7,8,10,12,13,14,15,38,47,1070', position: 4, status: true },
-    { id: 2, name: '!! BANKING SERVICES !!', service: ',17,18,19,20,21,22,23,28,31,33,36,37,57,1062', position: 3, status: false },
-    { id: 3, name: 'Insurnace', service: ',8,28', position: 5, status: true },
-    { id: 4, name: 'Recharge & BC Services', service: ',1067', position: 2, status: true },
-    { id: 5, name: 'Banner', service: ',18', position: 1, status: true },
-  ]);
+  const [designsList, setDesignsList] = useState([]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const toggleService = (srv) => {
-    setSelectedServices(prev => ({ ...prev, [srv]: !prev[srv] }));
+  // Load section types and services from API and merge them dynamically
+  const fetchInitialData = async () => {
+    setIsLoading(true);
+    try {
+      const sectRes = await API.sectionType.getAll(null); // Get both active/inactive
+      const servRes = await API.service.getAll();
+      
+      let loadedSections = [];
+      let loadedServices = [];
+      
+      if (sectRes && sectRes.status === true && Array.isArray(sectRes.data)) {
+        loadedSections = sectRes.data;
+        setSectionTypes(sectRes.data);
+      }
+
+      if (servRes && servRes.status === true && Array.isArray(servRes.data)) {
+        loadedServices = servRes.data;
+        setServices(servRes.data);
+      }
+
+      // Map dynamic services to sections
+      const matchedDesigns = loadedSections.map((sect) => {
+        const matchingServices = loadedServices
+          .filter(s => String(s.sectionType) === String(sect.id))
+          .map(s => s.id);
+          
+        return {
+          id: sect.id,
+          name: sect.name,
+          service: matchingServices.length > 0 ? ',' + matchingServices.join(',') : '—',
+          position: sect.orderBy || sect.position || 0,
+          status: sect.isActive !== false
+        };
+      });
+
+      setDesignsList(matchedDesigns);
+    } catch (err) {
+      console.error("Error fetching initial data in DesignService", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const toggleService = (srvId) => {
+    setSelectedServices(prev => ({ ...prev, [srvId]: !prev[srvId] }));
   };
 
   const confirmDelete = (id) => {
@@ -63,13 +94,71 @@ const DesignService = () => {
 
   const handleEdit = (design) => {
     setFormData({
+      id: design.id,
       name: design.name, 
       boxColor: '#ffffff', 
       textColor: '#333333', 
-      serviceType: design.name === 'Banner' ? 'Banner' : 'Service', 
+      serviceType: String(design.id), // Bind to selected section type ID
       bannerImage: null
     });
+    
+    // Parse services assigned to this design
+    const serviceIds = (design.service || '').split(',').map(s => s.trim()).filter(Boolean);
+    const selections = {};
+    serviceIds.forEach(id => {
+      selections[id] = true;
+    });
+    setSelectedServices(selections);
     setIsModalOpen(true);
+  };
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    
+    const targetSectionId = formData.serviceType;
+    if (!targetSectionId || targetSectionId === 'Banner') {
+      alert("Please select a target Section Type!");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const promises = [];
+      
+      services.forEach(srv => {
+        const isCurrentlySelected = selectedServices[srv.id];
+        const isPreviouslyAssigned = String(srv.sectionType) === String(targetSectionId);
+        
+        if (isCurrentlySelected && !isPreviouslyAssigned) {
+          // Assign service to this section
+          const payload = {
+            ...srv,
+            sectionType: targetSectionId
+          };
+          promises.push(API.service.update(payload));
+        } else if (!isCurrentlySelected && isPreviouslyAssigned) {
+          // Unassign service from this section
+          const payload = {
+            ...srv,
+            sectionType: '0'
+          };
+          promises.push(API.service.update(payload));
+        }
+      });
+
+      if (promises.length > 0) {
+        await Promise.all(promises);
+      }
+
+      alert("Design service section updated successfully!");
+      setIsModalOpen(false);
+      fetchInitialData(); // Reload list to reflect changes
+    } catch (err) {
+      console.error("Error saving design service", err);
+      alert("Failed to save design service");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -85,7 +174,11 @@ const DesignService = () => {
             color: '#fff', border: 'none', borderRadius: '8px', 
             padding: '10px 18px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
             boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-          }} onClick={() => setIsModalOpen(true)}>
+          }} onClick={() => {
+            setFormData({ name: '', boxColor: '#ffffff', textColor: '#333333', serviceType: '', bannerImage: null });
+            setSelectedServices({});
+            setIsModalOpen(true);
+          }}>
             <FiPlus /> <span>New Design Service</span>
           </button>
         </div>
@@ -133,15 +226,30 @@ const DesignService = () => {
               </tr>
             </thead>
             <tbody>
-              {designsList.map((design, idx) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748B', fontWeight: 600 }}>
+                    ⏳ Loading design services...
+                  </td>
+                </tr>
+              ) : designsList.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <FiDatabase size={28} style={{ opacity: 0.3 }} />
+                      <span style={{ fontWeight: 600 }}>No design layouts found</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : designsList.map((design, idx) => (
                 <tr key={design.id} className={styles.hoverRow} style={{ borderBottom: '1px solid #F1F5F9' }}>
                   <td style={{ fontWeight: 700, color: '#A0AEC0' }}>{idx + 1}</td>
                   <td style={{ textAlign: 'center' }}>
                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', alignItems: 'center' }}>
                         <button onClick={() => confirmDelete(design.id)} style={{ background: '#FFF5F5', border: '1px solid #FED7D7', color: '#EF4444', fontSize: '1rem', padding: '6px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Delete"><FiTrash2 /></button>
                         <label className={styles.switch} style={{ transform: 'scale(0.8)', margin: 0 }}>
-                          <input type="checkbox" checked={design.status} onChange={() => handleToggleStatus(design.id)} />
-                          <span className={styles.slider}></span>
+                           <input type="checkbox" checked={design.status} onChange={() => handleToggleStatus(design.id)} />
+                           <span className={styles.slider}></span>
                         </label>
                         <button onClick={() => handleEdit(design)} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#3B82F6', fontSize: '1rem', padding: '6px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Edit"><FiEdit /></button>
                      </div>
@@ -164,7 +272,7 @@ const DesignService = () => {
         {/* ── PAGINATION ── */}
         <div className="global-pagination" style={{ padding: '20px', borderTop: '1px solid #F1F5F9' }}>
           <div style={{ fontSize: '0.85rem', color: '#718096', fontWeight: 600 }}>
-            Showing 1 to 2 of 2 records
+            Showing 1 to {designsList.length} of {designsList.length} records
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button className="global-page-btn" disabled style={{ borderRadius: '8px' }}><FiChevronLeft /></button>
@@ -220,9 +328,12 @@ const DesignService = () => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Service Type</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Service Type / Section</label>
                     <select style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '0.95rem', background: '#F8FAFC', color: '#0F172A', outline: 'none', cursor: 'pointer' }} value={formData.serviceType} onChange={e => setFormData({...formData, serviceType: e.target.value})}>
-                      <option value="Service">Service</option>
+                      <option value="">-- Select Section Type --</option>
+                      {sectionTypes.map(st => (
+                        <option key={st.id} value={st.id}>{st.name}</option>
+                      ))}
                       <option value="Banner">Banner</option>
                     </select>
                   </div>
@@ -259,34 +370,57 @@ const DesignService = () => {
                     {/* Services Checkbox Grid */}
                     <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#0F172A' }}>Assign Services</h4>
-                      <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600, background: '#F1F5F9', padding: '4px 12px', borderRadius: '20px' }}>
-                        {Object.values(selectedServices).filter(Boolean).length} Selected
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>
+                          <input 
+                            type="checkbox"
+                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            checked={services.length > 0 && services.every(s => selectedServices[s.id])}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              const newSelections = {};
+                              services.forEach(s => {
+                                newSelections[s.id] = checked;
+                              });
+                              setSelectedServices(newSelections);
+                            }}
+                          />
+                          Select All
+                        </label>
+                        <span style={{ fontSize: '0.85rem', color: '#64748B', fontWeight: 600, background: '#F1F5F9', padding: '4px 12px', borderRadius: '20px' }}>
+                          {Object.values(selectedServices).filter(Boolean).length} Selected
+                        </span>
+                      </div>
                     </div>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '15px' }}>
-                      {allServicesList.map((srv, index) => (
-                        <label key={index} style={{ 
+                      {services.map((srv) => (
+                        <label key={srv.id} style={{ 
                           display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', 
-                          background: selectedServices[srv] ? 'rgba(59, 130, 246, 0.05)' : '#fff', 
-                          border: selectedServices[srv] ? '1px solid #3B82F6' : '1px solid #E2E8F0', 
+                          background: selectedServices[srv.id] ? 'rgba(59, 130, 246, 0.05)' : '#fff', 
+                          border: selectedServices[srv.id] ? '1px solid #3B82F6' : '1px solid #E2E8F0', 
                           borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s',
-                          boxShadow: selectedServices[srv] ? '0 4px 10px rgba(59, 130, 246, 0.1)' : 'none'
+                          boxShadow: selectedServices[srv.id] ? '0 4px 10px rgba(59, 130, 246, 0.1)' : 'none'
                         }}>
                           <div style={{ 
                             width: '20px', height: '20px', borderRadius: '6px', 
-                            border: selectedServices[srv] ? 'none' : '2px solid #CBD5E1', 
-                            background: selectedServices[srv] ? '#3B82F6' : 'transparent', 
+                            border: selectedServices[srv.id] ? 'none' : '2px solid #CBD5E1', 
+                            background: selectedServices[srv.id] ? '#3B82F6' : 'transparent', 
                             display: 'flex', alignItems: 'center', justifyContent: 'center' 
                           }}>
-                            {selectedServices[srv] && <FiCheck size={14} color="#fff" />}
+                            {selectedServices[srv.id] && <FiCheck size={14} color="#fff" />}
                           </div>
-                          <input type="checkbox" checked={!!selectedServices[srv]} onChange={() => toggleService(srv)} style={{ display: 'none' }} />
-                          <span style={{ fontSize: '0.85rem', fontWeight: selectedServices[srv] ? 700 : 600, color: selectedServices[srv] ? '#1E293B' : '#475569' }}>
-                            {srv}
+                          <input type="checkbox" checked={!!selectedServices[srv.id]} onChange={() => toggleService(srv.id)} style={{ display: 'none' }} />
+                          <span style={{ fontSize: '0.85rem', fontWeight: selectedServices[srv.id] ? 700 : 600, color: selectedServices[srv.id] ? '#1E293B' : '#475569' }}>
+                            {srv.name}
                           </span>
                         </label>
                       ))}
+                      {services.length === 0 && (
+                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '10px', color: '#64748B', fontSize: '0.85rem', fontWeight: 600 }}>
+                          No services available.
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -296,9 +430,29 @@ const DesignService = () => {
 
             {/* Footer */}
             <div style={{ padding: '15px 25px', borderTop: '1px solid #F1F5F9', background: '#fff', borderRadius: '0 0 20px 20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => setIsModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '8px', background: '#F1F5F9', color: '#475569', border: 'none', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={() => setIsModalOpen(false)} style={{ padding: '10px 25px', borderRadius: '8px', background: '#3B82F6', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FiCheckCircle size={16} /> Assign Section
+              <button onClick={() => setIsModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '8px', background: '#F1F5F9', color: '#475569', border: 'none', fontWeight: 700, cursor: 'pointer' }} disabled={isSaving}>Cancel</button>
+              <button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                style={{ 
+                  padding: '10px 25px', borderRadius: '8px', 
+                  background: isSaving ? '#CBD5E1' : '#3B82F6', 
+                  color: '#fff', border: 'none', fontWeight: 700, 
+                  cursor: isSaving ? 'not-allowed' : 'pointer', 
+                  boxShadow: isSaving ? 'none' : '0 4px 12px rgba(59, 130, 246, 0.3)', 
+                  display: 'flex', alignItems: 'center', gap: '8px' 
+                }}
+              >
+                {isSaving ? (
+                  <>
+                    <div className={styles.spinner} style={{ width: '16px', height: '16px', borderTopColor: '#fff', borderLeftColor: 'transparent', margin: 0 }}></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <FiCheckCircle size={16} /> <span>Assign Section</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

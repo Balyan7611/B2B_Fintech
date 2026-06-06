@@ -7,8 +7,7 @@ import {
   setCommonService, 
   setCommonSearchQuery, 
   setCommonRowsPerPage, 
-  setCommonCurrentPage,
-  setCommonCommissionList
+  setCommonCurrentPage
 } from '../../../store/slices/commissionSlice';
 import AdminTable from '../../../shared/components/common/AdminTable';
 import styles from './CommonCommissionSetup.module.css';
@@ -31,18 +30,7 @@ const CommonCommissionSetup = () => {
     'Gas', 'Water', 'Insurance', 'DMT', 'AEPS'
   ];
 
-  // Dummy data for table
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, opName: 'Airtel', startVal: '1.00', endVal: '10000.00', slab: '2.50%' },
-      { id: 2, opName: 'JIO', startVal: '1.00', endVal: '10000.00', slab: '3.00%' },
-      { id: 3, opName: 'VI', startVal: '1.00', endVal: '10000.00', slab: '3.20%' },
-      { id: 4, opName: 'BSNL', startVal: '1.00', endVal: '10000.00', slab: '4.50%' },
-      { id: 5, opName: 'Airtel DTH', startVal: '1.00', endVal: '10000.00', slab: '3.00%' },
-      { id: 6, opName: 'Tata Sky', startVal: '1.00', endVal: '10000.00', slab: '3.50%' },
-    ];
-    dispatch(setCommonCommissionList(dummyData));
-  }, [dispatch]);
+  // Commission data will be fetched from API based on selected service
 
   // CLOSE DROPDOWN ON CLICK OUTSIDE
   useEffect(() => {

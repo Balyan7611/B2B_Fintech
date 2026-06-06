@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { API } from '../../../api/endpoints';
 import { 
-  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiUser, FiRefreshCw, FiArrowRight, FiChevronDown
+  FiChevronLeft, FiChevronRight, FiCheck, FiUser, FiRefreshCw, FiSearch
 } from 'react-icons/fi';
-import { 
-  FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
-} from 'react-icons/fa';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
+import MemberSearchSelect from '../../../shared/components/common/MemberSearchSelect';
+import RoleSelect from '../../../shared/components/common/RoleSelect';
+import PackageSelect from '../../../shared/components/common/PackageSelect';
 import styles from '../MemberPages/MemberPages.module.css';
 
 const RoleChange = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
   const [fetchedMember, setFetchedMember] = useState(null);
-  
   const [roles, setRoles] = useState([]);
-  const [packages, setPackages] = useState([]);
-  
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
@@ -26,57 +21,93 @@ const RoleChange = () => {
     idChange: false
   });
 
+  // Fetch roles list initially for mapping in detectRole
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRoles = async () => {
       try {
         const rolesRes = await API.getRoles();
         if (rolesRes && Array.isArray(rolesRes)) setRoles(rolesRes);
         else if (rolesRes && rolesRes.data) setRoles(rolesRes.data);
-
-        const pkgRes = await API.package.getAll();
-        if (pkgRes && pkgRes.status === true && Array.isArray(pkgRes.data)) setPackages(pkgRes.data);
       } catch (err) {
-        console.error("Error fetching roles/packages", err);
+        console.error("Error loading roles in RoleChange:", err);
       }
     };
-    fetchData();
+    fetchRoles();
   }, []);
 
-  const mockMembers = [
-    { id: 'Pay99RT4002', name: 'vipin soni', parent: 'vivek varshney MDT8597', role: 'Retailer' },
-    { id: 'Pay99RT5005', name: 'rahul kumar', parent: 'admin ADM001', role: 'Distributor' }
-  ];
+  const detectRole = (member, rolesList) => {
+    if (!member) return { roleName: '', roleId: '' };
+    
+    // 1. If we already have a matched role in rolesList via member.roleId
+    if (member.roleId) {
+      const found = rolesList.find(r => r.id.toString() === member.roleId.toString());
+      if (found) return { roleName: found.name, roleId: found.id };
+    }
 
-  const filteredMembers = mockMembers.filter(m => m.id.toLowerCase().includes(searchTerm.toLowerCase()));
+    // 2. If member has a roleName/role string, let's find it in rolesList
+    const roleStr = member.role || member.roleName;
+    if (roleStr && rolesList.length > 0) {
+      const found = rolesList.find(r => r.name.toLowerCase() === roleStr.toLowerCase());
+      if (found) return { roleName: found.name, roleId: found.id };
+    }
 
-  const handleSelectMember = (member) => {
-    setSearchTerm(member.id);
-    setFetchedMember(member);
-    setShowDropdown(false);
+    // 3. Fallback to parsing memberId prefix
+    const mid = (member.memberId || member.id || '').toUpperCase();
+    let detectedRoleName = '';
+    if (mid.includes('RT')) {
+      detectedRoleName = 'Retailer';
+    } else if (mid.includes('MDT')) {
+      detectedRoleName = 'Master Distributor';
+    } else if (mid.includes('DT')) {
+      detectedRoleName = 'Distributor';
+    } else if (mid.includes('API')) {
+      detectedRoleName = 'API User';
+    } else {
+      detectedRoleName = 'Retailer'; // Default fallback
+    }
+
+    if (rolesList.length > 0) {
+      const found = rolesList.find(r => r.name.toLowerCase().replace(/\s+/g, '') === detectedRoleName.toLowerCase().replace(/\s+/g, ''));
+      if (found) return { roleName: found.name, roleId: found.id };
+    }
+
+    return { roleName: detectedRoleName, roleId: '' };
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setShowDropdown(true);
-    if (e.target.value === '') {
+  const handleSelectMember = (member) => {
+    if (!member) {
       setFetchedMember(null);
+      setFormData({ roleId: '', packageId: '', idChange: false });
+      return;
     }
+    const detected = detectRole(member, roles);
+    const updatedMember = {
+      ...member,
+      role: detected.roleName,
+      roleId: detected.roleId || member.roleId
+    };
+    setFetchedMember(updatedMember);
+    setFormData({
+      roleId: detected.roleId ? detected.roleId.toString() : '',
+      packageId: member.packageId ? member.packageId.toString() : '',
+      idChange: false
+    });
   };
 
   const handleChangeRole = () => {
     if (!fetchedMember || !formData.roleId) return;
     
     setIsLoading(true);
-    // Simulate API request
     setTimeout(() => {
+      const newRoleName = roles.find(r => r.id.toString() === formData.roleId.toString())?.name || 'Updated Role';
       setFetchedMember(prev => ({
         ...prev,
-        role: roles.find(r => r.id.toString() === formData.roleId)?.name || 'Updated Role'
+        role: newRoleName,
+        roleId: formData.roleId
       }));
       setIsLoading(false);
       setSuccessMessage('Role changed successfully!');
       
-      // Clear message after 3 seconds
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
@@ -103,75 +134,41 @@ const RoleChange = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             
             {/* Member ID Autocomplete */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>Member ID :</label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <input 
-                  type="text" 
-                  placeholder="Search Member ID..." 
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  onFocus={() => setShowDropdown(true)}
-                  style={{ width: '100%', padding: '10px 35px 10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.9rem', outline: 'none', color: '#334155', boxSizing: 'border-box' }}
-                />
-                <FiChevronDown style={{ position: 'absolute', right: '12px', color: '#64748B', pointerEvents: 'none' }} />
-              </div>
-              {showDropdown && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', marginTop: '4px', zIndex: 10, boxShadow: '0 10px 25px rgba(0,0,0,0.1)', maxHeight: '200px', overflowY: 'auto' }}>
-                  {filteredMembers.length > 0 ? (
-                    filteredMembers.map(m => (
-                      <div 
-                        key={m.id} 
-                        onClick={() => handleSelectMember(m)}
-                        style={{ padding: '10px 15px', borderBottom: '1px solid #F1F5F9', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#F8FAFC'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#fff'}
-                      >
-                        <span style={{ fontWeight: 700, color: '#0F172A', fontSize: '0.9rem' }}>{m.id}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{m.name}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ padding: '10px 15px', color: '#94A3B8', fontSize: '0.85rem', textAlign: 'center' }}>No member found</div>
-                  )}
-                </div>
-              )}
+              <MemberSearchSelect 
+                value={fetchedMember ? (fetchedMember.memberId || fetchedMember.id) : ""} 
+                onChange={handleSelectMember} 
+                placeholder="Search Member ID..."
+              />
             </div>
 
             {/* Role Dropdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>Role</label>
-              <select 
-                value={formData.roleId}
-                onChange={(e) => setFormData({...formData, roleId: e.target.value})}
-                style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.9rem', outline: 'none', color: '#334155', background: '#fff', cursor: 'pointer' }}
-              >
-                <option value="">Select Role</option>
-                {roles.map(r => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
+              <RoleSelect 
+                value={formData.roleId} 
+                onChange={(val) => setFormData({...formData, roleId: val})}
+                placeholder="Select Role"
+                style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.9rem', outline: 'none', color: '#334155', background: '#fff', cursor: 'pointer', height: '48px' }}
+              />
             </div>
 
             {/* Package Dropdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>Package</label>
-              <select 
+              <PackageSelect 
                 value={formData.packageId}
-                onChange={(e) => setFormData({...formData, packageId: e.target.value})}
-                style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.9rem', outline: 'none', color: '#334155', background: '#fff', cursor: 'pointer' }}
-              >
-                <option value="">Select Package</option>
-                {packages.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({...formData, packageId: val})}
+                placeholder="Select Package"
+                style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.9rem', outline: 'none', color: '#334155', background: '#fff', cursor: 'pointer', height: '48px' }}
+              />
             </div>
 
             {/* ID Change Checkbox */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>ID Change(Yes/No)</label>
-              <div style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', height: '42px', boxSizing: 'border-box' }}>
+              <div style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #CBD5E1', display: 'flex', alignItems: 'center', height: '48px', boxSizing: 'border-box' }}>
                 <input 
                   type="checkbox" 
                   checked={formData.idChange}
@@ -186,13 +183,13 @@ const RoleChange = () => {
           <div>
             <button 
               onClick={handleChangeRole}
-              disabled={isLoading || !fetchedMember || !formData.role}
+              disabled={isLoading || !fetchedMember || !formData.roleId}
               style={{ 
-                background: (isLoading || !fetchedMember || !formData.role) ? '#FCA5A5' : '#EF4444', 
+                background: (isLoading || !fetchedMember || !formData.roleId) ? '#FCA5A5' : '#EF4444', 
                 color: '#fff', border: 'none', borderRadius: '8px', 
                 padding: '10px 24px', fontSize: '0.95rem', fontWeight: 700, 
-                cursor: (isLoading || !fetchedMember || !formData.role) ? 'not-allowed' : 'pointer',
-                boxShadow: (isLoading || !fetchedMember || !formData.role) ? 'none' : '0 4px 10px rgba(239, 68, 68, 0.3)',
+                cursor: (isLoading || !fetchedMember || !formData.roleId) ? 'not-allowed' : 'pointer',
+                boxShadow: (isLoading || !fetchedMember || !formData.roleId) ? 'none' : '0 4px 10px rgba(239, 68, 68, 0.3)',
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}
             >
@@ -221,7 +218,7 @@ const RoleChange = () => {
 
           <ExportButtons 
             headers={['SL', 'MemberID', 'Name', 'Role', 'ParentID']}
-            rows={fetchedMember ? [[1, fetchedMember.id, fetchedMember.name, fetchedMember.role, fetchedMember.parent.replace(/\s+/g, ' ')]] : []}
+            rows={fetchedMember ? [[1, fetchedMember.memberId || fetchedMember.id, fetchedMember.name, fetchedMember.role, (fetchedMember.parent || '').replace(/\s+/g, ' ')]] : []}
             fileNamePrefix="role_change_report"
             sheetName="Role Change"
           />
@@ -252,14 +249,14 @@ const RoleChange = () => {
               {fetchedMember ? (
                 <tr style={{ borderBottom: '1px solid #E2E8F0', background: '#fff' }}>
                   <td style={{ padding: '15px', color: '#334155', fontSize: '0.9rem', borderRight: '1px solid #F1F5F9' }}>1</td>
-                  <td style={{ padding: '15px', color: '#334155', fontSize: '0.9rem', borderRight: '1px solid #F1F5F9', fontWeight: 700 }}>{fetchedMember.id}</td>
+                  <td style={{ padding: '15px', color: '#334155', fontSize: '0.9rem', borderRight: '1px solid #F1F5F9', fontWeight: 700 }}>{fetchedMember.memberId || fetchedMember.id}</td>
                   <td style={{ padding: '15px', color: '#334155', fontSize: '0.9rem', borderRight: '1px solid #F1F5F9' }}>{fetchedMember.name}</td>
                   <td style={{ padding: '15px', color: '#3B82F6', fontSize: '0.9rem', borderRight: '1px solid #F1F5F9', fontWeight: 800 }}>
                     <span style={{ background: '#EFF6FF', padding: '4px 10px', borderRadius: '6px' }}>{fetchedMember.role}</span>
                   </td>
                   <td style={{ padding: '15px', color: '#334155', fontSize: '0.9rem' }}>
                     <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
-                       {fetchedMember.parent.split(' ').map((p, i) => <div key={i}>{p}</div>)}
+                       {(fetchedMember.parent || '').split(' ').map((p, i) => <div key={i}>{p}</div>)}
                     </div>
                   </td>
                 </tr>
@@ -277,14 +274,20 @@ const RoleChange = () => {
         </div>
 
         {/* PAGINATION */}
-        <div style={{ padding: '15px 25px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+        <div className="global-pagination" style={{ padding: '15px 25px', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           <div style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>
             Showing {fetchedMember ? '1 to 1 of 1' : '0 to 0 of 0'} entries
           </div>
-          <div style={{ display: 'flex', gap: '5px', fontSize: '0.9rem', color: '#3B82F6', cursor: 'pointer' }}>
-             <span>Previous</span>
-             <span style={{ margin: '0 5px' }}>{fetchedMember ? '1' : '0'}</span>
-             <span>Next</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button className="global-page-btn" disabled style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiChevronLeft />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: '#0D1B5E', color: '#fff', borderRadius: '6px', fontWeight: 800, fontSize: '0.85rem' }}>
+              {fetchedMember ? '1' : '0'}
+            </div>
+            <button className="global-page-btn" disabled style={{ borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FiChevronRight />
+            </button>
           </div>
         </div>
 

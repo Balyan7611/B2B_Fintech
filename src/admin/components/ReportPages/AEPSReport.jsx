@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiFilter } from 'react-icons/fi';
@@ -22,15 +22,8 @@ const AEPSReport = () => {
     currentPage 
   } = useSelector(state => state.report.aepsReport);
 
-  // Load dummy data for display
-  useEffect(() => {
-    const dummyData = [
-      { id: 1, date: '2026-05-01 10:20', memberId: 'RT1236', memberName: 'Sachin Balyan', aadhar: 'XXXX XXXX 1234', type: 'Withdrawal', opening: '1000.00', amount: '500.00', commission: '5.00', closing: '505.00', status: 'SUCCESS' },
-      { id: 2, date: '2026-05-02 14:15', memberId: 'RT1236', memberName: 'Sachin Balyan', aadhar: 'XXXX XXXX 5678', type: 'Balance Inquiry', opening: '505.00', amount: '0.00', commission: '0.00', closing: '505.00', status: 'SUCCESS' },
-      { id: 3, date: '2026-05-03 09:45', memberId: 'RT1236', memberName: 'Sachin Balyan', aadhar: 'XXXX XXXX 9012', type: 'Withdrawal', opening: '505.00', amount: '100.00', commission: '1.00', closing: '406.00', status: 'FAILED' },
-    ];
-    dispatch(setAEPSList(dummyData));
-  }, [dispatch]);
+  // Data will be fetched from API when backend endpoints are ready
+  // useEffect(() => { ... fetch AEPS data ... }, [filters]);
 
   const filteredList = list.filter(item => {
     const matchesSearch = item.memberName.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -107,7 +100,6 @@ const AEPSReport = () => {
                   onChange={handleFilterChange}
                 >
                   <option value="">All Members</option>
-                  <option value="RT1236">Sachin Balyan (RT1236)</option>
                 </select>
               </div>
               <button className={styles.submitBtn} onClick={handleApplyFilters}>
