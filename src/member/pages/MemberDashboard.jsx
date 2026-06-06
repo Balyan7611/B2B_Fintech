@@ -155,9 +155,9 @@ const MemberDashboard = () => {
   };
 
   const walletData = [
-    { name: 'AEPS WALLET',   value: '320,242.53', color: '#10B981' },
-    { name: 'MAIN WALLET',   value: '111,379.00', color: '#3B82F6' },
-    { name: 'PROFIT WALLET', value: '0.00',        color: '#F59E0B' },
+    { name: 'AEPS WALLET',   value: '0.00', color: '#10B981' },
+    { name: 'MAIN WALLET',   value: '0.00', color: '#3B82F6' },
+    { name: 'PROFIT WALLET', value: '0.00', color: '#F59E0B' },
   ];
 
   const handleServiceClick = (path) => {

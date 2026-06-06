@@ -30,5 +30,9 @@ export const MemberService = {
         if (fromDate) payload.fromDate = fromDate;
         if (toDate) payload.toDate = toDate;
         return await apiService.post('/Member/get-all-members', payload);
+    },
+
+    updateMember: async (id, data) => {
+        return await apiService.put(`/Member/update-member/${id}`, data);
     }
 };

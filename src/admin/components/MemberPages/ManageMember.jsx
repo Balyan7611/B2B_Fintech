@@ -10,11 +10,13 @@ import {
   FaChevronLeft, FaChevronRight, FaEllipsisV, FaCog, FaEdit, FaEye, 
   FaUserLock, FaTrash, FaCheck, FaExclamationCircle, FaFilter,
   FaCalendarAlt, FaUserTag, FaIdCard, FaMobileAlt, FaHandHoldingUsd, FaArrowRight,
-  FaUsersCog, FaUserFriends, FaEnvelope, FaSms, FaVideo, FaTimes
+  FaUsersCog, FaUserFriends, FaEnvelope, FaSms, FaVideo, FaTimes, FaUserPlus
 } from 'react-icons/fa';
 import { updateMemberDirect, deleteMember } from '../../../store/slices/memberSlice';
 import { MemberService } from '../../../services/member.service';
 import styles from './MemberPages.module.css';
+import MemberControlPage from './MemberControlPage';
+import MemberRegistration from './MemberRegistration';
 
 const ToggleSwitch = ({ checked, onChange }) => (
   <div 
@@ -142,6 +144,7 @@ const ManageMember = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [filterRoleId, setFilterRoleId] = useState('');
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [memberType, setMemberType] = useState('All'); // 'Active', 'DeActive', 'All'
   const [kycStatus, setKycStatus] = useState('All');   // 'KYC', 'Non-KYC', 'All'
@@ -242,7 +245,7 @@ const ManageMember = () => {
 
   const handleActionClick = (action, m) => {
     setActiveDropdown(null);
-    if (action === 'Edit') setEditMember(m);
+    if (action === 'Edit') setEditMember({ ...m, initialEdit: true });
     else if (action === 'Send Email') alert(`Email sent successfully to ${m.email}`);
     else if (action === 'Send SMS') alert(`SMS sent successfully to ${m.mobile}`);
     else if (action === 'Re-KYC') alert(`Re-KYC process initiated for ${m.name}`);
@@ -260,6 +263,20 @@ const ManageMember = () => {
     if (totalPageNumber > 1) pages.push(totalPageNumber);
     return pages;
   };
+
+  if (editMember) {
+    return (
+      <MemberControlPage 
+        activeMemberData={editMember} 
+        initialEdit={editMember.initialEdit}
+        backLabel=""
+        onClose={() => {
+          setEditMember(null);
+          fetchMembers(pageNumber, rowsPerPage, searchQuery, filterRoleId, memberType, kycStatus, fromDate, toDate);
+        }} 
+      />
+    );
+  }
 
   return (
     <div className={styles.container} style={{ padding: '15px 15px 0px 15px', maxWidth: '100%' }}>
@@ -281,6 +298,26 @@ const ManageMember = () => {
             </h2>
             <p className={styles.directorySubtitle} style={{ fontSize: '0.65rem', margin: '0' }}>Manage and monitor network members</p>
           </div>
+          <button 
+            onClick={() => setShowRegistrationModal(true)}
+            style={{
+              padding: '6px 14px',
+              background: 'linear-gradient(135deg, #1756AA, #124d96)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 10px rgba(23, 86, 170, 0.15)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <FaUserPlus /> New Registration
+          </button>
         </div>
         
         <div className={styles.formGrid4} style={{ marginTop: '20px', overflow: 'visible' }}>
@@ -406,14 +443,13 @@ const ManageMember = () => {
               <tr style={{ background: 'linear-gradient(90deg, #0D1B5E 0%, #1a2f8a 100%)' }}>
                 <th style={{ color: '#fff' }}>S.No</th>
                 <th style={{ color: '#fff' }}>Action</th>
-                <th style={{ color: '#fff' }}>Main Balance</th>
-                <th style={{ color: '#fff' }}>AEPS Balance</th>
-                <th style={{ color: '#fff' }}>Hold Amount</th>
-                <th style={{ color: '#fff' }}>MemberID</th>
                 <th style={{ color: '#fff' }}>Member Name</th>
                 <th style={{ color: '#fff' }}>City / District</th>
                 <th style={{ color: '#fff' }}>Role & Package</th>
                 <th style={{ color: '#fff' }}>Mobile</th>
+                <th style={{ color: '#fff' }}>Main Balance</th>
+                <th style={{ color: '#fff' }}>AEPS Balance</th>
+                <th style={{ color: '#fff' }}>Hold Amount</th>
                 <th style={{ color: '#fff' }}>AEPS Status</th>
                 <th style={{ color: '#fff' }}>Email</th>
                 <th style={{ color: '#fff' }}>Alt Mobile</th>
@@ -431,7 +467,7 @@ const ManageMember = () => {
             <tbody>
               {isFetching ? (
                 <tr>
-                  <td colSpan="22" style={{ textAlign: 'center', padding: '40px', color: '#718096' }}>
+                  <td colSpan="21" style={{ textAlign: 'center', padding: '40px', color: '#718096' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: '32px', height: '32px', border: '3px solid #E2E8F0', borderTop: '3px solid #1756AA', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
                       <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Loading members...</span>
@@ -440,7 +476,7 @@ const ManageMember = () => {
                 </tr>
               ) : members.length === 0 ? (
                 <tr>
-                  <td colSpan="22" style={{ textAlign: 'center', padding: '40px', color: '#718096', fontSize: '0.9rem' }}>
+                  <td colSpan="21" style={{ textAlign: 'center', padding: '40px', color: '#718096', fontSize: '0.9rem' }}>
                     No data available in table
                   </td>
                 </tr>
@@ -639,6 +675,20 @@ const ManageMember = () => {
 
                       </div>
                     </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span className={styles.fwBold}>{m.name}</span>
+                        <span style={{ fontSize: '0.68rem', color: '#718096', fontWeight: 700 }}>ID: {m.loginId || m.id}</span>
+                      </div>
+                    </td>
+                    <td>{m.city || m.postOffice || 'N/A'}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span className={styles.roleTag} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>{m.roleName}</span>
+                        <span style={{ fontSize: '0.68rem', color: '#718096', fontWeight: 700 }}>{m.packageName}</span>
+                      </div>
+                    </td>
+                    <td>{m.mobile}</td>
                     <td className={styles.fwBold} style={{ color: '#27AE60' }}>₹ {m.balance || m.mainBal || 0}</td>
                     <td className={styles.fwBold} style={{ color: '#1756AA' }}>₹ {m.aepsBalance || m.aepsBal || 0}</td>
                     <td>
@@ -692,16 +742,6 @@ const ManageMember = () => {
                         </button>
                       </div>
                     </td>
-                    <td className={styles.fwBold}>{m.loginId || m.id}</td>
-                    <td className={styles.fwBold}>{m.name}</td>
-                    <td>{m.city || m.postOffice || 'N/A'}</td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span className={styles.roleTag} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>{m.roleName}</span>
-                        <span style={{ fontSize: '0.68rem', color: '#718096', fontWeight: 700 }}>{m.packageName}</span>
-                      </div>
-                    </td>
-                    <td>{m.mobile}</td>
                     <td>
                       <span className={`${styles.badge} ${m.aepsStatus === 'Registered' ? styles.badge_green : styles.badge_red}`}>
                         {m.aepsStatus === 'Registered' ? <FaCheck /> : <FaExclamationCircle />} {m.aepsStatus || 'Registered'}
@@ -790,34 +830,7 @@ const ManageMember = () => {
         </div>
       )}
 
-      {/* ── EDIT MODAL ── */}
-      {editMember && (
-        <div className={styles.drawerOverlay} onClick={() => setEditMember(null)}>
-          <div className={styles.drawerContent} onClick={e => e.stopPropagation()} style={{ width: '400px', background: '#fff', borderRadius: '12px', padding: '24px', margin: 'auto', alignSelf: 'center', height: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ margin: '0 0 20px', color: '#0D1B3E' }}>Edit Member</h3>
-            <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
-              <label>Name</label>
-              <input type="text" className={styles.inputControl} value={editMember.name} onChange={(e) => setEditMember({...editMember, name: e.target.value})} />
-            </div>
-            <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
-              <label>Mobile</label>
-              <input type="text" className={styles.inputControl} value={editMember.mobile} onChange={(e) => setEditMember({...editMember, mobile: e.target.value})} />
-            </div>
-            <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
-              <label>Shop Name</label>
-              <input type="text" className={styles.inputControl} value={editMember.shopName || editMember.shop || ''} onChange={(e) => setEditMember({...editMember, shopName: e.target.value})} />
-            </div>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
-              <button onClick={() => {
-                dispatch(updateMemberDirect({ id: editMember.id, updates: { name: editMember.name, mobile: editMember.mobile, shopName: editMember.shopName || editMember.shop } }));
-                setEditMember(null);
-                fetchMembers(pageNumber, rowsPerPage, searchQuery, filterRoleId, memberType, kycStatus, fromDate, toDate);
-              }} style={{ padding: '12px', background: '#27AE60', color: '#fff', border: 'none', borderRadius: '8px', flex: 1, fontWeight: 600, cursor: 'pointer' }}>Save Changes</button>
-              <button onClick={() => setEditMember(null)} style={{ padding: '12px', background: '#E53E3E', color: '#fff', border: 'none', borderRadius: '8px', flex: 1, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* ── HOLD CONFIRM MODAL ── */}
       {confirmHold && (
@@ -1092,6 +1105,17 @@ const ManageMember = () => {
 
           </div>
         </div>
+      )}
+
+      {/* Onboarding Modal */}
+      {showRegistrationModal && (
+        <MemberRegistration 
+          isModal={true} 
+          onClose={() => {
+            setShowRegistrationModal(false);
+            fetchMembers(pageNumber, rowsPerPage, searchQuery, filterRoleId, memberType, kycStatus, fromDate, toDate);
+          }} 
+        />
       )}
     </div>
   );

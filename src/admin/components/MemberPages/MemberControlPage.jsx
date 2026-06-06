@@ -14,11 +14,11 @@ import { updateMemberDirect } from '../../../store/slices/memberSlice';
 import styles from './MemberControlPage.module.css';
 import QuickActionGrid from '../../../shared/components/common/QuickActionGrid';
 
-const MemberControlPage = ({ activeMemberData, onClose }) => {
+const MemberControlPage = ({ activeMemberData, onClose, initialEdit = false, backLabel = 'to Dashboard' }) => {
   const dispatch = useDispatch();
 
   // ── STATE DECLARATIONS ──
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(initialEdit);
   const [profileForm, setProfileForm] = useState({
     name: '', mobile: '', shop: '', aadhar: '', pan: '',
     title: 'Mr.', role: 'Retailer', packageId: 'Retailer',
@@ -27,6 +27,36 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
     businessName: '', businessAddress: '', businessCity: '',
     businessState: 'Uttar Pradesh', businessPincode: '', businessPostOffice: ''
   });
+
+  useEffect(() => {
+    if (activeMemberData) {
+      setProfileForm({
+        name: activeMemberData.name || '',
+        mobile: activeMemberData.mobile || '',
+        shop: activeMemberData.email || activeMemberData.shop || activeMemberData.shopName || '',
+        aadhar: activeMemberData.aadhar || '',
+        pan: activeMemberData.pan || '',
+        title: activeMemberData.title || 'Mr.',
+        role: activeMemberData.role || activeMemberData.memberType || 'Retailer',
+        packageId: activeMemberData.packageId || 'Retailer',
+        altMobile: activeMemberData.altMobile || '',
+        gender: activeMemberData.gender || 'Male',
+        address: activeMemberData.address || '',
+        state: activeMemberData.state || 'Uttar Pradesh',
+        city: activeMemberData.city || '',
+        pincode: activeMemberData.pincode || '',
+        postOffice: activeMemberData.postOffice || 'Aurangabad Aheer',
+        dob: activeMemberData.dob || '',
+        active: activeMemberData.active !== undefined ? activeMemberData.active : true,
+        businessName: activeMemberData.businessName || '',
+        businessAddress: activeMemberData.businessAddress || '',
+        businessCity: activeMemberData.businessCity || '',
+        businessState: activeMemberData.businessState || 'Uttar Pradesh',
+        businessPincode: activeMemberData.businessPincode || '',
+        businessPostOffice: activeMemberData.businessPostOffice || 'Aurangabad Aheer'
+      });
+    }
+  }, [activeMemberData]);
 
   const [genderOptions, setGenderOptions] = useState(['Male', 'Female']);
 
@@ -144,36 +174,83 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
   };
 
   // ── EDIT PROFILE SAVE HANDLER ──
-  const handleProfileFormSubmit = (e) => {
+  const handleProfileFormSubmit = async (e) => {
     e.preventDefault();
-    dispatch(updateMemberDirect({
-      id: activeMemberData.id,
-      updates: {
-        name: profileForm.name,
-        mobile: profileForm.mobile,
-        shop: profileForm.shop, // email is bound here
-        aadhar: profileForm.aadhar,
-        pan: profileForm.pan,
-        title: profileForm.title,
-        role: profileForm.role,
-        altMobile: profileForm.altMobile,
-        gender: profileForm.gender,
-        address: profileForm.address,
-        state: profileForm.state,
-        city: profileForm.city,
-        pincode: profileForm.pincode,
-        postOffice: profileForm.postOffice,
-        dob: profileForm.dob,
-        active: profileForm.active,
-        businessName: profileForm.businessName,
-        businessAddress: profileForm.businessAddress,
-        businessCity: profileForm.businessCity,
-        businessState: profileForm.businessState,
-        businessPincode: profileForm.businessPincode,
-        businessPostOffice: profileForm.businessPostOffice
+    
+    const payload = {
+      roleId: parseInt(activeMemberData.roleId) || 2,
+      titleId: profileForm.title === 'Mr.' ? 1 : profileForm.title === 'Mrs.' ? 2 : 3,
+      packageId: parseInt(activeMemberData.packageId) || 2,
+      parentId: parseInt(activeMemberData.parentId) || 1,
+      name: profileForm.name,
+      email: profileForm.shop, // email is bound here
+      mobile: profileForm.mobile,
+      alterNativeMobileNumber: profileForm.altMobile,
+      genderId: profileForm.gender === 'Female' ? 2 : profileForm.gender === 'Other' ? 3 : 1,
+      dob: profileForm.dob ? profileForm.dob.split('T')[0] : "",
+      pic: activeMemberData.pic || "profile2.jpg",
+      loginOnOff: activeMemberData.loginOnOff ?? false,
+      deviceId: activeMemberData.deviceId || "",
+      appToken: activeMemberData.appToken || "",
+      macAddress: activeMemberData.macAddress || "",
+      deviceRegister: activeMemberData.deviceRegister || "",
+      fromChannel: activeMemberData.fromChannel || "",
+      time: parseInt(activeMemberData.time) || 8243,
+      aadhar: profileForm.aadhar,
+      pan: profileForm.pan,
+      address: profileForm.address,
+      pinCode: profileForm.pincode,
+      stateId: profileForm.state === 'Delhi' ? 2 : profileForm.state === 'Rajasthan' ? 3 : profileForm.state === 'Haryana' ? 4 : profileForm.state === 'Maharashtra' ? 5 : 1,
+      cityId: parseInt(activeMemberData.cityId) || 1,
+      parentStr: activeMemberData.parentStr || "",
+      shopName: profileForm.businessName,
+      shopAddress: profileForm.businessAddress,
+      shopPinCode: profileForm.businessPincode,
+      shopStateId: profileForm.businessState === 'Delhi' ? 2 : profileForm.businessState === 'Rajasthan' ? 3 : profileForm.businessState === 'Haryana' ? 4 : profileForm.businessState === 'Maharashtra' ? 5 : 1,
+      shopCityId: parseInt(activeMemberData.shopCityId) || 1,
+      postOffice: profileForm.postOffice,
+      businessPostOffice: profileForm.businessPostOffice
+    };
+
+    try {
+      const res = await API.member.updateMember(activeMemberData.id, payload);
+      if (res && (res.status === true || res.code === 'TXN')) {
+        dispatch(updateMemberDirect({
+          id: activeMemberData.id,
+          updates: {
+            name: profileForm.name,
+            mobile: profileForm.mobile,
+            email: profileForm.shop,
+            shopName: profileForm.businessName,
+            aadhar: profileForm.aadhar,
+            pan: profileForm.pan,
+            title: profileForm.title,
+            altMobile: profileForm.altMobile,
+            gender: profileForm.gender,
+            address: profileForm.address,
+            state: profileForm.state,
+            city: profileForm.city,
+            pincode: profileForm.pincode,
+            postOffice: profileForm.postOffice,
+            dob: profileForm.dob,
+            active: profileForm.active,
+            businessName: profileForm.businessName,
+            businessAddress: profileForm.businessAddress,
+            businessCity: profileForm.businessCity,
+            businessState: profileForm.businessState,
+            businessPincode: profileForm.businessPincode,
+            businessPostOffice: profileForm.businessPostOffice
+          }
+        }));
+        if (backLabel === '') {
+          onClose();
+        } else {
+          setIsEditingProfile(false);
+        }
       }
-    }));
-    setIsEditingProfile(false);
+    } catch (err) {
+      console.error("Error updating member profile:", err);
+    }
   };
 
   // ── BLOCK / UNBLOCK MEMBER TENTATIVE ──
@@ -189,7 +266,7 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
           className={styles.pageBackBtn}
           onClick={() => {
             if (isEditingProfile) {
-              setIsEditingProfile(false);
+              onClose();
             } else if (activeActionType) {
               setActiveActionType(null);
               setActionAmount('');
@@ -198,7 +275,7 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
             }
           }}
         >
-          <FaArrowLeft style={{ marginRight: '8px' }} /> Back <span className={styles.hideOnMobile}>to Dashboard</span>
+          <FaArrowLeft style={{ marginRight: '8px' }} /> Back {backLabel && <span className={styles.hideOnMobile}>{backLabel}</span>}
         </button>
         <span className={styles.controlPageTitle}>
           {isEditingProfile
@@ -512,7 +589,13 @@ const MemberControlPage = ({ activeMemberData, onClose }) => {
           <div className={styles.editPageActions}>
             <button 
               type="button" 
-              onClick={() => setIsEditingProfile(false)}
+              onClick={() => {
+                if (backLabel === '') {
+                  onClose();
+                } else {
+                  setIsEditingProfile(false);
+                }
+              }}
               className={styles.editCancelBtn}
             >
               Cancel

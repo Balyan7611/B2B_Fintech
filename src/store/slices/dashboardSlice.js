@@ -6,7 +6,7 @@ const initialState = {
   isSidebarOpen: true,
   isQuickActionsOpen: false,
   selectedDate: today,
-  wallets: { aeps: 320242.53, main: 111379.00, profit: 0.00 },
+  wallets: { aeps: 0.00, main: 0.00, profit: 0.00 },
   memberCounts: { admin: 1, masterDist: 9, distributor: 49, retailer: 603, apiUser: 16, unique: 1 },
   hoveredMenu: null,
   isMemberDropdownOpen: false,

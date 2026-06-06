@@ -14,7 +14,7 @@ import { updateRegistrationForm, setRegStep, updateMemberDirect } from '../../..
 import { MemberService } from '../../../services/member.service';
 import styles from './MemberPages.module.css';
 
-const MemberRegistration = () => {
+const MemberRegistration = ({ isModal = false, onClose }) => {
   const dispatch = useDispatch();
   const { registrationState } = useSelector((s) => s.member);
   const { currentStep, form } = registrationState;
@@ -132,81 +132,149 @@ const MemberRegistration = () => {
     { id: 4, label: 'BUSINESS' },
   ];
 
-  return (
-    <div className={styles.container} style={{ padding: '15px 15px 0px 15px', maxWidth: '100%' }}>
-      <div className={styles.cardFullMobile} style={{ marginTop: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderRadius: '24px', overflow: 'visible' }}>
-        
-        {/* HEADER */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}>
+  const mainContent = (
+    <div className={isModal ? '' : styles.cardFullMobile} style={isModal ? { marginTop: 0, overflow: 'visible' } : { marginTop: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderRadius: '24px', overflow: 'visible' }}>
+      
+      {/* HEADER */}
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid #F1F5F9', background: '#F8FAFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
           <h2 className={styles.directoryTitle} style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <FaUserPlus style={{ color: '#1756AA' }} /> Partner Onboarding Wizard
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#718096' }}>Register and onboard new retail partners to the network</p>
         </div>
-
-        {/* PREMIUM STEPPER */}
-        <div style={{ padding: '20px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
-           <div style={{ display: 'flex', alignItems: 'center', width: '80%', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '18px', left: '10%', right: '10%', height: '2px', background: '#E2E8F0', zIndex: 1 }}></div>
-              <div style={{ position: 'absolute', top: '18px', left: '10%', width: `${((currentStep-1)/3)*80}%`, height: '2px', background: '#1756AA', zIndex: 1, transition: '0.3s' }}></div>
-              
-              {steps.map((s) => (
-                <div key={s.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
-                   <div style={{ 
-                      width: '36px', height: '36px', borderRadius: '50%', 
-                      background: currentStep >= s.id ? '#1756AA' : '#fff', 
-                      color: currentStep >= s.id ? '#fff' : '#A0AEC0', 
-                      border: currentStep >= s.id ? 'none' : '2px solid #E2E8F0',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem',
-                      boxShadow: currentStep >= s.id ? '0 4px 10px rgba(23, 86, 170, 0.2)' : 'none'
-                   }}>
-                      {currentStep > s.id ? <FaCheck /> : s.id}
-                   </div>
-                   <span style={{ fontSize: '0.65rem', fontWeight: 800, color: currentStep >= s.id ? '#1756AA' : '#A0AEC0', letterSpacing: '0.5px' }}>{s.label}</span>
-                </div>
-              ))}
-           </div>
-        </div>
-
-        {/* WIZARD BODY */}
-        <div style={{ padding: '30px 24px', minHeight: '320px', background: '#fff', overflow: currentStep === 1 ? 'visible' : 'auto' }}>
-          {errorMsg && (
-            <div style={{ padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', marginBottom: '20px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-              <span>⚠️</span> {errorMsg}
-            </div>
-          )}
-          {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} errors={errors} />}
-          {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} errors={errors} />}
-          {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
-          {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
-        </div>
-
-        {/* FOOTER */}
-        <div style={{ padding: '20px 24px', borderTop: '1px solid #F1F5F9', background: '#F8FAFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px' }}>
-          <div>
-            {currentStep > 1 && (
-              <button type="button" className={styles.prevBtn} style={{ height: '40px', padding: '0 25px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep - 1)); }}>
-                <FaChevronLeft /> Previous Step
-              </button>
-            )}
-          </div>
-          
-          <div>
-            {currentStep < 4 ? (
-              <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={handleNextStep}>
-                Next Step <FaChevronRight />
-              </button>
-            ) : (
-              <button type="button" className={styles.publishBtn} style={{ height: '40px', padding: '0 35px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={handleSave} disabled={isLoading}>
-                {isLoading ? <div className={styles.spinner}></div> : <><FaCheck /> Complete Registration</>}
-              </button>
-            )}
-          </div>
-        </div>
-
+        {isModal && (
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.25rem',
+              color: '#718096',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              borderRadius: '50%',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#F1F5F9'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <FaTimes />
+          </button>
+        )}
       </div>
 
-      {/* ── SUCCESS POPUP MODAL ── */}
+      {/* PREMIUM STEPPER */}
+      <div style={{ padding: '20px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
+         <div style={{ display: 'flex', alignItems: 'center', width: '80%', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '18px', left: '10%', right: '10%', height: '2px', background: '#E2E8F0', zIndex: 1 }}></div>
+            <div style={{ position: 'absolute', top: '18px', left: '10%', width: `${((currentStep-1)/3)*80}%`, height: '2px', background: '#1756AA', zIndex: 1, transition: '0.3s' }}></div>
+            
+            {steps.map((s) => (
+              <div key={s.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
+                 <div style={{ 
+                    width: '36px', height: '36px', borderRadius: '50%', 
+                    background: currentStep >= s.id ? '#1756AA' : '#fff', 
+                    color: currentStep >= s.id ? '#fff' : '#A0AEC0', 
+                    border: currentStep >= s.id ? 'none' : '2px solid #E2E8F0',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem',
+                    boxShadow: currentStep >= s.id ? '0 4px 10px rgba(23, 86, 170, 0.2)' : 'none'
+                 }}>
+                    {currentStep > s.id ? <FaCheck /> : s.id}
+                 </div>
+                 <span style={{ fontSize: '0.65rem', fontWeight: 800, color: currentStep >= s.id ? '#1756AA' : '#A0AEC0', letterSpacing: '0.5px' }}>{s.label}</span>
+              </div>
+            ))}
+         </div>
+      </div>
+
+      {/* WIZARD BODY */}
+      <div style={{ padding: '30px 24px', minHeight: '320px', background: '#fff', overflow: currentStep === 1 ? 'visible' : 'auto' }}>
+        {errorMsg && (
+          <div style={{ padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', marginBottom: '20px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+            <span>⚠️</span> {errorMsg}
+          </div>
+        )}
+        {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} errors={errors} />}
+        {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} errors={errors} />}
+        {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
+        {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
+      </div>
+
+      {/* FOOTER */}
+      <div style={{ padding: '20px 24px', borderTop: '1px solid #F1F5F9', background: '#F8FAFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px' }}>
+        <div>
+          {currentStep > 1 && (
+            <button type="button" className={styles.prevBtn} style={{ height: '40px', padding: '0 25px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep - 1)); }}>
+              <FaChevronLeft /> Previous Step
+            </button>
+          )}
+        </div>
+        
+        <div>
+          {currentStep < 4 ? (
+            <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={handleNextStep}>
+              Next Step <FaChevronRight />
+            </button>
+          ) : (
+            <button type="button" className={styles.publishBtn} style={{ height: '40px', padding: '0 35px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={handleSave} disabled={isLoading}>
+              {isLoading ? <div className={styles.spinner}></div> : <><FaCheck /> Complete Registration</>}
+            </button>
+          )}
+        </div>
+      </div>
+
+    </div>
+  );
+
+  if (isModal) {
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1050,
+        background: 'rgba(13, 27, 62, 0.4)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }} onClick={onClose}>
+        <div style={{
+          background: '#fff',
+          borderRadius: '24px',
+          width: '100%',
+          maxWidth: '900px',
+          maxHeight: '90vh',
+          boxShadow: '0 20px 40px rgba(13, 27, 62, 0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          animation: 'fadeIn 0.3s ease-out',
+          overflowY: 'auto'
+        }} onClick={e => e.stopPropagation()}>
+          {mainContent}
+          <PopupModal 
+            show={popup.show} 
+            type={popup.type} 
+            title={popup.title} 
+            message={popup.message} 
+            onClose={() => {
+              closePopup();
+              if (popup.type === 'success') onClose();
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container} style={{ padding: '15px 15px 0px 15px', maxWidth: '100%' }}>
+      {mainContent}
       <PopupModal 
         show={popup.show} 
         type={popup.type} 

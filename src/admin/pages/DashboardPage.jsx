@@ -180,7 +180,7 @@ const SIDEBAR_LINKS = [
       { id: 'set_tpin', label: 'Set Member T-Pin' },
       { id: 'login_security', label: 'Login Security' },
       { id: 'credit_limit', label: 'Credit Limit' },
-      { id: 'registration_main', label: 'Registration' },
+      // { id: 'registration_main', label: 'Registration' },
       { id: 'manage_member', label: 'Manage Member' },
       { id: 'assign_tid', label: 'Assign TID' }
     ]
@@ -371,10 +371,10 @@ const DONUT_DATA = [
 const DONUT_COLORS = ['#1756AA', '#EAA21F', '#27AE60', '#E53E3E'];
 
 const STAT_CARDS = [
-  { id: 1, title: 'Total Transactions', value: '₹ 1,68,200', icon: FaExchangeAlt, color: 'blue' },
-  { id: 2, title: 'Total Commission', value: '₹ 7,290', icon: FaPercent, color: 'green' },
-  { id: 3, title: 'Total Charges', value: '₹ 1,150', icon: FaFileAlt, color: 'red' },
-  { id: 4, title: 'Net Flow', value: '₹ 1,59,760', icon: FaChartPie, color: 'yellow' },
+  { id: 1, title: 'Total Transactions', value: '₹ 0.00', icon: FaExchangeAlt, color: 'blue' },
+  { id: 2, title: 'Total Commission', value: '₹ 0.00', icon: FaPercent, color: 'green' },
+  { id: 3, title: 'Total Charges', value: '₹ 0.00', icon: FaFileAlt, color: 'red' },
+  { id: 4, title: 'Net Flow', value: '₹ 0.00', icon: FaChartPie, color: 'yellow' },
 ];
 
 const RECENT_TXNS = [

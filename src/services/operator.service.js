@@ -17,7 +17,11 @@ export const OperatorService = {
         return await apiService.get(`/Operator/${id}`);
     },
     
-    update: async (data) => {
-        return await apiService.put('/Operator', data);
+    create: async (formData) => {
+        return await apiService.postForm('/Operator/create', formData);
+    },
+    
+    update: async (formData) => {
+        return await apiService.putForm('/Operator/update', formData);
     }
 };

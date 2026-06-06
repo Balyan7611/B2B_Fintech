@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { API } from '../../../api/endpoints';
 import { 
-  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiSettings, FiActivity, FiZap, FiRefreshCw, FiImage, FiList
+  FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiDatabase, FiX, FiCheck, FiSettings, FiActivity, FiZap, FiRefreshCw, FiImage, FiList, FiDownload
 } from 'react-icons/fi';
 import { FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint } from 'react-icons/fa';
 import ExportButtons from '../../../shared/components/common/ExportButtons';
 import styles from '../MemberPages/MemberPages.module.css';
+import { getImageUrl } from '../../../config/siteConfig';
 
 const OperatorManagement = () => {
   const dispatch = useDispatch();
@@ -17,6 +18,39 @@ const OperatorManagement = () => {
   const [services, setServices] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Pagination State
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // File Upload State
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState('');
+
+  // Image Viewer Modal State
+  const [showImageModal, setShowImageModal] = useState({ isOpen: false, url: '' });
+
+  const handleDownloadImage = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = url.substring(url.lastIndexOf('/') + 1) || 'operator_logo.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      window.open(url, '_blank');
+    }
+  };
 
   const fetchServices = async () => {
     try {
@@ -30,16 +64,21 @@ const OperatorManagement = () => {
   const fetchOperators = async () => {
     setIsLoading(true);
     try {
-      const res = await API.operator.getAll();
-      if (res && res.status === true && Array.isArray(res.data)) {
-        setLocalOperators(res.data.map(item => ({
+      const res = await API.operator.getAll({
+        pageNumber,
+        pageSize
+      });
+      if (res && res.status === true && res.data) {
+        const items = res.data.items || [];
+        setTotalItems(res.data.totalItems || items.length);
+        setLocalOperators(items.map(item => ({
           id: item.id,
           name: item.name,
           code: item.operatorCode,
-          service: item.serviceId === 1 ? 'Prepaid' : item.serviceId === 2 ? 'Postpaid' : 'DTH',
+          service: item.serviceName || (item.serviceId === 1 ? 'Prepaid' : item.serviceId === 2 ? 'Postpaid' : 'DTH'),
           status: item.isActive,
-          addDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-GB') : '27/03/2025',
-          logo: item.image || '',
+          addDate: item.addDate ? new Date(item.addDate).toLocaleDateString('en-GB') : '27/03/2025',
+          logo: item.img ? getImageUrl(item.img, 'operators') : '',
           minValue: item.minVal !== undefined ? item.minVal.toString() : '0',
           maxValue: item.maxVal !== undefined ? item.maxVal.toString() : '0',
           downOperator: item.isOffLine,
@@ -58,9 +97,14 @@ const OperatorManagement = () => {
   };
 
   useEffect(() => {
-    fetchOperators();
     fetchServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchOperators();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageNumber, pageSize]);
 
   const [formData, setFormData] = useState({
     id: '', name: '', code: '', service: '', minValue: '0', maxValue: '0', logo: '', status: false, downOperator: false
@@ -100,7 +144,7 @@ const OperatorManagement = () => {
   };
 
   const handleDelete = () => {
-    // Delete operator is not present in OpenAPI, keep it local
+    // Delete operator is kept local since there is no API endpoint for deletion in instructions
     setLocalOperators(localOperators.filter(op => op.id !== showConfirmModal.id));
     setShowConfirmModal({ isOpen: false, id: null });
   };
@@ -110,52 +154,115 @@ const OperatorManagement = () => {
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddClick = () => {
-    setFormData({ id: '', name: '', code: '', serviceId: '', minValue: '0', maxValue: '0', logo: '', status: false, downOperator: false });
+    setFormData({ 
+      id: '', 
+      name: '', 
+      code: '', 
+      serviceId: '', 
+      minValue: '0', 
+      maxValue: '0', 
+      commission: '0', 
+      logo: '', 
+      status: true, 
+      downOperator: false 
+    });
+    setLogoPreview('');
+    setSelectedFile(null);
     setIsModalOpen(true);
   };
 
   const handleEdit = (operator) => {
-    setFormData({ ...formData, ...operator, serviceId: operator.serviceId || operator.service });
+    setFormData({
+      id: operator.id,
+      name: operator.name,
+      code: operator.code,
+      serviceId: operator.serviceId || '',
+      minValue: operator.minValue || '0',
+      maxValue: operator.maxValue || '0',
+      commission: operator.commission || '0',
+      logo: operator.logo || '',
+      status: operator.status || false,
+      downOperator: operator.downOperator || false
+    });
+    setLogoPreview(operator.logo || '');
+    setSelectedFile(null);
     setIsModalOpen(true);
+  };
+
+  const handleToggleStatus = async (operator) => {
+    try {
+      const formPayload = new FormData();
+      formPayload.append('Id', operator.id.toString());
+      formPayload.append('ServiceId', operator.serviceId.toString());
+      formPayload.append('OperatorCode', operator.code);
+      formPayload.append('Name', operator.name);
+      formPayload.append('MinVal', operator.minValue ? operator.minValue.toString() : '0');
+      formPayload.append('MaxVal', operator.maxValue ? operator.maxValue.toString() : '0');
+      formPayload.append('Commission', operator.commission ? operator.commission.toString() : '0');
+      formPayload.append('IsActive', (!operator.status).toString());
+      formPayload.append('IsPending', operator.isPending ? 'true' : 'false');
+      formPayload.append('IsOffLine', operator.downOperator ? 'true' : 'false');
+      
+      const res = await API.operator.update(formPayload);
+      if (res && res.status === true) {
+        fetchOperators();
+      }
+    } catch (err) {
+      console.error("Error toggling operator status:", err);
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        id: formData.id && !isNaN(formData.id) ? parseInt(formData.id) : 0,
-        serviceId: parseInt(formData.serviceId) || 0,
-        operatorCode: formData.code,
-        name: formData.name,
-        minVal: parseFloat(formData.minValue) || 0,
-        maxVal: parseFloat(formData.maxValue) || 0,
-        commission: parseFloat(formData.commission) || 0,
-        isActive: formData.status,
-        isPending: false,
-        isOffLine: formData.downOperator
-      };
+      const formPayload = new FormData();
+      formPayload.append('Id', formData.id && !isNaN(formData.id) ? formData.id.toString() : '0');
+      formPayload.append('ServiceId', formData.serviceId ? formData.serviceId.toString() : '0');
+      formPayload.append('OperatorCode', formData.code);
+      formPayload.append('Name', formData.name);
       
-      // Update is the only endpoint in Operator OpenAPI spec
-      if (formData.id && !isNaN(formData.id)) {
-        await API.operator.update(payload);
+      if (selectedFile) {
+        formPayload.append('File', selectedFile);
       }
-      fetchOperators();
+      
+      formPayload.append('MinVal', formData.minValue ? formData.minValue.toString() : '0');
+      formPayload.append('MaxVal', formData.maxValue ? formData.maxValue.toString() : '0');
+      formPayload.append('Commission', formData.commission ? formData.commission.toString() : '0');
+      formPayload.append('IsActive', formData.status ? 'true' : 'false');
+      formPayload.append('IsPending', 'false');
+      formPayload.append('IsOffLine', formData.downOperator ? 'true' : 'false');
+
+      let res;
+      if (formData.id && !isNaN(formData.id) && parseInt(formData.id) > 0) {
+        res = await API.operator.update(formPayload);
+      } else {
+        res = await API.operator.create(formPayload);
+      }
+
+      if (res && res.status === true) {
+        fetchOperators();
+        setIsModalOpen(false);
+        setSelectedFile(null);
+        setLogoPreview('');
+      } else {
+        setErrorMsg(res?.mess || 'Failed to save operator.');
+      }
     } catch (err) {
       console.error("Error saving operator:", err);
-      // Fallback local logic
-      if (formData.id) {
-        setLocalOperators(localOperators.map(op => op.id === formData.id ? { ...op, ...formData } : op));
-      } else {
-        const newOperator = { 
-          ...formData, 
-          id: Date.now(), 
-          addDate: new Date().toLocaleDateString('en-GB') 
-        };
-        setLocalOperators([newOperator, ...localOperators]);
-      }
-    } finally {
-      setIsModalOpen(false);
+      setErrorMsg('Failed to connect to the operator API.');
     }
   };
 
@@ -183,7 +290,15 @@ const OperatorManagement = () => {
         <div className="global-table-toolbar" style={{ padding: '20px 25px', flexWrap: 'wrap', gap: '20px', borderBottom: 'none' }}>
           <div className={styles.pillRow} style={{ alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', color: '#4E6080', fontWeight: 600 }}>Show</span>
-            <select className={styles.selectEntries} style={{ borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+            <select 
+              className={styles.selectEntries} 
+              style={{ borderRadius: '8px', border: '1px solid #E2E8F0' }}
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPageNumber(1);
+              }}
+            >
               <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
@@ -194,7 +309,7 @@ const OperatorManagement = () => {
           <ExportButtons 
             headers={['S.NO', 'OPERATOR NAME', 'CODE', 'SERVICE', 'STATUS', 'ADD DATE']}
             rows={localOperators.map((op, idx) => [
-              idx + 1, op.name, op.code, op.service, op.status ? 'ACTIVE' : 'INACTIVE', op.addDate
+              (pageNumber - 1) * pageSize + idx + 1, op.name, op.code, op.service, op.status ? 'ACTIVE' : 'INACTIVE', op.addDate
             ])}
             fileNamePrefix="operator_report"
             sheetName="Operators"
@@ -205,6 +320,8 @@ const OperatorManagement = () => {
             <input 
               type="text" 
               placeholder="Search operators..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{ borderRadius: '10px' }}
             />
           </div>
@@ -225,9 +342,13 @@ const OperatorManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {localOperators.map((op, idx) => (
+              {localOperators.filter(op => 
+                op.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                op.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                op.service?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).map((op, idx) => (
                 <tr key={op.id} className={styles.hoverRow}>
-                  <td style={{ fontWeight: 700, color: '#A0AEC0' }}>{idx + 1}</td>
+                  <td style={{ fontWeight: 700, color: '#A0AEC0' }}>{(pageNumber - 1) * pageSize + idx + 1}</td>
                   <td style={{ textAlign: 'center' }}>
                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button className={styles.editBtn} style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F8FAFC', color: '#3B82F6', border: '1px solid #E2E8F0', cursor: 'pointer' }} onClick={() => handleEdit(op)} title="Edit Operator"><FiEdit /></button>
@@ -237,7 +358,11 @@ const OperatorManagement = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                       <div style={{ width: '36px', height: '36px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', overflow: 'hidden' }}>
+                       <div 
+                         onClick={() => op.logo && setShowImageModal({ isOpen: true, url: op.logo })}
+                         style={{ width: '36px', height: '36px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6', overflow: 'hidden', cursor: op.logo ? 'pointer' : 'default' }}
+                         title={op.logo ? "Click to view image" : ""}
+                       >
                           {op.logo ? <img src={op.logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FiImage size={18} />}
                        </div>
                        <span style={{ color: '#1E293B', fontSize: '0.95rem', fontWeight: 800 }}>{op.name}</span>
@@ -251,7 +376,7 @@ const OperatorManagement = () => {
                   <td style={{ textAlign: 'center', color: '#475569', fontWeight: 700 }}>{op.service}</td>
                   <td style={{ textAlign: 'center' }}>
                      <label className={styles.switch} style={{ transform: 'scale(0.8)', margin: 0 }}>
-                        <input type="checkbox" checked={op.status} readOnly />
+                        <input type="checkbox" checked={op.status} onChange={() => handleToggleStatus(op)} />
                         <span className={styles.slider}></span>
                      </label>
                   </td>
@@ -281,29 +406,81 @@ const OperatorManagement = () => {
         {/* ── PAGINATION ── */}
         <div className="global-pagination" style={{ padding: '25px', borderTop: '1px solid #F1F5F9' }}>
           <div style={{ fontSize: '0.85rem', color: '#718096', fontWeight: 600 }}>
-            Showing 1 to 4 of 4 records
+            Showing {totalItems === 0 ? 0 : (pageNumber - 1) * pageSize + 1} to{' '}
+            {Math.min(pageNumber * pageSize, totalItems)} of {totalItems} records
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button className="global-page-btn" disabled style={{ borderRadius: '8px' }}><FiChevronLeft /></button>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '35px', height: '35px', background: '#1756AA', color: 'white', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem' }}>1</div>
-            <button className="global-page-btn" disabled style={{ borderRadius: '8px' }}><FiChevronRight /></button>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button 
+              className="global-page-btn" 
+              onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+              disabled={pageNumber <= 1 || isLoading} 
+              style={{ borderRadius: '8px' }}
+            >
+              <FiChevronLeft />
+            </button>
+            {(() => {
+              const pages = [];
+              const totalPageNumber = Math.ceil(totalItems / pageSize);
+              const delta = 2;
+              const left = Math.max(2, pageNumber - delta);
+              const right = Math.min(totalPageNumber - 1, pageNumber + delta);
+              pages.push(1);
+              if (left > 2) pages.push('...');
+              for (let i = left; i <= right; i++) pages.push(i);
+              if (right < totalPageNumber - 1) pages.push('...');
+              if (totalPageNumber > 1) pages.push(totalPageNumber);
+
+              return pages.map((p, idx) => p === '...' ? (
+                <span key={`ell-${idx}`} style={{ width: '35px', textAlign: 'center', color: '#A0AEC0', fontSize: '0.9rem' }}>...</span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPageNumber(p)}
+                  disabled={isLoading}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    width: '35px', 
+                    height: '35px', 
+                    background: p === pageNumber ? '#1756AA' : 'transparent', 
+                    color: p === pageNumber ? 'white' : '#64748B', 
+                    border: p === pageNumber ? 'none' : '1px solid #E2E8F0',
+                    borderRadius: '8px', 
+                    fontWeight: 700, 
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {p}
+                </button>
+              ));
+            })()}
+            <button 
+              className="global-page-btn" 
+              onClick={() => setPageNumber(p => Math.min(Math.ceil(totalItems / pageSize), p + 1))}
+              disabled={pageNumber >= Math.ceil(totalItems / pageSize) || isLoading} 
+              style={{ borderRadius: '8px' }}
+            >
+              <FiChevronRight />
+            </button>
           </div>
         </div>
       </div>
 
       {/* ── ADD/EDIT MODAL (DRAWER STYLE) ── */}
       {isModalOpen && (
-        <div className={styles.drawerOverlay} onClick={() => setIsModalOpen(false)}>
-          <div className={styles.drawer} onClick={(e) => e.stopPropagation()} style={{ width: '450px', maxWidth: '95%', background: '#fff' }}>
-            <div className={styles.drawerHeader} style={{ padding: '20px 25px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className={styles.drawerOverlay} style={{ backdropFilter: 'blur(5px)' }} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.drawer} onClick={(e) => e.stopPropagation()} style={{ width: '450px', maxWidth: '95%', background: '#fff', borderRadius: '20px 0 0 20px', boxShadow: '-10px 0 30px rgba(15, 23, 42, 0.08)', borderLeft: '1px solid #E2E8F0' }}>
+            <div className={styles.drawerHeader} style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' }}>
-                  <FiSettings size={18} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' }}>
+                  <FiSettings size={16} />
                 </div>
-                <h2 style={{ margin: 0, fontSize: '1.15rem', color: '#0F172A', fontWeight: 800 }}>{formData.id ? 'Operator Details Update' : 'Operator Details'}</h2>
+                <h2 style={{ margin: 0, fontSize: '1.05rem', color: '#0F172A', fontWeight: 800 }}>{formData.id ? 'Operator Details Update' : 'Operator Details'}</h2>
               </div>
-              <button onClick={() => setIsModalOpen(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}>
-                <FiX size={16} />
+              <button onClick={() => setIsModalOpen(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}>
+                <FiX size={14} />
               </button>
             </div>
             
@@ -336,14 +513,20 @@ const OperatorManagement = () => {
                       <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>Logo</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '42px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                           {formData.logo ? <img src={formData.logo} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FiImage style={{ color: '#94A3B8' }} />}
+                           {logoPreview ? <img src={logoPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FiImage style={{ color: '#94A3B8' }} />}
                         </div>
-                        <input type="file" name="logo" className={styles.inputControl} style={{ borderRadius: '8px', padding: '7px 10px', border: '1px solid #E2E8F0', background: '#fff', fontSize: '0.8rem', flex: 1 }} />
+                        <input 
+                          type="file" 
+                          name="logo" 
+                          onChange={handleFileChange}
+                          className={styles.inputControl} 
+                          style={{ borderRadius: '8px', padding: '7px 10px', border: '1px solid #E2E8F0', background: '#fff', fontSize: '0.8rem', flex: 1 }} 
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
                     <div className={styles.formGroup}>
                       <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>Min Value :</label>
                       <input type="number" name="minValue" className={styles.inputControl} value={formData.minValue} onChange={handleInputChange} style={{ borderRadius: '8px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#fff', fontSize: '0.9rem' }} />
@@ -351,6 +534,10 @@ const OperatorManagement = () => {
                     <div className={styles.formGroup}>
                       <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>Max Value :</label>
                       <input type="number" name="maxValue" className={styles.inputControl} value={formData.maxValue} onChange={handleInputChange} style={{ borderRadius: '8px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#fff', fontSize: '0.9rem' }} />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label} style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B' }}>Commission :</label>
+                      <input type="number" name="commission" className={styles.inputControl} value={formData.commission || '0'} onChange={handleInputChange} style={{ borderRadius: '8px', padding: '10px 14px', border: '1px solid #E2E8F0', background: '#fff', fontSize: '0.9rem' }} />
                     </div>
                   </div>
 
@@ -371,7 +558,7 @@ const OperatorManagement = () => {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '30px' }}>
-                  <button type="submit" style={{ padding: '10px 30px', background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)', transition: 'all 0.2s' }}>
+                  <button type="submit" style={{ padding: '10px 30px', background: 'linear-gradient(135deg, #1756AA 0%, #0D1B5E 100%)', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(23, 86, 170, 0.3)', transition: 'all 0.2s' }}>
                     Submit
                   </button>
                 </div>
@@ -608,6 +795,37 @@ const OperatorManagement = () => {
             </div>
 
             {/* FOOTER REMOVED AS REQUESTED */}
+          </div>
+        </div>
+      )}
+      {/* ── IMAGE VIEWER MODAL ── */}
+      {showImageModal.isOpen && (
+        <div 
+          onClick={() => setShowImageModal({ isOpen: false, url: '' })}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: '#fff', borderRadius: '16px', padding: '20px', width: '90%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', animation: 'modalSlideIn 0.2s ease-out' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', gap: '10px', marginBottom: '15px' }}>
+              <button 
+                onClick={() => handleDownloadImage(showImageModal.url)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#F1F5F9', color: '#1E293B', cursor: 'pointer' }}
+                title="Download logo"
+              >
+                <FiDownload size={16} />
+              </button>
+              <button 
+                onClick={() => setShowImageModal({ isOpen: false, url: '' })}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#F1F5F9', color: '#64748B', cursor: 'pointer' }}
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+            <div style={{ width: '100%', height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', borderRadius: '12px', padding: '10px', boxSizing: 'border-box' }}>
+              <img src={showImageModal.url} alt="Operator Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            </div>
           </div>
         </div>
       )}
