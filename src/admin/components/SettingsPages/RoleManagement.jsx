@@ -95,8 +95,8 @@ const RoleManagement = () => {
   const fetchServices = async () => {
     try {
       const res = await API.service.getAll();
-      if (res && Array.isArray(res)) {
-        const activeServices = res.filter(s => s.isActive);
+      if (res && res.status === true && Array.isArray(res.data)) {
+        const activeServices = res.data.filter(s => s.isActive);
         setDbServices(activeServices);
       } else {
         setErrorMsg('Failed to retrieve services from API.');

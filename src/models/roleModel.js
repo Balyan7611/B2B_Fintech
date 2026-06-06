@@ -19,7 +19,9 @@ export const RoleResponseModel = (res) => {
             service: item.service,
             packageId: item.packageID,
             outside: item.outSide !== undefined ? item.outSide : item.outRole,
-            typeRole: item.typeRole
+            typeRole: item.typeRole,
+            packageList: item.packageList || [],
+            serviceList: item.serviceList || []
         }));
     }
     
@@ -36,7 +38,9 @@ export const RoleResponseModel = (res) => {
             service: res.data.service,
             packageId: res.data.packageID,
             outside: res.data.outSide !== undefined ? res.data.outSide : res.data.outRole,
-            typeRole: res.data.typeRole
+            typeRole: res.data.typeRole,
+            packageList: res.data.packageList || [],
+            serviceList: res.data.serviceList || []
         }];
     }
     

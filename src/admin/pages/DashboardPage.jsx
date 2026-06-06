@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { API } from '../../api/endpoints';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { SITE_CONFIG } from '../../config/siteConfig';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -491,14 +492,71 @@ const DashboardPage = () => {
     return memberList.find(m => m.id === selectedMember.id) || selectedMember;
   }, [selectedMember, memberList]);
 
-  const filteredSuggestions = useMemo(() => {
-    if (!memberSearchQuery.trim()) return [];
-    const query = memberSearchQuery.toLowerCase();
-    return memberList.filter(m => 
-      m.name?.toLowerCase().includes(query) || 
-      m.mobile?.includes(query) || 
-      m.memberId?.toLowerCase().includes(query)
-    ).slice(0, 5);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSearchingMember, setIsSearchingMember] = useState(false);
+
+  useEffect(() => {
+    if (memberSearchQuery.trim().length < 1) {
+      setSuggestions([]);
+      return;
+    }
+    console.log("DashboardPage: Triggering member search for query:", memberSearchQuery);
+    const timer = setTimeout(async () => {
+      setIsSearchingMember(true);
+      const query = memberSearchQuery.toLowerCase().trim();
+      try {
+        console.log("DashboardPage: Calling API.member.search for query:", memberSearchQuery);
+        const results = await API.member.search(memberSearchQuery.trim());
+        console.log("DashboardPage: Search results returned:", results);
+        
+        // Filter local memberList case-insensitively
+        const localMatches = memberList.filter(m => 
+          (m.name && m.name.toLowerCase().includes(query)) ||
+          (m.memberId && m.memberId.toLowerCase().includes(query)) ||
+          (m.mobile && m.mobile.toLowerCase().includes(query)) ||
+          (m.email && m.email.toLowerCase().includes(query)) ||
+          (m.shopName && m.shopName.toLowerCase().includes(query))
+        );
+
+        // Merge API results with local matches, avoiding duplicates by id or memberId
+        const merged = [...(results || [])];
+        localMatches.forEach(lm => {
+          const alreadyExists = merged.some(m => 
+            String(m.id) === String(lm.id) || 
+            (m.memberId && lm.memberId && String(m.memberId).toLowerCase() === String(lm.memberId).toLowerCase())
+          );
+          if (!alreadyExists) {
+            merged.push(lm);
+          }
+        });
+
+        // Ensure all suggestions match the query case-insensitively for maximum relevance
+        const filteredSuggestions = merged.filter(m => 
+          (m.name && m.name.toLowerCase().includes(query)) ||
+          (m.memberId && m.memberId.toLowerCase().includes(query)) ||
+          (m.mobile && m.mobile.toLowerCase().includes(query)) ||
+          (m.email && m.email.toLowerCase().includes(query)) ||
+          (m.shopName && m.shopName.toLowerCase().includes(query))
+        );
+
+        setSuggestions(filteredSuggestions);
+      } catch (err) {
+        console.error("DashboardPage: Member Search Error:", err);
+        // Fallback to local filter
+        const localMatches = memberList.filter(m => 
+          (m.name && m.name.toLowerCase().includes(query)) ||
+          (m.memberId && m.memberId.toLowerCase().includes(query)) ||
+          (m.mobile && m.mobile.toLowerCase().includes(query)) ||
+          (m.email && m.email.toLowerCase().includes(query)) ||
+          (m.shopName && m.shopName.toLowerCase().includes(query))
+        );
+        setSuggestions(localMatches);
+      } finally {
+        setIsSearchingMember(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [memberSearchQuery, memberList]);
 
   const chartFilterOptions = ['Today', '7 Days', '1 Month', '3 Months', '6 Months', '1 Year', 'All Time'];
@@ -1189,7 +1247,7 @@ const DashboardPage = () => {
                     <FaSearch className={styles.searchMemberIcon} />
                     <input 
                       type="text" 
-                      placeholder="Search Member..." 
+                      placeholder="Search Member / Login ID..." 
                       className={styles.searchMemberInput}
                       value={memberSearchQuery}
                       onChange={(e) => {
@@ -1200,32 +1258,56 @@ const DashboardPage = () => {
                     />
                   </div>
 
-                  {showSearchDropdown && filteredSuggestions.length > 0 && (
+                  {showSearchDropdown && memberSearchQuery.trim().length >= 1 && (
                     <>
                       <div className={styles.dropdownBackdrop} onClick={() => setShowSearchDropdown(false)} />
                       <div className={styles.searchSuggestionsDropdown}>
-                        {filteredSuggestions.map((m) => (
-                          <button
-                            key={m.id}
-                            className={styles.suggestionItem}
-                            onClick={() => {
-                              setSelectedMember(m);
-                              setMemberSearchQuery('');
-                              setShowSearchDropdown(false);
-                            }}
-                          >
-                            <div className={styles.suggestionAvatar}>
-                              {m.name ? m.name.charAt(0).toUpperCase() : '👤'}
-                            </div>
-                            <div className={styles.suggestionText}>
-                              <span className={styles.suggestionName}>{m.name}</span>
-                              <span className={styles.suggestionMeta}>{m.memberId || 'N/A'} • {m.mobile}</span>
-                            </div>
-                            <span className={styles.suggestionBadge}>
-                              {m.memberId ? m.memberId.split(' ')[0] : 'Member'}
-                            </span>
-                          </button>
-                        ))}
+                        {isSearchingMember ? (
+                          <div style={{ padding: '15px', textAlign: 'center', color: '#718096', fontSize: '0.85rem' }}>
+                            Searching...
+                          </div>
+                        ) : suggestions.length > 0 ? (
+                          suggestions.map((m) => (
+                            <button
+                              key={m.id}
+                              className={styles.suggestionItem}
+                              onClick={() => {
+                                setSelectedMember(m);
+                                setMemberSearchQuery('');
+                                setShowSearchDropdown(false);
+                              }}
+                            >
+                              <div className={styles.suggestionAvatar}>
+                                {m.name ? m.name.charAt(0).toUpperCase() : '👤'}
+                              </div>
+                              <div className={styles.suggestionText}>
+                                <span className={styles.suggestionName}>{m.name} ({m.memberId || 'N/A'})</span>
+                                <span className={styles.suggestionMeta}>📞 {m.mobile}</span>
+                                {m.shopName && <span className={styles.suggestionMeta}>🏪 {m.shopName}</span>}
+                                <span className={styles.suggestionMeta} style={{ fontSize: '0.68rem', color: '#1756AA', fontWeight: '600', marginTop: '2px' }}>
+                                  Bal: ₹{m.mainWallet !== undefined ? m.mainWallet.toFixed(2) : '0.00'}
+                                </span>
+                              </div>
+                              <span className={`${styles.suggestionBadge} ${
+                                m.memberId && m.memberId.startsWith('RT') ? styles.badgeRetailer :
+                                m.memberId && m.memberId.startsWith('DT') ? styles.badgeDistributor :
+                                m.memberId && m.memberId.startsWith('MD') ? styles.badgeMasterDist :
+                                m.memberId && m.memberId.startsWith('AD') ? styles.badgeAdmin : styles.badgeDefault
+                              }`}>
+                                {m.memberId ? (
+                                  m.memberId.startsWith('RT') ? 'Retailer' :
+                                  m.memberId.startsWith('DT') ? 'Distributor' :
+                                  m.memberId.startsWith('MD') ? 'Master Dist.' :
+                                  m.memberId.startsWith('AD') ? 'Admin' : 'Member'
+                                ) : 'Member'}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <div style={{ padding: '15px', textAlign: 'center', color: '#718096', fontSize: '0.85rem' }}>
+                            No members found
+                          </div>
+                        )}
                       </div>
                     </>
                   )}

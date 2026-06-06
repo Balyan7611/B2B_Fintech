@@ -1037,32 +1037,33 @@
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(13, 27, 62, 0.08);
-  box-shadow: 0 12px 36px rgba(13, 27, 62, 0.15);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
   border-radius: 16px;
-  width: 320px;
+  width: 360px;
   max-height: 380px;
   overflow-y: auto;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(10px);
-  animation: modalSlideUp 0.2s ease-out;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .suggestionItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid #F1F5F9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
 }
 
 .suggestionItem:last-child {
@@ -1070,21 +1071,23 @@
 }
 
 .suggestionItem:hover {
-  background: rgba(23, 86, 170, 0.06);
+  background: linear-gradient(90deg, rgba(23, 86, 170, 0.06) 0%, rgba(23, 86, 170, 0.01) 100%);
+  transform: translateX(4px);
 }
 
 .suggestionAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1756AA, #124d96);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1756AA 0%, #1a365d 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(23, 86, 170, 0.2);
 }
 
 .suggestionText {
@@ -1092,35 +1095,60 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  gap: 2px;
 }
 
 .suggestionName {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #0D1B3E;
-  margin-bottom: 1px;
+  color: #0F172A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .suggestionMeta {
-  font-size: 0.7rem;
-  color: #718096;
+  font-size: 0.72rem;
+  color: #64748B;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .suggestionBadge {
-  background: #E2E8F0;
-  color: #4E6080;
-  border-radius: 6px;
-  padding: 2px 8px;
+  border-radius: 8px;
+  padding: 3px 8px;
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   flex-shrink: 0;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.badgeRetailer {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.badgeDistributor {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.badgeMasterDist {
+  background: #F3E8FF;
+  color: #7E22CE;
+}
+
+.badgeAdmin {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.badgeDefault {
+  background: #F1F5F9;
+  color: #475569;
 }
 
 

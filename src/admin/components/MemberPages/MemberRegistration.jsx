@@ -25,7 +25,7 @@ const MemberRegistration = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
-  const [genderOptions, setGenderOptions] = useState(['Male', 'Female']);
+  const [genderOptions, setGenderOptions] = useState(['Male', 'Female', 'Other']);
   const [roleOptions, setRoleOptions] = useState([]);
   const [packageOptions, setPackageOptions] = useState([]);
   const [stateOptions, setStateOptions] = useState([]);
@@ -67,6 +67,52 @@ const MemberRegistration = () => {
     fetchDropdownData();
   }, []);
 
+  const [errors, setErrors] = useState({});
+
+  const validateStep = (step) => {
+    let stepErrors = {};
+    if (step === 1) {
+      if (!form.role) stepErrors.role = 'Field is required';
+      if (!form.packageId) stepErrors.packageId = 'Field is required';
+    } else if (step === 2) {
+      if (!form.name || !form.name.trim()) stepErrors.name = 'Field is required';
+      if (!form.aadhar || !form.aadhar.trim()) stepErrors.aadhar = 'Field is required';
+      else if (form.aadhar.length !== 12) stepErrors.aadhar = 'Aadhar must be 12 digits';
+      if (!form.pan || !form.pan.trim()) stepErrors.pan = 'Field is required';
+      else if (form.pan.length !== 10) stepErrors.pan = 'PAN must be 10 characters';
+      if (!form.dob) stepErrors.dob = 'Field is required';
+      if (!form.mobile || !form.mobile.trim()) stepErrors.mobile = 'Field is required';
+      else if (form.mobile.length !== 10) stepErrors.mobile = 'Mobile must be 10 digits';
+      if (!form.email || !form.email.trim()) stepErrors.email = 'Field is required';
+      else if (!/\S+@\S+\.\S+/.test(form.email)) stepErrors.email = 'Invalid email format';
+    } else if (step === 3) {
+      if (!form.address1 || !form.address1.trim()) stepErrors.address1 = 'Field is required';
+      if (!form.pincode || !form.pincode.trim()) stepErrors.pincode = 'Field is required';
+      else if (form.pincode.length !== 6) stepErrors.pincode = 'Pincode must be 6 digits';
+      if (!form.state) stepErrors.state = 'Field is required';
+      if (!form.city || !form.city.trim()) stepErrors.city = 'Field is required';
+    } else if (step === 4) {
+      if (!form.businessName || !form.businessName.trim()) stepErrors.businessName = 'Field is required';
+      if (!form.bizAddress || !form.bizAddress.trim()) stepErrors.bizAddress = 'Field is required';
+      if (!form.bizState) stepErrors.bizState = 'Field is required';
+      if (!form.bizCity || !form.bizCity.trim()) stepErrors.bizCity = 'Field is required';
+      if (!form.bizPincode || !form.bizPincode.trim()) stepErrors.bizPincode = 'Field is required';
+      else if (form.bizPincode.length !== 6) stepErrors.bizPincode = 'Pincode must be 6 digits';
+    }
+
+    setErrors(prev => ({ ...prev, ...stepErrors }));
+    return Object.keys(stepErrors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    setErrorMsg('');
+    if (validateStep(currentStep)) {
+      dispatch(setRegStep(currentStep + 1));
+    } else {
+      setErrorMsg('Please fill all required fields before proceeding.');
+    }
+  };
+
   const getStateName = (id) => {
     const found = stateOptions.find(s => String(s.id) === String(id));
     return found ? found.name : (id || '');
@@ -82,71 +128,29 @@ const MemberRegistration = () => {
       value = value.replace(/\D/g, '').slice(0, 12);
     } else if (name === 'pan') {
       value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
-    } else if (name === 'pincode') {
+    } else if (name === 'pincode' || name === 'bizPincode') {
       value = value.replace(/\D/g, '').slice(0, 6);
+    }
+    
+    if (errors[name]) {
+      setErrors(prev => {
+        const copy = { ...prev };
+        delete copy[name];
+        return copy;
+      });
     }
     
     dispatch(updateRegistrationForm({ [name]: value }));
   };
 
   const handleSave = () => {
-    if (!form.role || !form.packageId) {
-      dispatch(setRegStep(1));
-      setErrorMsg('Please complete Role and Package details.');
-      return;
-    }
-    if (!form.name || !form.mobile || !form.pan || !form.aadhar) {
-      dispatch(setRegStep(2));
-      setErrorMsg('Please complete Personal and KYC details.');
-      return;
-    }
-    if (!form.address1 || !form.state) {
-      dispatch(setRegStep(3));
-      setErrorMsg('Please complete Residential Address details.');
-      return;
-    }
-    if (!form.businessName) {
-      dispatch(setRegStep(4));
-      setErrorMsg('Please complete Business details (Shop Name).');
-      return;
-    }
-
     setErrorMsg('');
-    setIsLoading(true);
+    if (!validateStep(4)) {
+      setErrorMsg('Please complete all required fields.');
+      return;
+    }
 
-    const payload = {
-        roleId: parseInt(form.role) || 0,
-        titleId: form.title === 'Mr' ? 1 : form.title === 'Mrs' ? 2 : 3,
-        packageId: parseInt(form.packageId) || 0,
-        parentId: form.upline === 'Admin' ? 1 : 1,
-        name: form.name || "",
-        email: form.email || "",
-        mobile: form.mobile || "",
-        alterNativeMobileNumber: form.whatsapp || "",
-        genderId: form.gender === 'Female' ? 2 : 1,
-        dob: form.dob || "",
-        pic: "",
-        loginOnOff: true,
-        deviceId: "",
-        appToken: "",
-        macAddress: "",
-        deviceRegister: "",
-        fromChannel: "",
-        time: 0,
-        aadhar: form.aadhar || "",
-        pan: form.pan || "",
-        address: form.address1 || "",
-        stateId: parseInt(form.state) || 1, 
-        cityId: 2, 
-        parentStr: "",
-        shopName: form.businessName || "",
-        shopAddress: form.bizAddress || "",
-        shopPinCode: form.bizPincode || "",
-        shopStateId: parseInt(form.bizState) || 1,
-        shopCityId: 2,
-        postOffice: form.postOffice || form.city || "",
-        businessPostOffice: form.bizPostOffice || form.bizCity || ""
-    };
+    setIsLoading(true);
 
     if (editingId) {
         // Mock edit for now
@@ -155,7 +159,7 @@ const MemberRegistration = () => {
         setIsModalOpen(false);
         setErrorMsg('');
     } else {
-        MemberService.createMember(payload)
+        MemberService.createMember(form)
             .then((res) => {
                 setIsLoading(false);
                 setIsModalOpen(false);
@@ -170,6 +174,7 @@ const MemberRegistration = () => {
   };
 
   const handleEdit = (member) => {
+    setErrors({});
     dispatch(updateRegistrationForm(member));
     setEditingId(member.id);
     dispatch(setRegStep(1));
@@ -206,6 +211,7 @@ const MemberRegistration = () => {
           </div>
           <button onClick={() => {
               setEditingId(null);
+              setErrors({});
               dispatch(updateRegistrationForm({ role: '', upline: '', packageId: '', title: 'Mr', gender: 'Male', name: '', aadhar: '', pan: '', dob: '', mobile: '', whatsapp: '', email: '', address1: '', pincode: '', postOffice: '', city: '', state: '', businessName: '', bizAddress: '', bizPincode: '', bizPostOffice: '', bizCity: '', bizState: '' }));
               dispatch(setRegStep(1));
               setIsModalOpen(true);
@@ -350,8 +356,8 @@ const MemberRegistration = () => {
       {/* ── REGISTRATION MODAL ── */}
       {isModalOpen && (
         <div className={styles.modalOverlay} style={{ zIndex: 4000 }}>
-          <div className={styles.modalContainer} style={{ width: '750px', borderRadius: '24px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div className={styles.modalHeader} style={{ padding: '20px 30px', borderBottom: '1px solid #F1F5F9' }}>
+          <div className={styles.modalContainer} style={{ width: '900px', borderRadius: '24px', maxHeight: '95vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className={styles.modalHeader} style={{ padding: '10px 24px', borderBottom: '1px solid #F1F5F9' }}>
                <div>
                   <h3 className={styles.modalTitle} style={{ fontSize: '1.25rem', margin: 0 }}>Member Onboarding</h3>
                   <p className={styles.modalSubtitle} style={{ fontSize: '0.8rem', margin: 0, color: '#718096' }}>Complete the steps to register a new partner</p>
@@ -362,7 +368,7 @@ const MemberRegistration = () => {
             </div>
 
             {/* PREMIUM STEPPER */}
-            <div style={{ padding: '15px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ padding: '10px 0', background: '#FBFDFF', borderBottom: '1.5px solid #F1F5F9', display: 'flex', justifyContent: 'center' }}>
                <div style={{ display: 'flex', alignItems: 'center', width: '80%', position: 'relative' }}>
                   <div style={{ position: 'absolute', top: '18px', left: '10%', right: '10%', height: '2px', background: '#E2E8F0', zIndex: 1 }}></div>
                   <div style={{ position: 'absolute', top: '18px', left: '10%', width: `${((currentStep-1)/3)*80}%`, height: '2px', background: '#1756AA', zIndex: 1, transition: '0.3s' }}></div>
@@ -385,19 +391,19 @@ const MemberRegistration = () => {
                </div>
             </div>
 
-            <div className={styles.modalBody} style={{ padding: '25px 30px', flex: 1, overflowY: 'auto' }}>
+            <div className={styles.modalBody} style={{ padding: '15px 24px', flex: 1, overflowY: 'auto' }}>
               {errorMsg && (
                 <div style={{ padding: '12px 16px', background: '#FFF5F5', color: '#E53E3E', borderRadius: '8px', marginBottom: '16px', border: '1px solid #FEB2B2', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, animation: 'fadeIn 0.3s ease' }}>
                   <span>⚠️</span> {errorMsg}
                 </div>
               )}
-              {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} roleOptions={roleOptions} packageOptions={packageOptions} />}
-              {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} />}
-              {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} />}
-              {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} />}
+              {currentStep === 1 && <Step1 form={form} onChange={handleInputChange} roleOptions={roleOptions} packageOptions={packageOptions} errors={errors} />}
+              {currentStep === 2 && <Step2 form={form} onChange={handleInputChange} genderOptions={genderOptions} errors={errors} />}
+              {currentStep === 3 && <Step3 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
+              {currentStep === 4 && <Step4 form={form} onChange={handleInputChange} states={stateOptions} errors={errors} />}
             </div>
 
-            <div className={styles.modalFooter} style={{ padding: '15px 30px', borderTop: '1px solid #F1F5F9', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className={styles.modalFooter} style={{ padding: '10px 24px', borderTop: '1px solid #F1F5F9', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 {currentStep > 1 && (
                   <button type="button" className={styles.prevBtn} style={{ height: '40px', padding: '0 25px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep - 1)); }}>
@@ -408,7 +414,7 @@ const MemberRegistration = () => {
               
               <div>
                 {currentStep < 4 ? (
-                  <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setErrorMsg(''); dispatch(setRegStep(currentStep + 1)); }}>
+                  <button type="button" className={styles.nextBtn} style={{ height: '40px', padding: '0 30px', fontSize: '0.9rem', background: '#1756AA', color: '#fff', borderRadius: '8px', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, cursor: 'pointer' }} onClick={handleNextStep}>
                     Next Step <FaChevronRight />
                   </button>
                 ) : (
@@ -425,43 +431,52 @@ const MemberRegistration = () => {
   );
 };
 
-const Step1 = ({ form, onChange, roleOptions = [], packageOptions = [] }) => (
-  <div className={styles.gridTwo} style={{ gap: '20px' }}>
-    <div className={styles.formGroup}>
-      <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <FaUserTag style={{ color: '#1756AA' }} /> SELECT ROLE
-      </label>
-      <select name="role" className={styles.selectControl} style={{ height: '40px' }} value={form.role} onChange={onChange}>
-        <option value="">Select Role</option>
-        {roleOptions.map(r => (
-          <option key={r.id} value={r.id}>{r.name}</option>
-        ))}
-      </select>
-    </div>
-    <div className={styles.formGroup}>
-      <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <FaUserPlus style={{ color: '#1756AA' }} /> SELECT UPLINE
-      </label>
-      <select name="upline" className={styles.selectControl} style={{ height: '40px' }} value={form.upline} onChange={onChange}>
-        <option value="">Select Upline</option>
-        <option value="Admin">Admin</option>
-      </select>
-    </div>
-    <div className={styles.formGroup}>
-      <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <FaBriefcase style={{ color: '#1756AA' }} /> PACKAGE ID
-      </label>
-      <select name="packageId" className={styles.selectControl} style={{ height: '40px' }} value={form.packageId} onChange={onChange}>
-        <option value="">Select Package</option>
-        {packageOptions.map(p => (
-          <option key={p.id} value={p.id}>{p.name}</option>
-        ))}
-      </select>
-    </div>
-  </div>
-);
+const Step1 = ({ form, onChange, roleOptions = [], packageOptions = [], errors = {} }) => {
+  const selectedRoleObj = roleOptions.find(r => String(r.id) === String(form.role));
+  const dynamicPackageOptions = (selectedRoleObj && selectedRoleObj.packageList && selectedRoleObj.packageList.length > 0)
+    ? selectedRoleObj.packageList
+    : packageOptions;
 
-const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female'] }) => (
+  return (
+    <div className={styles.gridTwo} style={{ gap: '20px' }}>
+      <div className={styles.formGroup}>
+        <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FaUserTag style={{ color: '#1756AA' }} /> SELECT ROLE
+        </label>
+        <select name="role" className={styles.selectControl} style={{ height: '40px' }} value={form.role} onChange={onChange}>
+          <option value="">Select Role</option>
+          {roleOptions.map(r => (
+            <option key={r.id} value={r.id}>{r.name}</option>
+          ))}
+        </select>
+        {errors.role && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.role}</span>}
+      </div>
+      <div className={styles.formGroup}>
+        <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FaUserPlus style={{ color: '#1756AA' }} /> SELECT UPLINE
+        </label>
+        <select name="upline" className={styles.selectControl} style={{ height: '40px' }} value={form.upline} onChange={onChange}>
+          <option value="">Select Upline</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div className={styles.formGroup}>
+        <label style={{ fontWeight: 700, fontSize: '0.75rem', color: '#4E6080', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FaBriefcase style={{ color: '#1756AA' }} /> PACKAGE ID
+        </label>
+        <select name="packageId" className={styles.selectControl} style={{ height: '40px' }} value={form.packageId} onChange={onChange}>
+          <option value="">Select Package</option>
+          {dynamicPackageOptions.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        {errors.packageId && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.packageId}</span>}
+      </div>
+    </div>
+  );
+};
+
+const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female', 'Other'], errors = {} }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
     <div className={styles.gridTwo}>
       <div className={styles.formGroup}>
@@ -500,12 +515,14 @@ const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female'] }) => (
         <div className={styles.inputWrap}>
           <input type="text" name="name" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="Enter name" value={form.name} onChange={onChange} />
         </div>
+        {errors.name && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.name}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>AADHAR NUMBER</label>
         <div className={styles.inputWrap}>
           <input type="text" name="aadhar" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="XXXX XXXX XXXX" value={form.aadhar} onChange={onChange} />
         </div>
+        {errors.aadhar && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.aadhar}</span>}
       </div>
     </div>
 
@@ -515,12 +532,14 @@ const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female'] }) => (
         <div className={styles.inputWrap}>
           <input type="text" name="pan" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="ABCDE1234F" value={form.pan} onChange={onChange} />
         </div>
+        {errors.pan && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.pan}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>DATE OF BIRTH</label>
         <div className={styles.inputWrap}>
           <input type="date" name="dob" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} value={form.dob} onChange={onChange} />
         </div>
+        {errors.dob && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.dob}</span>}
       </div>
     </div>
 
@@ -530,18 +549,29 @@ const Step2 = ({ form, onChange, genderOptions = ['Male', 'Female'] }) => (
         <div className={styles.inputWrap}>
           <input type="text" name="mobile" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="+91" value={form.mobile} onChange={onChange} />
         </div>
+        {errors.mobile && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.mobile}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>WHATSAPP NUMBER</label>
         <div className={styles.inputWrap}>
-          <input type="text" name="whatsapp" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="+91" value={form.whatsapp} onChange={onChange} />
+          <input type="text" name="whatsapp" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="+91 (Optional)" value={form.whatsapp} onChange={onChange} />
         </div>
+      </div>
+    </div>
+
+    <div className={styles.gridTwo}>
+      <div className={styles.formGroup}>
+        <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>EMAIL ADDRESS</label>
+        <div className={styles.inputWrap}>
+          <input type="email" name="email" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="Enter email address" value={form.email} onChange={onChange} />
+        </div>
+        {errors.email && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.email}</span>}
       </div>
     </div>
   </div>
 );
 
-const Step3 = ({ form, onChange, states }) => (
+const Step3 = ({ form, onChange, states, errors = {} }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
     <div className={styles.gridTwo}>
       <div className={styles.formGroup}>
@@ -549,12 +579,14 @@ const Step3 = ({ form, onChange, states }) => (
         <div className={styles.inputWrap}>
           <input type="text" name="address1" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="House no, Street..." value={form.address1} onChange={onChange} />
         </div>
+        {errors.address1 && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.address1}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>AREA PINCODE</label>
         <div className={styles.inputWrap}>
           <input type="text" name="pincode" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="6 digit code" value={form.pincode} onChange={onChange} />
         </div>
+        {errors.pincode && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.pincode}</span>}
       </div>
     </div>
     <div className={styles.gridTwo}>
@@ -566,18 +598,20 @@ const Step3 = ({ form, onChange, states }) => (
              {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
            </select>
         </div>
+        {errors.state && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.state}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>CITY / DISTRICT</label>
         <div className={styles.inputWrap}>
            <input type="text" name="city" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px', fontSize: '0.85rem' }} placeholder="Enter city name" value={form.city} onChange={onChange} />
         </div>
+        {errors.city && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.city}</span>}
       </div>
     </div>
   </div>
 );
 
-const Step4 = ({ form, onChange, states }) => (
+const Step4 = ({ form, onChange, states, errors = {} }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
     <div className={styles.gridTwo}>
       <div className={styles.formGroup}>
@@ -585,12 +619,14 @@ const Step4 = ({ form, onChange, states }) => (
         <div className={styles.inputWrap}>
           <input type="text" name="businessName" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="Enter shop name" value={form.businessName} onChange={onChange} />
         </div>
+        {errors.businessName && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.businessName}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>BUSINESS ADDRESS</label>
         <div className={styles.inputWrap}>
           <input type="text" name="bizAddress" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="Shop address" value={form.bizAddress} onChange={onChange} />
         </div>
+        {errors.bizAddress && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.bizAddress}</span>}
       </div>
     </div>
     <div className={styles.gridTwo}>
@@ -602,12 +638,24 @@ const Step4 = ({ form, onChange, states }) => (
              {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
            </select>
         </div>
+        {errors.bizState && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.bizState}</span>}
       </div>
       <div className={styles.formGroup}>
         <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>BUSINESS CITY</label>
         <div className={styles.inputWrap}>
-           <input type="text" name="bizCity" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px', fontSize: '0.85rem' }} value={form.bizCity} onChange={onChange} />
+           <input type="text" name="bizCity" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px', fontSize: '0.85rem' }} placeholder="Enter business city" value={form.bizCity} onChange={onChange} />
         </div>
+        {errors.bizCity && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.bizCity}</span>}
+      </div>
+    </div>
+
+    <div className={styles.gridTwo}>
+      <div className={styles.formGroup}>
+        <label style={{ fontWeight: 700, fontSize: '0.7rem' }}>BUSINESS PINCODE</label>
+        <div className={styles.inputWrap}>
+          <input type="text" name="bizPincode" className={styles.inputControl} style={{ height: '38px', paddingLeft: '15px' }} placeholder="6 digit code" value={form.bizPincode} onChange={onChange} />
+        </div>
+        {errors.bizPincode && <span style={{ color: '#E53E3E', fontSize: '0.72rem', marginTop: '4px', display: 'block', fontWeight: 600 }}>{errors.bizPincode}</span>}
       </div>
     </div>
   </div>
