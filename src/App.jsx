@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import AdminLoginPage from './admin/pages/AdminLoginPage';
 import DashboardPage from './admin/pages/DashboardPage';
 import { SITE_CONFIG } from './config/siteConfig';
@@ -49,11 +49,62 @@ import RefundPolicyPage from './public/pages/RefundPolicyPage';
 import RegisterDetailsPage from './public/pages/RegisterDetailsPage';
 import TermsPage from './public/pages/TermsPage';
 import { AuthGuard } from './security/auth-guard';
+import { clearSession } from './utils/authUtils';
 import { setNavScrolled, setNotification } from './store/slices/uiSlice';
 import GlobalLoaderAndToast from './components/GlobalLoaderAndToast';
 
 function App() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // 15 minutes of inactivity limit (900,000 ms)
+    const INACTIVITY_LIMIT = 15 * 60 * 1000;
+    let timeoutId;
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      const hasAdmin = localStorage.getItem('admin_token');
+      const hasAccess = localStorage.getItem('access_token');
+      const session = localStorage.getItem('bss_current_session');
+      
+      if ((hasAdmin || hasAccess) && session) {
+        timeoutId = setTimeout(handleAutoLogout, INACTIVITY_LIMIT);
+      }
+    };
+
+    const handleAutoLogout = () => {
+      const isAdminPath = location.pathname.startsWith('/admin');
+      clearSession();
+      dispatch(setNotification({ 
+        type: 'error', 
+        message: 'Session expired due to inactivity. Please login again.' 
+      }));
+      
+      if (isAdminPath) {
+        navigate('/admin/login', { replace: true });
+      } else {
+        navigate('/member/login', { replace: true });
+      }
+    };
+
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    resetTimer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [dispatch, navigate, location.pathname]);
 
   useEffect(() => {
     // Dynamic page title and description

@@ -7,6 +7,7 @@ import {
   FaFileExcel, FaFilePdf, FaFileCsv, FaCopy, FaPrint 
 } from 'react-icons/fa';
 import styles from '../MemberPages/MemberPages.module.css';
+import { sanitizeHTML } from '../../../utils/securityUtils';
 
 const ManageNews = () => {
   const dispatch = useDispatch();
@@ -217,7 +218,7 @@ const ManageNews = () => {
                           <span style={{ color: '#1756AA', fontSize: '0.95rem', fontWeight: 800 }}>{item.title}</span>
                           <p 
                             style={{ color: '#718096', fontSize: '0.75rem', margin: 0, fontWeight: 500, lineHeight: 1.5 }}
-                            dangerouslySetInnerHTML={{ __html: item.content.length > 80 ? item.content.substring(0, 80) + '...' : item.content }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHTML(item.content.length > 80 ? item.content.substring(0, 80) + '...' : item.content) }}
                           />
                        </div>
                     </div>

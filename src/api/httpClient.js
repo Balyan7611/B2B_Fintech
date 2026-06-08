@@ -26,7 +26,22 @@ const stopLoading = () => {
 };
 
 httpClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
+    // Check if system is frozen
+    const isFrozen = localStorage.getItem('bss_system_frozen') === 'true';
+    const method = (config.method || 'get').toLowerCase();
+    const isWrite = ['post', 'put', 'delete', 'patch'].includes(method);
+    const isAuthRequest = config.url.includes('/login') || config.url.includes('/register') || config.url.includes('/forgot') || config.url.includes('/otp');
+
+    if (isFrozen && isWrite && !isAuthRequest) {
+        // If they are not logged in as Admin, block the transaction
+        const isAdmin = sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token');
+        if (!isAdmin) {
+            const error = new Error("System Freeze: All transactions are temporarily suspended by the Administrator for system security.");
+            return Promise.reject(error);
+        }
+    }
+
+    const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     
     if (config.data instanceof FormData) {

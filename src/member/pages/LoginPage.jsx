@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FaArrowLeft,
   FaArrowRight,
@@ -19,7 +19,7 @@ import { API } from '../../api/endpoints';
 import { SITE_CONFIG } from '../../config/siteConfig';
 import styles from '../../pages/LoginPage.module.css';
 import { backToStep1, proceedToStep2, setPassword, setUserId } from '../../store/slices/loginSlice';
-import { decodeToken } from '../../utils/authUtils';
+import { decodeToken, saveSession, getSession } from '../../utils/authUtils';
 
 const FEATURES = [
   { icon: FaShieldAlt,  label: 'Bank-Grade Security' },
@@ -44,6 +44,50 @@ const LoginPage = () => {
   const [rePassword, setRePassword] = useState('');
   const [modalError, setModalError] = useState('');
   const [locationStatus, setLocationStatus] = useState(null);
+
+  // Brute force protection
+  const [failedAttempts, setFailedAttempts] = useState(() => {
+    const attempts = localStorage.getItem('member_login_attempts');
+    return attempts ? parseInt(attempts, 10) : 0;
+  });
+  const [lockoutUntil, setLockoutUntil] = useState(() => {
+    const until = localStorage.getItem('member_lockout_until');
+    return until ? parseInt(until, 10) : 0;
+  });
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    const session = getSession();
+    if (token && session && session.sessionId) {
+      const decoded = decodeToken(token);
+      if (decoded && (decoded.role === '2' || decoded.role === 2 || decoded.role > 1)) {
+        navigate('/member/dashboard', { replace: true });
+      }
+    }
+  }, [navigate]);
+
+  // Lockout countdown timer
+  useEffect(() => {
+    if (lockoutUntil > Date.now()) {
+      setRemainingTime(Math.ceil((lockoutUntil - Date.now()) / 1000));
+      const interval = setInterval(() => {
+        const diff = lockoutUntil - Date.now();
+        if (diff <= 0) {
+          setLockoutUntil(0);
+          setFailedAttempts(0);
+          localStorage.removeItem('member_login_attempts');
+          localStorage.removeItem('member_lockout_until');
+          setRemainingTime(0);
+          clearInterval(interval);
+        } else {
+          setRemainingTime(Math.ceil(diff / 1000));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [lockoutUntil]);
 
   const checkLocationBeforeLogin = () => {
     return new Promise((resolve, reject) => {
@@ -146,6 +190,12 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
+
+    if (remainingTime > 0) {
+      setErrorMessage(`Too many failed attempts. Try again in ${remainingTime} seconds.`);
+      setLoginError(true);
+      return;
+    }
     
     if (!password.trim()) {
       setLoginError(true);
@@ -168,22 +218,46 @@ const LoginPage = () => {
         
         if (!token) throw new Error("Token missing from server");
         
-        localStorage.setItem('access_token', token);
-        localStorage.setItem('member_token', token);
         const decoded = decodeToken(token);
         
         if (decoded && (decoded.role === '2' || decoded.role === 2 || decoded.role > 1)) {
-           navigate('/member/dashboard');
+          // Reset brute force counters on success
+          localStorage.removeItem('member_login_attempts');
+          localStorage.removeItem('member_lockout_until');
+          setFailedAttempts(0);
+          setLockoutUntil(0);
+
+          localStorage.setItem('access_token', token);
+          localStorage.setItem('member_token', token);
+          sessionStorage.setItem('access_token', token);
+          sessionStorage.setItem('member_token', token);
+          
+          // Save session
+          saveSession({ mobile: userId, fullName: decoded.name || 'Member', role: 2 });
+          
+          navigate('/member/dashboard', { replace: true });
         } else {
-           setErrorMessage("Unauthorized access - Member only");
-           setLoginError(true);
+          throw new Error("Unauthorized access - Member only");
         }
       } else {
-        setErrorMessage(response.mess || "Login Failed");
-        setLoginError(true);
+        throw new Error(response.mess || "Login Failed");
       }
     } catch (err) {
-      setErrorMessage(err.message || "Login Failed");
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      localStorage.setItem('member_login_attempts', newAttempts);
+
+      let errorMsg = err.message || "Login Failed";
+      if (newAttempts >= 5) {
+        const lockoutTime = Date.now() + 5 * 60 * 1000; // 5 minutes lockout
+        setLockoutUntil(lockoutTime);
+        localStorage.setItem('member_lockout_until', lockoutTime);
+        errorMsg = "Too many failed attempts. Account locked out for 5 minutes.";
+      } else {
+        errorMsg = `${errorMsg} (Attempt ${newAttempts}/5)`;
+      }
+
+      setErrorMessage(errorMsg);
       setLoginError(true);
     } finally {
       setLoading(false);
@@ -359,9 +433,15 @@ const LoginPage = () => {
                     <button
                       type="submit"
                       className={`${styles.primaryBtn} ${loading ? styles.btnLoading : ''}`}
-                      disabled={loading || (locationStatus?.status === 'off')}
+                      disabled={loading || (locationStatus?.status === 'off') || (remainingTime > 0)}
                     >
-                      {loading ? <div className={styles.spinner}></div> : <>Login Securely <FaShieldAlt /></>}
+                      {loading ? (
+                        <div className={styles.spinner}></div>
+                      ) : remainingTime > 0 ? (
+                        `Locked out (${remainingTime}s)`
+                      ) : (
+                        <>Login Securely <FaShieldAlt /></>
+                      )}
                     </button>
 
                     <button type="button" className={styles.backBtn} onClick={handleBack}>

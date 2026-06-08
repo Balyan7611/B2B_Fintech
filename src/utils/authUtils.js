@@ -47,12 +47,27 @@ export const findUserByCredentials = (adminId, password) => {
 };
 
 export const saveSession = (user) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ adminId: user.adminId, name: user.fullName, loggedInAt: new Date().toISOString() }));
+  let sessionId = '';
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(4);
+    window.crypto.getRandomValues(array);
+    sessionId = Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('-');
+  } else {
+    sessionId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  }
+  const sessionData = JSON.stringify({
+    adminId: user?.adminId || user?.email || user?.mobile || 'user',
+    name: user?.fullName || user?.name || 'User',
+    sessionId,
+    loggedInAt: new Date().toISOString()
+  });
+  localStorage.setItem(SESSION_KEY, sessionData);
+  sessionStorage.setItem(SESSION_KEY, sessionData);
 };
 
 export const getSession = () => {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY));
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY));
   } catch {
     return null;
   }
@@ -60,6 +75,11 @@ export const getSession = () => {
 
 export const clearSession = () => {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('member_token');
+  localStorage.removeItem('user_data');
+  sessionStorage.clear();
 };
 
 export const decodeToken = (token) => {

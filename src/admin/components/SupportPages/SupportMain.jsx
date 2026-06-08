@@ -18,6 +18,7 @@ import {
   FaCheck, FaSpinner, FaPlus, FaTimes, FaHeadset, FaInfoCircle, FaPowerOff
 } from 'react-icons/fa';
 import styles from './AddSupport.module.css';
+import { sanitizeHTML } from '../../../utils/securityUtils';
 
 const SupportMain = () => {
   const dispatch = useDispatch();
@@ -197,7 +198,7 @@ const SupportMain = () => {
                   <td>
                     <div
                       className={styles.descCell}
-                      dangerouslySetInnerHTML={{ __html: row.description }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(row.description) }}
                     />
                   </td>
                   <td>

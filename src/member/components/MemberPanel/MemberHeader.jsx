@@ -28,6 +28,7 @@ import {
 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { clearSession } from '../../../utils/authUtils';
 import { SITE_CONFIG } from '../../../config/siteConfig';
 import { requestForToken, setupForegroundListener } from '../../../firebase';
 import {
@@ -100,7 +101,8 @@ const MemberHeader = () => {
   };
 
   const confirmLogout = () => {
-    navigate('/');
+    clearSession();
+    navigate('/member/login');
   };
 
   const handleNavigate = (path) => {

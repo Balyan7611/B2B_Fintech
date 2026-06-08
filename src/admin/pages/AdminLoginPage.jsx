@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FaArrowLeft,
   FaArrowRight,
@@ -16,7 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { API } from '../../api/endpoints';
 import { SITE_CONFIG } from '../../config/siteConfig';
 import styles from '../../pages/LoginPage.module.css';
-import { decodeToken } from '../../utils/authUtils';
+import { decodeToken, saveSession, getSession } from '../../utils/authUtils';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -27,6 +27,50 @@ const AdminLoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [locationStatus, setLocationStatus] = useState(null);
+
+  // Brute-force protection: Lockout after 5 failed attempts
+  const [failedAttempts, setFailedAttempts] = useState(() => {
+    const attempts = localStorage.getItem('admin_login_attempts');
+    return attempts ? parseInt(attempts, 10) : 0;
+  });
+  const [lockoutUntil, setLockoutUntil] = useState(() => {
+    const until = localStorage.getItem('admin_lockout_until');
+    return until ? parseInt(until, 10) : 0;
+  });
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token');
+    const session = getSession();
+    if (token && session && session.sessionId) {
+      const decoded = decodeToken(token);
+      if (decoded && (decoded.role === '1' || decoded.role === 1)) {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [navigate]);
+
+  // Lockout countdown timer
+  useEffect(() => {
+    if (lockoutUntil > Date.now()) {
+      setRemainingTime(Math.ceil((lockoutUntil - Date.now()) / 1000));
+      const interval = setInterval(() => {
+        const diff = lockoutUntil - Date.now();
+        if (diff <= 0) {
+          setLockoutUntil(0);
+          setFailedAttempts(0);
+          localStorage.removeItem('admin_login_attempts');
+          localStorage.removeItem('admin_lockout_until');
+          setRemainingTime(0);
+          clearInterval(interval);
+        } else {
+          setRemainingTime(Math.ceil(diff / 1000));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [lockoutUntil]);
 
   const checkLocationBeforeLogin = () => {
     return new Promise((resolve, reject) => {
@@ -77,6 +121,12 @@ const AdminLoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    if (remainingTime > 0) {
+      setError(`Too many failed attempts. Try again in ${remainingTime} seconds.`);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -90,20 +140,45 @@ const AdminLoginPage = () => {
         
         if (!token) throw new Error("Token missing from server");
         
-        localStorage.setItem('admin_token', token);
-        localStorage.setItem('access_token', token);
         const decoded = decodeToken(token);
         
         if (decoded && (decoded.role === '1' || decoded.role === 1)) {
-            navigate('/admin/dashboard');
+          // Reset brute force counters on success
+          localStorage.removeItem('admin_login_attempts');
+          localStorage.removeItem('admin_lockout_until');
+          setFailedAttempts(0);
+          setLockoutUntil(0);
+          
+          localStorage.setItem('admin_token', token);
+          localStorage.setItem('access_token', token);
+          sessionStorage.setItem('admin_token', token);
+          sessionStorage.setItem('access_token', token);
+          
+          // Save the secure session
+          saveSession({ adminId, fullName: decoded.name || 'Admin', role: 1 });
+          
+          navigate('/admin/dashboard', { replace: true });
         } else {
-            setError("Unauthorized access - Admin only");
+          throw new Error("Unauthorized access - Admin only");
         }
       } else {
-        setError(response.mess || "Admin Authentication Failed");
+        throw new Error(response.mess || "Admin Authentication Failed");
       }
     } catch (err) {
-      setError(err.message || "Admin Authentication Failed");
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      localStorage.setItem('admin_login_attempts', newAttempts);
+      
+      let errorMsg = err.message || "Admin Authentication Failed";
+      if (newAttempts >= 5) {
+        const lockoutTime = Date.now() + 5 * 60 * 1000; // 5 minutes lockout
+        setLockoutUntil(lockoutTime);
+        localStorage.setItem('admin_lockout_until', lockoutTime);
+        errorMsg = "Too many failed attempts. Account locked out for 5 minutes.";
+      } else {
+        errorMsg = `${errorMsg} (Attempt ${newAttempts}/5)`;
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -258,9 +333,15 @@ const AdminLoginPage = () => {
                     <button
                       type="submit"
                       className={`${styles.primaryBtn} ${loading ? styles.btnLoading : ''}`}
-                      disabled={loading || (locationStatus?.status === 'off')}
+                      disabled={loading || (locationStatus?.status === 'off') || (remainingTime > 0)}
                     >
-                      {loading ? <div className={styles.spinner}></div> : <>Grant Admin Access <FaShieldAlt /></>}
+                      {loading ? (
+                        <div className={styles.spinner}></div>
+                      ) : remainingTime > 0 ? (
+                        `Locked out (${remainingTime}s)`
+                      ) : (
+                        <>Grant Admin Access <FaShieldAlt /></>
+                      )}
                     </button>
 
                     <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>

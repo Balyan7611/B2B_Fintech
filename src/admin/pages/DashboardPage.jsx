@@ -14,6 +14,7 @@ import {
   setIsMemberDropdownOpen
 } from '../../store/slices/dashboardSlice';
 import { clearSession, getSession } from '../../utils/authUtils';
+import { setNotification } from '../../store/slices/uiSlice';
 import {
   FaBars, FaSearch, FaWallet, FaSignOutAlt, FaTh,
   FaMobileAlt, FaFingerprint, FaMoneyBillWave, FaUsers,
@@ -423,6 +424,45 @@ const DashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Emergency Freeze Switch
+  const [isSystemFrozen, setIsSystemFrozen] = useState(() => {
+    return localStorage.getItem('bss_system_frozen') === 'true';
+  });
+  const [showFreezeModal, setShowFreezeModal] = useState(false);
+  const [freezePassword, setFreezePassword] = useState('');
+  const [freezeModalError, setFreezeModalError] = useState('');
+  const [freezeMessage, setFreezeMessage] = useState('⚠️ SYSTEM NOTICE: All transactions and wallet transfers are temporarily suspended by the Admin for security.');
+
+  const handleFreezeToggleClick = () => {
+    setFreezePassword('');
+    setFreezeModalError('');
+    setShowFreezeModal(true);
+  };
+
+  const handleConfirmFreeze = (e) => {
+    e.preventDefault();
+    if (freezePassword === '1234') {
+      const nextState = !isSystemFrozen;
+      localStorage.setItem('bss_system_frozen', String(nextState));
+      if (nextState) {
+        localStorage.setItem('bss_system_freeze_message', freezeMessage || '⚠️ SYSTEM NOTICE: All transactions and wallet transfers are temporarily suspended by the Admin for security.');
+      } else {
+        localStorage.removeItem('bss_system_freeze_message');
+      }
+      window.dispatchEvent(new Event('system_freeze_updated')); // Notify other components in the same window
+      
+      setIsSystemFrozen(nextState);
+      setShowFreezeModal(false);
+      setFreezePassword('');
+      dispatch(setNotification({
+        type: nextState ? 'error' : 'success',
+        message: nextState ? '⚠️ EMERGENCY FREEZE ACTIVE: All services disabled!' : '✅ EMERGENCY FREEZE REMOVED: Services activated.'
+      }));
+    } else {
+      setFreezeModalError('Incorrect security password.');
+    }
+  };
   const { isSidebarOpen, isQuickActionsOpen, selectedDate, wallets, memberCounts, hoveredMenu, isMemberDropdownOpen } = useSelector((s) => s.dashboard);
   const actionPanelRef = useRef(null);
   const hoverTimeoutRef = useRef(null);
@@ -871,6 +911,48 @@ const DashboardPage = () => {
                 <span className={styles.walletLabel}>Profit Wallet</span>
                 <span className={styles.walletAmount}>{wallets.profit.toFixed(2)}</span>
               </div>
+            </div>
+          </div>
+          {/* Kill Switch (Emergency Freeze) */}
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: isSystemFrozen ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: `1px solid ${isSystemFrozen ? '#EF4444' : '#10B981'}`,
+              cursor: 'pointer',
+              userSelect: 'none',
+              marginRight: '15px'
+            }}
+            onClick={handleFreezeToggleClick}
+            title={isSystemFrozen ? 'System is Frozen! Click to Activate Services.' : 'Emergency Kill Switch: Click to Freeze All Services.'}
+          >
+            <FaExclamationTriangle style={{ color: isSystemFrozen ? '#EF4444' : '#10B981', fontSize: '1rem' }} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isSystemFrozen ? '#EF4444' : '#10B981' }}>
+              {isSystemFrozen ? 'SYSTEM FROZEN' : 'SYSTEM ACTIVE'}
+            </span>
+            <div style={{
+              width: '32px',
+              height: '18px',
+              background: isSystemFrozen ? '#EF4444' : '#E2E8F0',
+              borderRadius: '10px',
+              position: 'relative',
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{
+                width: '14px',
+                height: '14px',
+                background: '#FFF',
+                borderRadius: '50%',
+                position: 'absolute',
+                top: '2px',
+                left: isSystemFrozen ? '16px' : '2px',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+              }} />
             </div>
           </div>
 
@@ -1662,6 +1744,105 @@ const DashboardPage = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Emergency Freeze Password Modal */}
+      {showFreezeModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
+        }} onClick={() => setShowFreezeModal(false)}>
+          <form 
+            onSubmit={handleConfirmFreeze}
+            style={{
+              background: '#fff', borderRadius: '16px', padding: '24px',
+              width: '380px', maxWidth: '90%', textAlign: 'center',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '50%',
+              background: isSystemFrozen ? '#E0F2FE' : '#FEE2E2', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', color: isSystemFrozen ? '#0284C7' : '#EF4444', margin: '0 auto 16px auto',
+              fontSize: '1.6rem'
+            }}>
+              <FaUserLock />
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 800, color: '#0D1B3E' }}>
+              {isSystemFrozen ? 'Activate All Services?' : 'Deactivate All Services?'}
+            </h3>
+            <p style={{ margin: '0 0 20px 0', fontSize: '0.85rem', color: '#64748B', lineHeight: 1.5 }}>
+              {isSystemFrozen 
+                ? 'Are you sure you want to activate member transactions? Enter Admin Security Password to confirm.' 
+                : 'WARNING: This will freeze all member withdrawals and transactions immediately. Enter Admin Security Password to confirm.'}
+            </p>
+            
+            {freezeModalError && (
+              <div style={{
+                color: '#EF4444', background: '#FEF2F2', border: '1px solid #FCA5A5',
+                padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', marginBottom: '15px',
+                display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center'
+              }}>
+                <FaExclamationTriangle /> {freezeModalError}
+              </div>
+            )}
+
+            <input
+              type="password"
+              placeholder="Enter Admin Password"
+              value={freezePassword}
+              onChange={(e) => setFreezePassword(e.target.value)}
+              autoFocus
+              required
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: '8px',
+                border: '1px solid #E2E8F0', marginBottom: '20px', outline: 'none',
+                boxSizing: 'border-box', textAlign: 'center', fontSize: '1rem',
+                letterSpacing: '0.1em'
+              }}
+            />
+
+            {!isSystemFrozen && (
+              <textarea
+                placeholder="Enter custom broadcast message for members..."
+                value={freezeMessage}
+                onChange={(e) => setFreezeMessage(e.target.value)}
+                rows={3}
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: '8px',
+                  border: '1px solid #E2E8F0', marginBottom: '20px', outline: 'none',
+                  boxSizing: 'border-box', fontSize: '0.9rem', resize: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            )}
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                type="button"
+                onClick={() => setShowFreezeModal(false)}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0',
+                  background: '#fff', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
+                  background: isSystemFrozen ? '#0284C7' : '#EF4444', color: '#fff', 
+                  fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

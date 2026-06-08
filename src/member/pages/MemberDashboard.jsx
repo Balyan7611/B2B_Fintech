@@ -67,6 +67,22 @@ const MemberDashboard = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1200);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isSystemFrozen, setIsSystemFrozen] = useState(() => localStorage.getItem('bss_system_frozen') === 'true');
+  const [freezeMessage, setFreezeMessage] = useState(() => localStorage.getItem('bss_system_freeze_message') || '⚠️ SYSTEM NOTICE: All transactions and wallet transfers are temporarily suspended by the Admin for security.');
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsSystemFrozen(localStorage.getItem('bss_system_frozen') === 'true');
+      setFreezeMessage(localStorage.getItem('bss_system_freeze_message') || '⚠️ SYSTEM NOTICE: All transactions and wallet transfers are temporarily suspended by the Admin for security.');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('system_freeze_updated', handleStorageChange); // Custom event for same-window updates
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('system_freeze_updated', handleStorageChange);
+    };
+  }, []);
+
   // Toast logic
   const [currentToast, setCurrentToast] = useState(null);
   const [isToastClosing, setIsToastClosing] = useState(false);
@@ -171,6 +187,24 @@ const MemberDashboard = () => {
       <div className={styles.layout}>
         <MemberSidebar />
         <div className={`${styles.mainWrapper} ${!isSidebarOpen && !isMobile ? styles.expanded : ''}`}>
+          {isSystemFrozen && (
+            <div style={{
+              background: '#FEF2F2',
+              color: '#991B1B',
+              borderBottom: '1px solid #FCA5A5',
+              padding: '12px 24px',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              justifyContent: 'center',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}>
+              <FaShieldAlt style={{ color: '#EF4444' }} />
+              <span>{freezeMessage}</span>
+            </div>
+          )}
           
           <div className={styles.newsTickerWrapper}>
             <div className={styles.newsTickerContent}>
